@@ -20,7 +20,7 @@ const gridCols = {
         <h4 class="text-sm font-bold text-grey-400  tracking-wide mb-3">
             {{ title }}
         </h4>
-        <div class="grid gap-x-8 gap-y-4" :class="gridCols[cols]">
+        <div class="grid gap-x-6 gap-y-2" :class="gridCols[cols]">
             <slot />
         </div>
     </div>

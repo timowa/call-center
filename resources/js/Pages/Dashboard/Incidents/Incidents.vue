@@ -34,7 +34,7 @@ const isColsOpen = ref(false);
             </div>
         </div>
         <ActiveFiltersRow/>
-        <FilterModal :show="isFilterOpen"/>
+        <FilterModal :show="isFilterOpen" @close="isFilterOpen = false"/>
     </div>
 
 </template>
