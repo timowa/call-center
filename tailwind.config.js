@@ -26,9 +26,11 @@ export default {
                 'grey-100': '#edf1f7',
                 'grey-150': '#f5f5f5',
                 'grey-200': '#ECEDEF',
+                'grey-220': '#dee0e3',
                 'grey-250': '#BDBDBD',
                 'grey-300': 'rgb(125, 133, 143)',
                 'grey-350': '#79818B',
+                'grey-370': '#5F6772',
                 'grey-400': '#141F2F'
             }
         },

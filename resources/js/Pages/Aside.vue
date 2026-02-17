@@ -12,7 +12,7 @@ import TextInput from "@/Components/Form/TextInput.vue";
         <span>Заблокирован</span>
     </div>
     <div class="px-2">
-        <TextInput model-value="" :placeholder="'Введите номер'"></TextInput>
+        <TextInput model-value="" :placeholder="'Введите номер'" :wFull="true"></TextInput>
     </div>
 </aside>
 </template>
