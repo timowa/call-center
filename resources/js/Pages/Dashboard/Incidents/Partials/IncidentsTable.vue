@@ -1,7 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
 import ModeChanger from "@/Pages/Dashboard/Incidents/Partials/ModeChanger.vue";
-
+const props = defineProps(['incidents']);
 const filterRowsButtons = [
     {
         id: 1,
@@ -42,68 +42,12 @@ const tableColumns = ref([
     {id: 'operator', title: 'ФИО Оператора', visible: true},
     {id: 'UKIO', title: 'УКИО', visible: true},
     {id: 'status', title: 'Состояние', visible: true},
-    {id: 'type', title: 'Тип вызова', visible: true},
-    {id: 'caller_number', title: 'Номер звонящего', visible: true},
+    {id: 'service_name', title: 'Тип вызова', visible: true},
+    {id: 'applicant_phone', title: 'Номер звонящего', visible: true},
     {id: 'dialed_number', title: 'Набранный номер', visible: true},
-    {id: 'place_of_incident', title: 'Место происшествия', visible: true},
+    {id: 'district_name', title: 'Место происшествия', visible: true},
 ]);
-const incidents = ref([
-    {id: 123, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 3, type: 3,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 124, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 1,
-        type: 2,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 125, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 1,
-        type: 3,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 126, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 1,
-        type: 4,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 127, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 2,
-        type: 5,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 128, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 2,
-        type: 4,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 129, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 2,
-        type: 3,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 130, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 2,
-        type: 1,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 131, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 2,
-        type: 2,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 132, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status':7,
-        type: 1,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 133, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 7,
-        type: 3,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 134, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 7,
-        type: 1,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 135, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 7,
-        type: 3,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 136, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 7,
-        type: 2,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 137, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 3,
-        type: 2,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 138, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 3,
-        type: 3,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 139, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 3,
-        type: 4,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 140, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 3,
-        type: 3,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 141, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 3,
-        type: 4,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 142, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 3,
-        type: 3,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 143, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 3,
-        type: 4,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-    {id: 144, datetime: '2026-02-06 14:59:52', creator: '112 Абакан (2111219)', operator: '2111245 2111245 2111245', UKIO: '4038793', 'status': 3,
-        type: 3,caller_number: '89832704737', dialed_number: '3901123311', place_of_incident: 'Сорск г.'},
-]);
-const tableData = computed(() => {
-    return incidents.value.map(item => {
-        const dateObj = new Date(item.datetime);
-        return {
-            ...item,
-            // Timestamp для идеальной сортировки (числа сравнивать проще всего)
-            ts: dateObj.getTime(),
-            // Готовая строка для отображения, чтобы не вызывать функцию в шаблоне 100 раз
-            displayDate: dateObj.toLocaleString('ru-RU')
-        };
-    });
-});
+console.log(props.incidents)
 </script>
 
 <template>
@@ -131,12 +75,12 @@ const tableData = computed(() => {
             </tr>
             </thead>
             <tbody>
-            <tr v-for="incident in tableData" :key="incident.id" class="text-sm text-grey-400 bg-grey-150">
+            <tr v-for="incident in incidents" :key="incident.id" class="text-sm text-grey-400 bg-grey-150">
                 <td
                     v-for="col in tableColumns" :key="col.id"
                     :data-order="col.id === 'datetime' ? incident.ts : null"
                 >
-                    <template v-if="col.id === 'date'" v-text="incident.displayDate"></template>
+                    <template v-if="col.id === 'date'" v-text="incident.datetime"></template>
                     <template v-else-if="col.id === 'status'">
                         <div class="flex items-center whitespace-nowrap" :title="statusMap[incident.status]?.label">
                             <div

@@ -51,6 +51,12 @@ class IncidentsController extends Controller
 
     public function update(Request $request, int $id)
     {
+        $request->validate([
+            'main_service_id' => 'required',
+        ],
+            [
+                'main_service_id.required' => 'Пожалуйста, выберите основную службу.'
+            ]);
         $incident = Incident::findOrFail($id);
         $data = $request->except(['additional_services', 'created_at', 'creator', 'main_service_id', 'incident_type', 'source', 'area_id']);
         $data['service_id'] = $request->main_service_id;
@@ -61,5 +67,36 @@ class IncidentsController extends Controller
             'message' => 'Карточка успешно добавлена',
             'type' => 'success'
         ]);
+    }
+
+    public function dashboard()
+    {
+        $incidents = Incident::select(['created_at', 'user_id', 'service_id', 'applicant_info->phone as applicant_phone', 'district_id'])
+            ->with(['user' => function($query) {
+                $query->select('id', 'name');
+            },
+                'service' => function($query) {
+                $query->select('id', 'name');
+                },
+                'district' => function($query) {
+                $query->select('id', 'name');
+                }])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($incident) {
+                return [
+                    'id' => $incident->id,
+                    'datetime' => $incident->created_at->format('Y-m-d H:i:s'),
+                    'creator' => $incident->user->name,
+                    'operator' => '33 22 11',
+                    'UKIO' => '244414',
+                    'status' => 1,
+                    'service_name' => $incident->service->name,
+                    'applicant_phone' => $incident->applicant_phone,
+                    'dialed_number' => '88005553535',
+                    'district_name' => $incident->district->name ?? 'Не указано',
+                ];
+            });
+        return Inertia::render('Dashboard', ['incidents' => $incidents]);
     }
 }

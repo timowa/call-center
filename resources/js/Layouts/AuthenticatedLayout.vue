@@ -95,6 +95,20 @@ watch(
     },
     { deep: true }
 );
+watch(() => page.props.errors, (errors) => {
+    if (Object.keys(errors).length > 0) {
+        // Проходимся по всем ошибкам и выводим каждую в отдельном Noty
+        Object.values(errors).forEach(error => {
+            new Noty({
+                text: error,
+                type: 'error',
+                timeout: 5000, // Ошибки лучше показывать дольше
+                layout: 'topRight',
+                theme: 'metroui'
+            }).show();
+        });
+    }
+}, { deep: true });
 </script>
 
 <template>

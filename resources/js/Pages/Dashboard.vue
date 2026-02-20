@@ -41,7 +41,7 @@ const currentTab = ref('indicates')
         </div>
         <div>
             <keep-alive>
-                <component :is="tabs[currentTab].template"/>
+                <component :is="tabs[currentTab].template" v-bind="$attrs"/>
             </keep-alive>
         </div>
     </div>

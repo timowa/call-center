@@ -36,6 +36,7 @@ watch(
                        type="select"
                        v-model="form.main_service_id"
                        :options="services"
+                       :error="form.errors.main_service_id"
             />
             <div class="col-span-4 flex gap-6">
                 <FormField label="Учебная" type="checkbox" v-model="form.is_training"/>
