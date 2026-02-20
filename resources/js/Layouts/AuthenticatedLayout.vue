@@ -3,7 +3,9 @@
 
 import Aside from "@/Pages/Aside.vue";
 import Header from "@/Pages/Header.vue";
-import {inject, onMounted, onUnmounted, provide, readonly, ref} from "vue";
+import {inject, onMounted, onUnmounted, provide, readonly, ref, watch} from "vue";
+import {usePage} from "@inertiajs/vue3";
+import Noty from 'noty';
 
 const modes = [
     {
@@ -75,6 +77,24 @@ provide('workMode', {
 provide('allWorkModes', {
     modes: readonly(modes)
 })
+
+const page = usePage();
+watch(
+    () => page.props.flash,
+    (flash) => {
+        console.log(flash)
+        if (flash && flash.message) {
+            new Noty({
+                text: flash.message,
+                type: flash.type || 'info', // success, error, warning, info
+                timeout: 3000,
+                layout: 'topRight',
+                theme: 'metroui'
+            }).show();
+        }
+    },
+    { deep: true }
+);
 </script>
 
 <template>

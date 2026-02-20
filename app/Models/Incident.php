@@ -7,10 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Incident extends Model
 {
 
-    protected $fillable = [
-        'user_id',
-    ];
-
+   protected $guarded = [];
     protected $casts = [
         'applicant_info' => 'array',
         'services_info' => 'array',

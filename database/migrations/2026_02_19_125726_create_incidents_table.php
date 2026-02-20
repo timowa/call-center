@@ -46,6 +46,7 @@ return new class extends Migration
             $table->foreignId('emergency_type_id')->nullable()->constrained('emergency_types');
             $table->longText('description')->nullable();
             $table->json('applicant_info')->nullable();
+            $table->json('services_info')->nullable();
             $table->timestamps();
         });
     }

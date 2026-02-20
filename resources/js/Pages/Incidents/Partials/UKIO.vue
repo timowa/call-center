@@ -5,6 +5,7 @@ import FormGroup from "@/Components/Form/FormGroup.vue";
 import InputLabel from "@/Components/Form/InputLabel.vue";
 import TextInput from "@/Components/Form/TextInput.vue";
 import {ref, watch} from "vue";
+import Block from "@/Components/Block.vue";
 const props = defineProps(['form', 'incidentTypes', 'services', 'areas', 'districts']);
 watch(
     () => props.form.main_service_id,
@@ -21,6 +22,7 @@ watch(
 </script>
 
 <template>
+    <Block>
         <FormGroup title="Информация" :cols="6">
             <FormField label="№ карточки" v-model="form.id" :readonly="true" />
             <FormField label="Время обработки" v-model="form.proc_time" :readonly="true"  :text-align="'right'"/>
@@ -54,20 +56,20 @@ watch(
             </div>
         </FormGroup>
         <FormGroup title="Место происшествия" :cols="6">
-                <FormField type="select" v-model="form.area_id" label="Район" :options="areas"/>
-                <FormField type="select"
-                           v-model="form.district_id"
-                           label="Округ"
-                           :text-align="'right'"
-                           :options="districts"
-                />
-                <FormField v-model="form.street" label="Улица" :text-align="'right'"/>
-                <InputLabel label="Дом"/>
+            <FormField type="select" v-model="form.area_id" label="Район" :options="areas"/>
+            <FormField type="select"
+                       v-model="form.district_id"
+                       label="Округ"
+                       :text-align="'right'"
+                       :options="districts"
+            />
+            <FormField v-model="form.street" label="Улица" :text-align="'right'"/>
+            <InputLabel label="Дом"/>
             <div class="grid grid-cols-5 gap-2">
                 <TextInput v-model="form.house_number" class="col-span-2"/>
                 <FormField v-model="form.corpus_number" label="Корп." :col-span="3" :text-align="'right'"/>
             </div>
-                <InputLabel label="Квартира" :text-align="'right'"/>
+            <InputLabel label="Квартира" :text-align="'right'"/>
             <div class="grid grid-cols-5 gap-2">
                 <TextInput v-model="form.apartment_number" class="col-span-2"/>
                 <FormField v-model="form.entrance_number" label="Под." :col-span="3" :text-align="'right'"/>
@@ -132,6 +134,8 @@ watch(
             <FormField label="Доп. инфо" v-model="form.applicant_info.additional_info" :col-span="6" :grid-col="6" type="textarea"/>
             <FormField label="Язык общения" v-model="form.applicant_info.language"/>
         </FormGroup>
+    </Block>
+
 </template>
 
 <style scoped>

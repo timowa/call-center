@@ -19,6 +19,10 @@ const props = defineProps({
     colSpan: {
         type: Number,
         default: 2
+    },
+    vertical: {
+        type: Boolean,
+        default: false
     }
 });
 const inputs = {
@@ -50,7 +54,7 @@ const colSpans = {
 }
 const isCheckbox = props.type === 'checkbox' || props.type === 'radio';
 const inputClasses = computed(()=>{
-    if (isCheckbox) return {};
+    if (isCheckbox || props.vertical) return {};
     return {
         'col-start-2': true,
         [colEnd[props.colSpan]]: true
@@ -60,10 +64,13 @@ const display = computed(()=>{
     if (isCheckbox) return {
         'flex': true
     };
+
     return {
-        'grid gap-6': true,
-        [gridCols[props.gridCol]]: true,
-        [colSpans[props.colSpan]]: true
+        'grid gap-6': !props.vertical,
+        'grid grid-rows-2': props.vertical,
+        [gridCols[props.gridCol]]: !props.vertical && props.gridCol > 1,
+        [colSpans[props.colSpan]]: props.colSpan > 1,
+        'items-center': !props.vertical
     }
 });
 
@@ -71,7 +78,7 @@ const display = computed(()=>{
 </script>
 
 <template>
-    <div class="align-center text-13 items-center" :class="display">
+    <div class="align-center text-13 " :class="display">
         <InputLabel v-bind="$attrs" v-if="$attrs.label && !isCheckbox"/>
         <component v-bind="$attrs" :is="inputs[type]" class="flex-shrink-0" :class="inputClasses"></component>
         <InputLabel v-bind="$attrs" v-if="$attrs.label && isCheckbox"/>

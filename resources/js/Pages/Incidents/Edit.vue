@@ -154,16 +154,14 @@ const submit = () => {
                 @click="currentTab = id"
             >{{tab.title}}</TabHeaderButton>
         </TabsHeader>
-        <div class="bg-white px-[20px] py-[10px]">
-            <form @submit.prevent="submit" >
-            <keep-alive>
-                <component :is="tabs[currentTab].template" :form="form" v-bind="$attrs"/>
-            </keep-alive>
-                <div class="text-right">
-                    <PrimaryButton :disabled="form.processing">Сохранить</PrimaryButton>
-                </div>
-            </form>
-        </div>
+        <form @submit.prevent="submit" >
+        <keep-alive>
+            <component :is="tabs[currentTab].template" :form="form" v-bind="$attrs"/>
+        </keep-alive>
+            <div class="text-right">
+                <PrimaryButton :disabled="form.processing">Сохранить</PrimaryButton>
+            </div>
+        </form>
     </div>
 </template>
 

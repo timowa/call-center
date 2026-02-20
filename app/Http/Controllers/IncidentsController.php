@@ -51,6 +51,15 @@ class IncidentsController extends Controller
 
     public function update(Request $request, int $id)
     {
-        dd($request->request->all());
+        $incident = Incident::findOrFail($id);
+        $data = $request->except(['additional_services', 'created_at', 'creator', 'main_service_id', 'incident_type', 'source', 'area_id']);
+        $data['service_id'] = $request->main_service_id;
+        $data['incident_type_id'] = $request->incident_type;
+        $incident->update($data);
+        $incident->additionalServices()->sync($request->additional_services ?? []);
+        return redirect()->route('dashboard')->with([
+            'message' => 'Карточка успешно добавлена',
+            'type' => 'success'
+        ]);
     }
 }
