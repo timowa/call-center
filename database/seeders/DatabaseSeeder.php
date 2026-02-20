@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Area;
-use App\Models\CallType;
+use App\Models\Service;
 use App\Models\District;
 use App\Models\EmergencyType;
 use App\Models\IncidentType;
@@ -22,11 +22,11 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-//        User::factory()->create([
-//            'name' => 'Admin',
-//            'email' => 'admin@mail.ru',
-//            'password' => bcrypt('admin123'),
-//        ]);
+        User::factory()->create([
+            'name' => 'Admin',
+            'email' => 'admin@mail.ru',
+            'password' => bcrypt('admin123'),
+        ]);
 
         $incidentTypes = [
             'Лица в розыске',
@@ -61,7 +61,7 @@ class DatabaseSeeder extends Seeder
             'ЕДДС',
         ];
         foreach ($callTypes as $type) {
-            CallType::create([
+            Service::create([
                 'name' => $type
             ]);
         }

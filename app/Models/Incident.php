@@ -11,6 +11,11 @@ class Incident extends Model
         'user_id',
     ];
 
+    protected $casts = [
+        'applicant_info' => 'array',
+        'services_info' => 'array',
+    ];
+
     public function district()
     {
         return $this->belongsTo(District::class);
@@ -21,9 +26,14 @@ class Incident extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function callType()
+    public function service()
     {
-        return $this->belongsTo(CallType::class);
+        return $this->belongsTo(Service::class);
+    }
+
+    public function additionalServices()
+    {
+        return $this->belongsToMany(Service::class);
     }
 
     public function type()
@@ -35,5 +45,6 @@ class Incident extends Model
     {
         return $this->belongsTo(EmergencyType::class);
     }
+
 
 }

@@ -2,7 +2,11 @@
 import {computed, onMounted} from 'vue';
 
 const model = defineModel();
-const props = defineProps(['placeholder', 'readonly', 'options']);
+const props = defineProps({
+    'placeholder': String,
+    'readonly': Boolean,
+    'options': Array
+});
 
 const classes = computed(() => ({
     'bg-gray-200 cursor-not-allowed opacity-70': props.readonly

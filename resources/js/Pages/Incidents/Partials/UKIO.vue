@@ -4,8 +4,20 @@ import FormField from "@/Components/Form/FormField.vue";
 import FormGroup from "@/Components/Form/FormGroup.vue";
 import InputLabel from "@/Components/Form/InputLabel.vue";
 import TextInput from "@/Components/Form/TextInput.vue";
-import {ref} from "vue";
-const props = defineProps(['form', 'incidentTypes', 'callTypes']);
+import {ref, watch} from "vue";
+const props = defineProps(['form', 'incidentTypes', 'services', 'areas', 'districts']);
+watch(
+    () => props.form.main_service_id,
+    (newMainServiceId) => {
+        if (!newMainServiceId) return;
+
+        // Удаляем выбранную главную службу из списка дополнительных служб (чекбоксов)
+        const index = props.form.additional_services.indexOf(newMainServiceId);
+        if (index !== -1) {
+            props.form.additional_services.splice(index, 1);
+        }
+    }
+);
 </script>
 
 <template>
@@ -20,8 +32,8 @@ const props = defineProps(['form', 'incidentTypes', 'callTypes']);
             <FormField label="Источник" v-model="form.source"  :text-align="'right'"/>
             <FormField label="Тип вызова"
                        type="select"
-                       v-model="form.call_type"
-                       :options="callTypes"
+                       v-model="form.main_service_id"
+                       :options="services"
             />
             <div class="col-span-4 flex gap-6">
                 <FormField label="Учебная" type="checkbox" v-model="form.is_training"/>
@@ -30,20 +42,26 @@ const props = defineProps(['form', 'incidentTypes', 'callTypes']);
             <div class="col-span-full grid align-center text-13 grid-cols-6">
                 <InputLabel label="Службы"/>
                 <div class="col-span-5 flex gap-6">
-                    <FormField v-for="type in callTypes"
+                    <FormField v-for="type in services"
                                :key="type.id"
+                               :value="type.id"
                                :label="type.name"
                                type="checkbox"
-                               v-model="form.services"
+                               v-model:checked="form.additional_services"
                                v-show="form.call_type !== type.id"
                     />
                 </div>
             </div>
         </FormGroup>
         <FormGroup title="Место происшествия" :cols="6">
-                <FormField type="select" v-model="form.area_id" label="Район"/>
-                <FormField type="select" v-model="form.district_id" label="Округ" :text-align="'right'"/>
-                <FormField type="select" v-model="form.street" label="Улица" :text-align="'right'"/>
+                <FormField type="select" v-model="form.area_id" label="Район" :options="areas"/>
+                <FormField type="select"
+                           v-model="form.district_id"
+                           label="Округ"
+                           :text-align="'right'"
+                           :options="districts"
+                />
+                <FormField v-model="form.street" label="Улица" :text-align="'right'"/>
                 <InputLabel label="Дом"/>
             <div class="grid grid-cols-5 gap-2">
                 <TextInput v-model="form.house_number" class="col-span-2"/>
@@ -88,31 +106,31 @@ const props = defineProps(['form', 'incidentTypes', 'callTypes']);
 
         </FormGroup>
         <FormGroup title="Информация о заявителе" :cols="6">
-            <FormField label="Фамилия" v-model="form.applicant_lastname"/>
-            <FormField label="Имя" v-model="form.applicant_firstname" :text-align="'right'"/>
-            <FormField label="Отчество" v-model="form.applicant_surname" :text-align="'right'"/>
-            <FormField label="Телефон" v-model="form.applicant_phone"/>
-            <FormField label="Статус" v-model="form.applicant_status" :text-align="'right'"/>
+            <FormField label="Фамилия" v-model="form.applicant_info.lastname"/>
+            <FormField label="Имя" v-model="form.applicant_info.firstname" :text-align="'right'"/>
+            <FormField label="Отчество" v-model="form.applicant_info.surname" :text-align="'right'"/>
+            <FormField label="Телефон" v-model="form.applicant_info.phone"/>
+            <FormField label="Статус" v-model="form.applicant_info.status" :text-align="'right'"/>
             <InputLabel label="Дата рождения" :text-align="'right'"/>
             <div class="grid grid-cols-5 gap-2">
-                <TextInput v-model="form.applicant_birthday" class="col-span-2"/>
-                <FormField v-model="form.appllicant_age" label="Возраст" :col-span="3" :text-align="'right'"/>
+                <TextInput v-model="form.applicant_info.birthday" class="col-span-2"/>
+                <FormField v-model="form.applicant_info.age" label="Возраст" :col-span="3" :text-align="'right'"/>
             </div>
-            <FormField type="select" v-model="form.applicant_district" label="Район"/>
-            <FormField type="select" v-model="form.applicant_area" label="Округ" :text-align="'right'"/>
-            <FormField type="select" v-model="form.applicant_street" label="Улица" :text-align="'right'"/>
+            <FormField type="select" v-model="form.applicant_info.district" label="Район"/>
+            <FormField type="select" v-model="form.applicant_info.area" label="Округ" :text-align="'right'"/>
+            <FormField type="select" v-model="form.applicant_info.street" label="Улица" :text-align="'right'"/>
             <InputLabel label="Дом"/>
             <div class="grid grid-cols-5 gap-2">
-                <TextInput v-model="form.applicant_house" class="col-span-2"/>
-                <FormField v-model="form.applicant_corpus" label="Корп." :col-span="3" :text-align="'right'"/>
+                <TextInput v-model="form.applicant_info.house" class="col-span-2"/>
+                <FormField v-model="form.applicant_info.corpus" label="Корп." :col-span="3" :text-align="'right'"/>
             </div>
             <InputLabel label="Квартира" :text-align="'right'"/>
             <div class="grid grid-cols-5 gap-2">
-                <TextInput v-model="form.applicant_apartment" class="col-span-2"/>
+                <TextInput v-model="form.applicant_info.apartment" class="col-span-2"/>
             </div>
-            <FormField v-model="form.applicant_coordinates" label="Координаты" :text-align="'right'"/>
-            <FormField label="Доп. инфо" v-model="form.applicant_additional_info" :col-span="6" :grid-col="6" type="textarea"/>
-            <FormField label="Язык общения" v-model="form.applicant_language"/>
+            <FormField v-model="form.applicant_info.coordinates" label="Координаты" :text-align="'right'"/>
+            <FormField label="Доп. инфо" v-model="form.applicant_info.additional_info" :col-span="6" :grid-col="6" type="textarea"/>
+            <FormField label="Язык общения" v-model="form.applicant_info.language"/>
         </FormGroup>
 </template>
 

@@ -7,13 +7,102 @@ export default {
 </script>
 <script setup>
 import {Head, useForm} from "@inertiajs/vue3";
-import {ref} from "vue";
+import {computed, ref, watch} from "vue";
 import UKIO from "@/Pages/Incidents/Partials/UKIO.vue";
 import EDDS from "@/Pages/Incidents/Partials/EDDS.vue";
 import TabsHeader from "@/Components/TabsHeader.vue";
 import TabHeaderButton from "@/Components/TabHeaderButton.vue";
+import Firefighters from "@/Pages/Incidents/Partials/Firefighters.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
 const props = defineProps(['incident']);
-const tabs = {
+const form = useForm({
+    id: props.incident.id,
+    created_at: {
+        date: props.incident.dt.date,
+        time: props.incident.dt.time
+    },
+    creator: props.incident.user.name,
+    main_service_id: props.incident.service_id,
+    additional_services: props.incident.additional_services,
+    incident_type: props.incident.type,
+    source: props.incident.source,
+    is_training: props.incident.is_trainig,
+    is_important: props.incident.is_important,
+    area_id: props.incident.area_id,
+    district_id: props.incident.district_id,
+    street: props.incident.street,
+    house_number: props.incident.house_number,
+    corpus_number: props.incident.corpus_number,
+    apartment_number: props.incident.apartment_number,
+    entrance_number: props.incident.entrance_number,
+    entrance_code: props.incident.entrance_code,
+    floor: props.incident.floor,
+    number_of_floors: props.incident.number_of_floors,
+    ownership: props.incident.ownership,
+    building: props.incident.building,
+    additional_street: props.incident.additional_street,
+    district_of_city: props.incident.district_of_city,
+    object: props.incident.object,
+    coordinates: props.incident.coordinates,
+    road: props.incident.road,
+    metre: props.incident.metre,
+    km: props.incident.km,
+    is_nearby: props.incident.is_nearby,
+    address_section: props.incident.address_section,
+    additional_info: props.incident.additional_info,
+    emergency_threat: props.incident.emergency_threat,
+    threat_to_people: props.incident.threat_to_people,
+    number_of_victims: props.incident.number_of_victims,
+    emergency_type_id: props.incident.emergency_type_id,
+    description: props.incident.description,
+    applicant_info: props.incident.applicant_info || {
+        lastname: '',
+        firstname: '',
+        surname: '',
+        phone: '',
+        status: '',
+        birthday: '',
+        age: '',
+        district: '',
+        area: '',
+        street: '',
+        house: '',
+        corpus: '',
+        apartment: '',
+        coordinates: '',
+        additional_info: '',
+        language: ''
+    },
+    services_info: props.incident.services_info || {
+        EDDS: {
+            info: {
+                type: '',
+                company: '',
+                instruction: '',
+                message: '',
+                additional_info: '',
+                elimination_datetime: '',
+                is_consultation: false,
+            },
+            results: {
+                forces: '',
+                departure_datetime: '',
+                arrival_datetime: '',
+                elimination_datetime: '',
+                applicant_feedback_datetime: '',
+                dispatcher: '',
+                take_actions: ''
+            },
+            response: {
+
+            }
+
+
+        }
+    }
+});
+
+const tabs = computed(() => ({
     UKIO: {
         template: UKIO,
         title: 'УКИО',
@@ -22,18 +111,36 @@ const tabs = {
     EDDS: {
         template: EDDS,
         title: 'ЕДДС/ЖКХ',
-        show: true,
-    }
-};
-const currentTab = ref('UKIO');
-const form = useForm({
-    id: props.incident.id,
-    created_at: {
-        date: props.incident.dt.date,
-        time: props.incident.dt.time
+        show: form.additional_services.includes(8) || form.main_service_id === 8,
+        service_id: 8
     },
-    creator: props.incident.user.name,
+    FIREFIGHTERS: {
+        template: Firefighters,
+        title: '01',
+        service_id: 4,
+        show: form.additional_services.includes(4) || form.main_service_id === 4
+    }
+}));
+watch(() => tabs.value.EDDS.show, (isVisible) => {
+    if (!isVisible && currentTab.value === 'EDDS') {
+        currentTab.value = 'UKIO';
+    }
 });
+const currentTab = ref('UKIO');
+
+const submit = () => {
+    form.put(route('incidents.update', props.incident.id), {
+        preserveScroll: true, // Чтобы страница не прыгала вверх после сохранения
+        onSuccess: () => {
+            // Можно добавить уведомление
+            console.log('Данные успешно обновлены');
+        },
+        onError: (errors) => {
+            // Вывод ошибок валидации в консоль для отладки
+            console.error('Ошибки валидации:', errors);
+        },
+    });
+}
 </script>
 
 <template>
@@ -44,13 +151,17 @@ const form = useForm({
                 v-for="(tab, id) in tabs"
                 v-show="tab.show"
                 :active="currentTab === id"
+                @click="currentTab = id"
             >{{tab.title}}</TabHeaderButton>
         </TabsHeader>
         <div class="bg-white px-[20px] py-[10px]">
-            <form action="" >
+            <form @submit.prevent="submit" >
             <keep-alive>
                 <component :is="tabs[currentTab].template" :form="form" v-bind="$attrs"/>
             </keep-alive>
+                <div class="text-right">
+                    <PrimaryButton :disabled="form.processing">Сохранить</PrimaryButton>
+                </div>
             </form>
         </div>
     </div>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\IncidentsController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -27,7 +28,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/incidents/create', [IncidentsController::class, 'create'])->name('incidents.create');
     Route::get('/incidents/edit/{id}', [IncidentsController::class, 'edit'])->name('incidents.edit');
-    Route::put('/incidents/update', [IncidentsController::class, 'update'])->name('incidents.update');
+    Route::put('/incidents/update/{id}', [IncidentsController::class, 'update'])->name('incidents.update');
 });
 
 require __DIR__.'/auth.php';
