@@ -1,7 +1,7 @@
 <script setup>
 import {inject, ref} from "vue";
-import ModeChangerButton from "@/Pages/Dashboard/Incidents/Components/ModeChangerButton.vue";
-import IncidentsTable from "@/Pages/Dashboard/Incidents/Partials/IncidentsTable.vue";
+import TabsHeader from "@/Components/TabsHeader.vue";
+import TabHeaderButton from "@/Components/TabHeaderButton.vue";
 
 const {setActiveMode, lastActiveMode} = inject('workMode');
 const activeBtn = ref('oper');
@@ -27,13 +27,13 @@ const buttons = [
 </script>
 
 <template>
-<div class="w-fit bg-grey-220 rounded-sm">
-    <ModeChangerButton
-        v-for="button in buttons"
-        :active="activeBtn === button.id"
-        @click="button.click"
-    >{{ button.title }}</ModeChangerButton>
-</div>
+    <TabsHeader>
+        <TabHeaderButton  v-for="button in buttons"
+                          :active="activeBtn === button.id"
+                          @click="button.click">
+            {{ button.title }}
+        </TabHeaderButton>
+    </TabsHeader>
 </template>
 
 <style scoped>

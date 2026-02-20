@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\IncidentsController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+
+    Route::get('/incidents/create', [IncidentsController::class, 'create'])->name('incidents.create');
+    Route::get('/incidents/edit/{id}', [IncidentsController::class, 'edit'])->name('incidents.edit');
+    Route::put('/incidents/update', [IncidentsController::class, 'update'])->name('incidents.update');
 });
 
 require __DIR__.'/auth.php';

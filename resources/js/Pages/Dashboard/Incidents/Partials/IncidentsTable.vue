@@ -1,5 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
+import ModeChanger from "@/Pages/Dashboard/Incidents/Partials/ModeChanger.vue";
 
 const filterRowsButtons = [
     {
@@ -106,6 +107,8 @@ const tableData = computed(() => {
 </script>
 
 <template>
+    <ModeChanger/>
+
 <div class="bg-white">
     <div class="flex gap-2">
         <button

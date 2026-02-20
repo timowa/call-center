@@ -1,9 +1,5 @@
 <script setup>
 import {ref, onMounted, onUnmounted, inject} from 'vue';
-
-const seconds = ref(0);
-let timerInterval = null;
-
 const formatTime = (totalSeconds) => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -14,19 +10,11 @@ const formatTime = (totalSeconds) => {
         .join(":");
 };
 
-onMounted(() => {
-    timerInterval = setInterval(() => {
-        seconds.value++;
-    }, 1000);
-});
 
-onUnmounted(() => {
-    clearInterval(timerInterval);
-});
 
 const dropdownActive = ref(false);
 const {modes} = inject("allWorkModes");
-const {getActiveMode, setActiveMode} = inject('workMode');
+const {getActiveMode, setActiveMode, seconds} = inject('workMode');
 </script>
 
 <template>

@@ -3,7 +3,7 @@
 
 import Aside from "@/Pages/Aside.vue";
 import Header from "@/Pages/Header.vue";
-import {provide, readonly, ref} from "vue";
+import {inject, onMounted, onUnmounted, provide, readonly, ref} from "vue";
 
 const modes = [
     {
@@ -44,19 +44,33 @@ const modes = [
 ];
 const activeMode = ref(6);
 const lastActiveMode = ref(0);
-const setActiveMode = function(modeId) {
-    lastActiveMode.value = activeMode.value;
-    activeMode.value = modeId;
-}
+const seconds = ref(0);
+let timerInterval = null;
 const getActiveMode = () => {
     return modes.filter((mode) => mode.id === activeMode.value)[0];
 }
+const setActiveMode = function(modeId) {
+    lastActiveMode.value = activeMode.value;
+    activeMode.value = modeId;
+    seconds.value = 0;
+}
+
+onMounted(() => {
+    timerInterval = setInterval(() => {
+        seconds.value++;
+    }, 1000);
+});
+
+onUnmounted(() => {
+    clearInterval(timerInterval);
+});
 
 provide('workMode', {
     activeMode: readonly(activeMode),
     lastActiveMode: readonly(lastActiveMode),
     setActiveMode,
-    getActiveMode
+    getActiveMode,
+    seconds: seconds
 });
 provide('allWorkModes', {
     modes: readonly(modes)

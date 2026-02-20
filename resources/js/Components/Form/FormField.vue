@@ -5,11 +5,20 @@ import Checkbox from "@/Components/Form/Checkbox.vue";
 import Radio from "@/Components/Form/Radio.vue";
 import InputLabel from "@/Components/Form/InputLabel.vue";
 import {computed} from "vue";
+import Textarea from "@/Components/Form/Textarea.vue";
 
 const props = defineProps({
     type: {
         type: String,
         default: 'text'
+    },
+    gridCol: {
+        type: Number,
+        default: 2
+    },
+    colSpan: {
+        type: Number,
+        default: 2
     }
 });
 const inputs = {
@@ -17,22 +26,56 @@ const inputs = {
     select: Select,
     checkbox: Checkbox,
     radio: Radio,
+    textarea: Textarea
 }
-
-const isRightLabelFloat = props.type === 'checkbox' || props.type === 'radio';
-const floatClasses = computed(()=>({
-    'flex-row-reverse justify-end whitespace-nowrap': isRightLabelFloat,
-    'justify-between': !isRightLabelFloat,
-
-}));
+const gridCols = {
+    2: 'grid-cols-2',
+    3: 'grid-cols-3',
+    4: 'grid-cols-4',
+    6: 'grid-cols-6',
+}
+const colEnd = {
+    2: '',
+    3: 'col-end-4',
+    4: 'col-end-5',
+    5: 'col-end-6',
+    6: 'col-end-7',
+}
+const colSpans = {
+    2: 'col-span-2',
+    3: 'col-span-3',
+    4: 'col-span-4',
+    5: 'col-span-5',
+    6: 'col-span-6',
+}
+const isCheckbox = props.type === 'checkbox' || props.type === 'radio';
+const inputClasses = computed(()=>{
+    if (isCheckbox) return {};
+    return {
+        'col-start-2': true,
+        [colEnd[props.colSpan]]: true
+    }
+});
+const display = computed(()=>{
+    if (isCheckbox) return {
+        'flex': true
+    };
+    return {
+        'grid gap-6': true,
+        [gridCols[props.gridCol]]: true,
+        [colSpans[props.colSpan]]: true
+    }
+});
 
 
 </script>
 
 <template>
-    <div class=" flex items-center text-13" :class="floatClasses">
-        <InputLabel v-bind="$attrs" />
-        <component v-bind="$attrs" :is="inputs[type]" class="flex-shrink-0"></component>
+    <div class="align-center text-13 items-center" :class="display">
+        <InputLabel v-bind="$attrs" v-if="$attrs.label && !isCheckbox"/>
+        <component v-bind="$attrs" :is="inputs[type]" class="flex-shrink-0" :class="inputClasses"></component>
+        <InputLabel v-bind="$attrs" v-if="$attrs.label && isCheckbox"/>
+
     </div>
 
 </template>

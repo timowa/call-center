@@ -5,7 +5,6 @@ import ActiveFiltersRow from "@/Components/ActiveFiltersRow.vue";
 import {ref} from "vue";
 import LinkButton from "@/Components/LinkButton.vue";
 import FilterModal from "@/Pages/Dashboard/Incidents/Partials/FilterModal.vue";
-import ModeChanger from "@/Pages/Dashboard/Incidents/Partials/ModeChanger.vue";
 import IncidentsTable from "@/Pages/Dashboard/Incidents/Partials/IncidentsTable.vue";
 
 const isFilterOpen = ref(false);
@@ -20,6 +19,7 @@ const isColsOpen = ref(false);
                 <LinkButton
                     :title="'Создать карточку'"
                     :icon="'plus'"
+                    :href="route('incidents.create')"
                 />
             </div>
             <div class="flex gap-6">
@@ -37,9 +37,7 @@ const isColsOpen = ref(false);
         </div>
         <ActiveFiltersRow/>
         <div>
-            <ModeChanger/>
             <IncidentsTable/>
-
         </div>
         <FilterModal :show="isFilterOpen" @close="isFilterOpen = false"/>
     </div>

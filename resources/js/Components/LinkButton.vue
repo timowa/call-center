@@ -1,4 +1,6 @@
 <script setup>
+import {Link} from "@inertiajs/vue3";
+
 const props = defineProps(['title', 'icon']);
 const icons = {
     plus: '  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">\n' +
@@ -9,10 +11,10 @@ const icons = {
 
 <template>
     <button>
-        <a href="#" class="text-primary-light flex">
+        <Link v-bind="$attrs" class="text-primary-light flex">
                     <span class="mr-3" v-if="icon && icons[icon]" v-html="icons[icon]"></span>
             {{ title }}
-        </a>
+        </Link>
     </button>
 </template>
 
