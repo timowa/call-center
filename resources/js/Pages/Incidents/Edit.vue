@@ -7,7 +7,7 @@ export default {
 </script>
 <script setup>
 import {Head, useForm} from "@inertiajs/vue3";
-import {computed, ref, watch} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import UKIO from "@/Pages/Incidents/Partials/UKIO.vue";
 import EDDS from "@/Pages/Incidents/Partials/EDDS.vue";
 import TabsHeader from "@/Components/TabsHeader.vue";
@@ -141,6 +141,14 @@ const submit = () => {
         },
     });
 }
+
+
+onUnmounted(() => {
+    if (form.main_service_id === null) {
+        form.main_service_id = 1
+    }
+    submit();
+})
 </script>
 
 <template>

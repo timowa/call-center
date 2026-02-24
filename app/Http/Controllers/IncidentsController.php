@@ -71,7 +71,7 @@ class IncidentsController extends Controller
 
     public function dashboard()
     {
-        $incidents = Incident::select(['created_at', 'user_id', 'service_id', 'applicant_info->phone as applicant_phone', 'district_id'])
+        $incidents = Incident::select(['id','created_at', 'user_id', 'service_id', 'applicant_info->phone as applicant_phone', 'district_id'])
             ->with(['user' => function($query) {
                 $query->select('id', 'name');
             },
@@ -89,7 +89,6 @@ class IncidentsController extends Controller
                     'datetime' => $incident->created_at->format('Y-m-d H:i:s'),
                     'creator' => $incident->user->name,
                     'operator' => '33 22 11',
-                    'UKIO' => '244414',
                     'status' => 1,
                     'service_name' => $incident->service->name,
                     'applicant_phone' => $incident->applicant_phone,
