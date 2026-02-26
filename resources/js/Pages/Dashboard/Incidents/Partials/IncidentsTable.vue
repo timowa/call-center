@@ -3,7 +3,6 @@ import {computed, onMounted, ref} from "vue";
 import ModeChanger from "@/Pages/Dashboard/Incidents/Partials/ModeChanger.vue";
 import {router} from "@inertiajs/vue3";
 import Block from "@/Components/Block.vue";
-import FormGroup from "@/Components/Form/FormGroup.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import DataTable from 'datatables.net-vue3';

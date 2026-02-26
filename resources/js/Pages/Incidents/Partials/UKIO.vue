@@ -103,8 +103,8 @@ watch(
                 <FormField v-model="form.emergency_threat" label="Угроза ЧС" type="checkbox"/>
                 <FormField v-model="form.threat_to_people" label="Угроза людям" type="checkbox"/>
             </div>
-            <FormField v-model="form.number_of_victims" label="Пострадавших"/>
-            <FormField v-model="form.emergency_type_id" label="Тип ЧС" type="select"/>
+            <FormField v-model="form.number_of_victims" label="Пострадавших" :text-align="'right'"/>
+            <FormField v-model="form.emergency_type_id" label="Тип ЧС" type="select"  :text-align="'right'"/>
             <FormField label="Описание" v-model="form.description" :col-span="6" :grid-col="6" type="textarea"/>
 
         </FormGroup>

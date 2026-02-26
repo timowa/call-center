@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import {computed, inject} from 'vue';
 
 const emit = defineEmits(['update:checked']);
 
@@ -11,6 +11,7 @@ const props = defineProps({
     value: {
         default: null,
     },
+    disabled: Boolean
 });
 
 const proxyChecked = computed({
@@ -22,6 +23,16 @@ const proxyChecked = computed({
         emit('update:checked', val);
     },
 });
+const viewMode = inject('viewMode');
+const disabled = computed(() => {
+    if (props.disabled === true) {
+        return true;
+    }
+    if (viewMode.value === true) {
+        return true;
+    }
+    return false;
+})
 </script>
 
 <template>
@@ -29,6 +40,7 @@ const proxyChecked = computed({
         type="checkbox"
         :value="value"
         v-model="proxyChecked"
-        class="mr-2 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+        :disabled="disabled === true"
+        class="mr-2 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 disabled:bg-grey-220 disabled:cursor-not-allowed"
     />
 </template>

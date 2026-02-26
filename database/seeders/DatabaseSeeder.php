@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Area;
+use App\Models\CallType;
 use App\Models\Service;
 use App\Models\District;
 use App\Models\EmergencyType;
@@ -50,20 +51,28 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        $services = [
+            'Пожарные', 'Полиция', 'Скорая', 'Газ', 'Антитеррор'
+        ];
+
+        foreach ($services as $service) {
+            Service::create([
+                'name' => $service,
+            ]);
+        }
+
         $callTypes = [
-            'Ложный',
-            'Детская шалость',
-            'Справочный',
-            'Пожарные',
-            'Полиция',
-            'Скорая',
-            'Служба газа',
-            'ЕДДС',
+            ['name' => 'Ложный', 'service_id' => null],
+            ['name' => 'Детская шалость', 'service_id' => null],
+            ['name' => 'Справочный', 'service_id' => null],
+            ['name' => 'Пожарные', 'service_id' => 1],
+            ['name' => 'Полиция', 'service_id' => 2],
+            ['name' => 'Скорая', 'service_id' => 3],
+            ['name' => 'Служба газа', 'service_id' => 4],
+            ['name' => 'ЕДДС', 'service_id' => null],
         ];
         foreach ($callTypes as $type) {
-            Service::create([
-                'name' => $type
-            ]);
+            CallType::create($type);
         }
 
         $areas = [

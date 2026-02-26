@@ -6,15 +6,18 @@ export default {
 }
 </script>
 <script setup>
-import {Head, useForm} from "@inertiajs/vue3";
-import {computed, onUnmounted, ref, watch} from "vue";
+import {Head, router, useForm} from "@inertiajs/vue3";
+import {computed, onUnmounted, provide, ref, watch} from "vue";
 import UKIO from "@/Pages/Incidents/Partials/UKIO.vue";
 import EDDS from "@/Pages/Incidents/Partials/EDDS.vue";
 import TabsHeader from "@/Components/TabsHeader.vue";
 import TabHeaderButton from "@/Components/TabHeaderButton.vue";
 import Firefighters from "@/Pages/Incidents/Partials/Firefighters.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import LinkButton from "@/Components/LinkButton.vue";
 const props = defineProps(['incident']);
+const viewMode = ref(true);
+provide('viewMode', viewMode)
 const form = useForm({
     id: props.incident.id,
     created_at: {
@@ -166,8 +169,15 @@ onUnmounted(() => {
         <keep-alive>
             <component :is="tabs[currentTab].template" :form="form" v-bind="$attrs"/>
         </keep-alive>
-            <div class="text-right">
-                <PrimaryButton :disabled="form.processing">Сохранить</PrimaryButton>
+            <div class="text-right mt-6">
+                <PrimaryButton v-if="viewMode === true" @click="viewMode = false" type="button">Редактировать</PrimaryButton>
+                <div v-if="viewMode !== true" class="flex justify-end gap-2">
+                    <PrimaryButton :disabled="form.processing" @click="form.main_service_id = 2">Детская шалость</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing" @click="form.main_service_id = 1">Ложный</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing">Передать без вызова</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing">Переать с вызовом</PrimaryButton>
+
+                </div>
             </div>
         </form>
     </div>

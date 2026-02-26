@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import {computed, inject} from 'vue';
 
 const emit = defineEmits(['update:checked']);
 
@@ -24,6 +24,15 @@ const proxyChecked = computed({
     },
 });
 const bgColor = props.disabled ? 'bg-grey-200' : 'bg-white'
+const viewMode = inject('viewMode');
+const disabled = computed(() => {
+    if (props.disabled === true) {
+        return true;
+    }
+    if (viewMode.value === true) {
+        return true;
+    }
+})
 </script>
 
 <template>
@@ -32,7 +41,7 @@ const bgColor = props.disabled ? 'bg-grey-200' : 'bg-white'
         :value="value"
         :disabled="disabled"
         v-model="proxyChecked"
-        class="rounded-full border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 mr-2"
+        class="rounded-full border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 mr-2 disabled:bg-grey-220 disabled:cursor-not-allowed"
         :class="bgColor"
     />
 </template>

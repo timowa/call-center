@@ -10,12 +10,13 @@ const icons = {
 </script>
 
 <template>
-    <button>
-        <Link v-bind="$attrs" class="text-primary-light flex">
-                    <span class="mr-3" v-if="icon && icons[icon]" v-html="icons[icon]"></span>
-            {{ title }}
-        </Link>
-    </button>
+
+            <Link v-bind="$attrs" class="text-primary-light flex">
+                        <span class="mr-3" v-if="icon && icons[icon]" v-html="icons[icon]"></span>
+                {{ title }}
+            </Link>
+
+
 </template>
 
 <style scoped>

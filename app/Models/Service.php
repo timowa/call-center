@@ -12,4 +12,9 @@ class Service extends Model
         return $this->hasMany(Incident::class);
     }
 
+    public function callType()
+    {
+        return $this->belongsTo(CallType::class);
+    }
+
 }
