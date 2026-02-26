@@ -6,16 +6,21 @@ import InputLabel from "@/Components/Form/InputLabel.vue";
 import TextInput from "@/Components/Form/TextInput.vue";
 import {ref, watch} from "vue";
 import Block from "@/Components/Block.vue";
-const props = defineProps(['form', 'incidentTypes', 'services', 'areas', 'districts']);
+const props = defineProps(['form', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes']);
+const checkedCallTypeServiceId = ref(null);
 watch(
-    () => props.form.main_service_id,
-    (newMainServiceId) => {
-        if (!newMainServiceId) return;
+    () => props.form.call_type,
+    (newCallType) => {
+        if (!newCallType) return;
 
-        // Удаляем выбранную главную службу из списка дополнительных служб (чекбоксов)
-        const index = props.form.additional_services.indexOf(newMainServiceId);
+        const callTypeData = props.callTypes.filter((callType) => callType.id === newCallType)[0];
+
+        if (callTypeData.service_id === null) return;
+
+        const index = props.form.services.indexOf(callTypeData.service_id);
+        checkedCallTypeServiceId.value = callTypeData.service_id;
         if (index !== -1) {
-            props.form.additional_services.splice(index, 1);
+            props.form.services.splice(index, 1);
         }
     }
 );
@@ -34,9 +39,9 @@ watch(
             <FormField label="Источник" v-model="form.source"  :text-align="'right'"/>
             <FormField label="Тип вызова"
                        type="select"
-                       v-model="form.main_service_id"
-                       :options="services"
-                       :error="form.errors.main_service_id"
+                       v-model="form.call_type"
+                       :options="callTypes"
+                       :error="form.errors.call_type"
             />
             <div class="col-span-4 flex gap-6">
                 <FormField label="Учебная" type="checkbox" v-model="form.is_training"/>
@@ -50,8 +55,8 @@ watch(
                                :value="type.id"
                                :label="type.name"
                                type="checkbox"
-                               v-model:checked="form.additional_services"
-                               v-show="form.call_type !== type.id"
+                               v-model:checked="form.services"
+                               v-show="checkedCallTypeServiceId !== type.id"
                     />
                 </div>
             </div>

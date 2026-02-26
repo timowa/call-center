@@ -23,12 +23,12 @@ class Incident extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function service()
+    public function callType()
     {
         return $this->belongsTo(Service::class);
     }
 
-    public function additionalServices()
+    public function services()
     {
         return $this->belongsToMany(Service::class);
     }

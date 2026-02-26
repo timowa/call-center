@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Area;
+use App\Models\CallType;
 use App\Models\Service;
 use App\Models\District;
 use App\Models\EmergencyType;
@@ -28,19 +29,21 @@ class IncidentsController extends Controller
         $incident = Incident::findOrFail($id)
             ->load('user')
             ->load('type')
-            ->load('service');
+            ->load('callType');
         $incident->dt = [
             'date' => $incident->created_at->format('Y-m-d'),
             'time' => $incident->created_at->format('H:i:s'),
         ];
-        $incident->additional_services = [];
+        $incident->services = [];
         $services = Service::all();
+        $callTypes = CallType::all();
         $incidentTypes = IncidentType::all();
         $emergencyTypes = EmergencyType::all();
         $areas = Area::all();
         $districts = District::all();
         return Inertia::render('Incidents/Edit', [
             'incident' => $incident,
+            'callTypes' => $callTypes,
             'services' => $services,
             'incidentTypes' => $incidentTypes,
             'emergencyTypes' => $emergencyTypes,
@@ -52,17 +55,17 @@ class IncidentsController extends Controller
     public function update(Request $request, int $id)
     {
         $request->validate([
-            'main_service_id' => 'required',
+            'call_type' => 'required',
         ],
             [
-                'main_service_id.required' => 'Пожалуйста, выберите основную службу.'
+                'call_type.required' => 'Пожалуйста, выберите основную службу.'
             ]);
         $incident = Incident::findOrFail($id);
-        $data = $request->except(['additional_services', 'created_at', 'creator', 'main_service_id', 'incident_type', 'source', 'area_id']);
-        $data['service_id'] = $request->main_service_id;
+        $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'source', 'area_id']);
+        $data['service_id'] = $request->call_type;
         $data['incident_type_id'] = $request->incident_type;
         $incident->update($data);
-        $incident->additionalServices()->sync($request->additional_services ?? []);
+        $incident->services()->sync($request->services ?? []);
         return redirect()->route('dashboard')->with([
             'message' => 'Карточка успешно добавлена',
             'type' => 'success'
@@ -71,12 +74,12 @@ class IncidentsController extends Controller
 
     public function dashboard()
     {
-        $incidents = Incident::select(['id','created_at', 'user_id', 'service_id', 'applicant_info->phone as applicant_phone', 'district_id'])
+        $incidents = Incident::select(['id','created_at', 'user_id', 'call_type_id', 'applicant_info->phone as applicant_phone', 'district_id'])
             ->with(['user' => function($query) {
                 $query->select('id', 'name');
             },
-                'service' => function($query) {
-                $query->select('id', 'name');
+                'callType' => function($query) {
+                $query->select('id', 'name', 'service_id');
                 },
                 'district' => function($query) {
                 $query->select('id', 'name');
@@ -90,7 +93,7 @@ class IncidentsController extends Controller
                     'creator' => $incident->user->name,
                     'operator' => '33 22 11',
                     'status' => 1,
-                    'service_name' => $incident->service->name,
+                    'call_type' => $incident->callType->name ?? '',
                     'applicant_phone' => $incident->applicant_phone,
                     'dialed_number' => '88005553535',
                     'district_name' => $incident->district->name ?? 'Не указано',

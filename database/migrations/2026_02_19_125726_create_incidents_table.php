@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('incident_type_id')->nullable()->constrained('incident_types');
-            $table->foreignId('service_id')->nullable()->constrained('services');
+            $table->foreignId('call_type_id')->nullable()->constrained('call_types');
             $table->boolean('is_training')->default(false);
             $table->boolean('is_important')->default(false);
             $table->foreignId('district_id')->nullable()->constrained('districts');

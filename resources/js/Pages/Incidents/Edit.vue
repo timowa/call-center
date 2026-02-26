@@ -25,8 +25,8 @@ const form = useForm({
         time: props.incident.dt.time
     },
     creator: props.incident.user.name,
-    main_service_id: props.incident.service_id,
-    additional_services: props.incident.additional_services,
+    call_type: props.incident.call_type,
+    services: props.incident.services,
     incident_type: props.incident.type,
     source: props.incident.source,
     is_training: props.incident.is_trainig,
@@ -114,14 +114,14 @@ const tabs = computed(() => ({
     EDDS: {
         template: EDDS,
         title: 'ЕДДС/ЖКХ',
-        show: form.additional_services.includes(8) || form.main_service_id === 8,
+        show: form.services.includes(8) || form.main_service_id === 8,
         service_id: 8
     },
     FIREFIGHTERS: {
         template: Firefighters,
         title: '01',
         service_id: 4,
-        show: form.additional_services.includes(4) || form.main_service_id === 4
+        show: form.services.includes(4) || form.main_service_id === 4
     }
 }));
 watch(() => tabs.value.EDDS.show, (isVisible) => {

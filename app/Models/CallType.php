@@ -11,4 +11,9 @@ class CallType extends Model
     {
         return $this->hasOne(Service::class);
     }
+
+    public function incidents()
+    {
+        return $this->hasMany(Incident::class);
+    }
 }
