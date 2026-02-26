@@ -51,6 +51,33 @@ class IncidentsController extends Controller
             'districts' => $districts,
         ]);
     }
+    public function view(int $id)
+    {
+        $incident = Incident::findOrFail($id)
+            ->load('user')
+            ->load('type')
+            ->load('callType');
+        $incident->dt = [
+            'date' => $incident->created_at->format('Y-m-d'),
+            'time' => $incident->created_at->format('H:i:s'),
+        ];
+        $incident->services = [];
+        $services = Service::all();
+        $callTypes = CallType::all();
+        $incidentTypes = IncidentType::all();
+        $emergencyTypes = EmergencyType::all();
+        $areas = Area::all();
+        $districts = District::all();
+        return Inertia::render('Incidents/Edit', [
+            'incident' => $incident,
+            'callTypes' => $callTypes,
+            'services' => $services,
+            'incidentTypes' => $incidentTypes,
+            'emergencyTypes' => $emergencyTypes,
+            'areas' => $areas,
+            'districts' => $districts,
+        ]);
+    }
 
     public function update(Request $request, int $id)
     {
@@ -62,7 +89,7 @@ class IncidentsController extends Controller
             ]);
         $incident = Incident::findOrFail($id);
         $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'source', 'area_id']);
-        $data['service_id'] = $request->call_type;
+        $data['call_type_id'] = $request->call_type['id'];
         $data['incident_type_id'] = $request->incident_type;
         $incident->update($data);
         $incident->services()->sync($request->services ?? []);

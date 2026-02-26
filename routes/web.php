@@ -20,6 +20,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/incidents/dashboard', [IncidentsController::class, 'dashboard'])->name('incidents.dashboard');
     Route::get('/incidents/create', [IncidentsController::class, 'create'])->name('incidents.create');
     Route::get('/incidents/edit/{id}', [IncidentsController::class, 'edit'])->name('incidents.edit');
+    Route::get('/incidents/view/{id}', [IncidentsController::class, 'view'])->name('incidents.view');
     Route::put('/incidents/update/{id}', [IncidentsController::class, 'update'])->name('incidents.update');
 });
 

@@ -25,7 +25,7 @@ class Incident extends Model
 
     public function callType()
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(CallType::class);
     }
 
     public function services()

@@ -114,14 +114,14 @@ const tabs = computed(() => ({
     EDDS: {
         template: EDDS,
         title: 'ЕДДС/ЖКХ',
-        show: form.services.includes(8) || form.main_service_id === 8,
+        show: form.services.includes(8) || form.call_type === 8,
         service_id: 8
     },
     FIREFIGHTERS: {
         template: Firefighters,
         title: '01',
         service_id: 4,
-        show: form.services.includes(4) || form.main_service_id === 4
+        show: form.services.includes(4) || form.call_type === 4
     }
 }));
 watch(() => tabs.value.EDDS.show, (isVisible) => {
@@ -147,8 +147,8 @@ const submit = () => {
 
 
 onUnmounted(() => {
-    if (form.main_service_id === null) {
-        form.main_service_id = 1
+    if (form.call_type === null) {
+        form.call_type = 1
     }
     submit();
 })
@@ -172,8 +172,8 @@ onUnmounted(() => {
             <div class="text-right mt-6">
                 <PrimaryButton v-if="viewMode === true" @click="viewMode = false" type="button">Редактировать</PrimaryButton>
                 <div v-if="viewMode !== true" class="flex justify-end gap-2">
-                    <PrimaryButton :disabled="form.processing" @click="form.main_service_id = 2">Детская шалость</PrimaryButton>
-                    <PrimaryButton :disabled="form.processing" @click="form.main_service_id = 1">Ложный</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 2">Детская шалость</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 1">Ложный</PrimaryButton>
                     <PrimaryButton :disabled="form.processing">Передать без вызова</PrimaryButton>
                     <PrimaryButton :disabled="form.processing">Переать с вызовом</PrimaryButton>
 
