@@ -11,6 +11,10 @@ class Incident extends Model
     protected $casts = [
         'applicant_info' => 'array',
         'services_info' => 'array',
+        'is_training' => 'boolean',
+        'is_important' => 'boolean',
+        'emergency_threat' => 'boolean',
+        'threat_to_people' => 'boolean',
     ];
 
     public function district()
@@ -30,12 +34,12 @@ class Incident extends Model
 
     public function services()
     {
-        return $this->belongsToMany(Service::class);
+        return $this->belongsToMany(Service::class, 'incident_service');
     }
 
     public function type()
     {
-        return $this->belongsTo(IncidentType::class);
+        return $this->belongsTo(IncidentType::class, 'incident_type_id', 'id', 'incident_types');
     }
 
     public function emergencyType()

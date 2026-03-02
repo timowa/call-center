@@ -22,7 +22,8 @@ watch(
         if (index !== -1) {
             props.form.services.splice(index, 1);
         }
-    }
+    },
+    { immediate: true }
 );
 </script>
 
@@ -44,8 +45,8 @@ watch(
                        :error="form.errors.call_type"
             />
             <div class="col-span-4 flex gap-6">
-                <FormField label="Учебная" type="checkbox" v-model="form.is_training"/>
-                <FormField label="Важная" type="checkbox" v-model="form.is_important"/>
+                <FormField label="Учебная" type="checkbox" v-model:checked="form.is_training"/>
+                <FormField label="Важная" type="checkbox" v-model:checked="form.is_important"/>
             </div>
             <div class="col-span-full grid align-center text-13 grid-cols-6">
                 <InputLabel label="Службы"/>
@@ -98,15 +99,15 @@ watch(
                 <TextInput v-model="form.metre" class="col-span-2"/>
                 <FormField v-model="form.km" label="Км/м" :col-span="3" :text-align="'right'"/>
             </div>
-            <FormField v-model="form.is_nearby" label="Рядом" type="checkbox" :col-span="2"/>
+            <FormField v-model:checked="form.is_nearby" label="Рядом" type="checkbox" :col-span="2"/>
             <FormField label="Адресный участок" v-model="form.address_section" :col-span="6" :grid-col="6" type="textarea"/>
             <FormField label="Доп. инфо" v-model="form.additional_info" :col-span="6" :grid-col="6" type="textarea"/>
         </FormGroup>
 
         <FormGroup label="Описание происшествия" :cols="6">
             <div class="col-span-2 grid grid-cols-2">
-                <FormField v-model="form.emergency_threat" label="Угроза ЧС" type="checkbox"/>
-                <FormField v-model="form.threat_to_people" label="Угроза людям" type="checkbox"/>
+                <FormField v-model:checked="form.emergency_threat" label="Угроза ЧС" type="checkbox"/>
+                <FormField v-model:checked="form.threat_to_people" label="Угроза людям" type="checkbox"/>
             </div>
             <FormField v-model="form.number_of_victims" label="Пострадавших" :text-align="'right'"/>
             <FormField v-model="form.emergency_type_id" label="Тип ЧС" type="select"  :text-align="'right'"/>

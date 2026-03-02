@@ -25,11 +25,11 @@ const form = useForm({
         time: props.incident.dt.time
     },
     creator: props.incident.user.name,
-    call_type: props.incident.call_type,
+    call_type: props.incident.call_type.id ?? 0,
     services: props.incident.services,
-    incident_type: props.incident.type,
+    incident_type: props.incident.type.id ?? 0,
     source: props.incident.source,
-    is_training: props.incident.is_trainig,
+    is_training: props.incident.is_training,
     is_important: props.incident.is_important,
     area_id: props.incident.area_id,
     district_id: props.incident.district_id,
@@ -104,6 +104,8 @@ const form = useForm({
         }
     }
 });
+
+console.log(form)
 
 const tabs = computed(() => ({
     UKIO: {

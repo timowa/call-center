@@ -16,11 +16,29 @@ const props = defineProps({
 
 const proxyChecked = computed({
     get() {
+        if (Array.isArray(props.checked)) {
+            return props.checked.some(item =>
+                (item.id !== undefined ? item.id : item) === props.value
+            );
+        }
         return props.checked;
     },
 
     set(val) {
-        emit('update:checked', val);
+        if (Array.isArray(props.checked)) {
+            const newList = [...props.checked];
+            if (val) {
+                newList.push(props.value);
+            } else {
+                const index = newList.findIndex(item =>
+                    (item.id !== undefined ? item.id : item) === props.value
+                );
+                if (index !== -1) newList.splice(index, 1);
+            }
+            emit('update:checked', newList);
+        } else {
+            emit('update:checked', val);
+        }
     },
 });
 const viewMode = inject('viewMode');
