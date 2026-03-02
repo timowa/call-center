@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, ref} from "vue";
+import {computed, inject, onMounted, ref} from "vue";
 import ModeChanger from "@/Pages/Dashboard/Incidents/Partials/ModeChanger.vue";
 import {router} from "@inertiajs/vue3";
 import Block from "@/Components/Block.vue";
@@ -7,7 +7,11 @@ import SecondaryButton from "@/Components/SecondaryButton.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net';
-const props = defineProps(['incidents']);
+
+
+const incidents = inject('incidents');
+
+
 const selectedIncident = ref(null);
 DataTable.use(DataTablesCore);
 const filterRowsButtons = [

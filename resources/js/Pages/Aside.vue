@@ -1,5 +1,7 @@
 <script setup>
+import {ref} from "vue";
 
+const phone = ref('');
 import TextInput from "@/Components/Form/TextInput.vue";
 </script>
 
@@ -12,7 +14,7 @@ import TextInput from "@/Components/Form/TextInput.vue";
         <span>Заблокирован</span>
     </div>
     <div class="px-2">
-        <TextInput model-value="" :placeholder="'Введите номер'" class="w-full"></TextInput>
+        <TextInput :placeholder="'Введите номер'" class="w-full" model-value="phone"></TextInput>
     </div>
 </aside>
 </template>

@@ -4,16 +4,17 @@ import FormField from "@/Components/Form/FormField.vue";
 import FormGroup from "@/Components/Form/FormGroup.vue";
 import InputLabel from "@/Components/Form/InputLabel.vue";
 import TextInput from "@/Components/Form/TextInput.vue";
-import {ref, watch} from "vue";
+import {inject, ref, watch} from "vue";
 import Block from "@/Components/Block.vue";
-const props = defineProps(['form', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes']);
+const props = defineProps(['form']);
+const {callTypes, incidentTypes, areas, districts, services} = inject('directories');
 const checkedCallTypeServiceId = ref(null);
 watch(
     () => props.form.call_type,
     (newCallType) => {
         if (!newCallType) return;
 
-        const callTypeData = props.callTypes.filter((callType) => callType.id === newCallType)[0];
+        const callTypeData = callTypes.filter((callType) => callType.id === newCallType)[0];
 
         if (callTypeData.service_id === null) return;
 
@@ -31,8 +32,8 @@ watch(
     <Block>
         <FormGroup title="Информация" :cols="6">
             <FormField label="№ карточки" v-model="form.id" :readonly="true" />
-            <FormField label="Время обработки" v-model="form.proc_time" :readonly="true"  :text-align="'right'"/>
-            <FormField label="Входящий номер" v-model="form.phone" :readonly="true"  :text-align="'right'" />
+            <FormField label="Время обработки" v-model="form.processing_time" :readonly="true"  :text-align="'right'"/>
+            <FormField label="Входящий номер" v-model="form.incoming_number" :readonly="true"  :text-align="'right'" />
             <FormField label="Дата обращения" v-model="form.created_at.date" :readonly="true"  />
             <FormField label="Время регистрации" v-model="form.created_at.time" :readonly="true"  :text-align="'right'" />
             <FormField label="Создатель" v-model="form.creator" :readonly="true"  :text-align="'right'" />

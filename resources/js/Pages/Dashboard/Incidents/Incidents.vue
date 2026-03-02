@@ -37,7 +37,7 @@ const isColsOpen = ref(false);
         </div>
         <ActiveFiltersRow/>
         <div>
-            <IncidentsTable v-bind="$attrs"/>
+            <IncidentsTable/>
         </div>
         <FilterModal :show="isFilterOpen" @close="isFilterOpen = false"/>
     </div>

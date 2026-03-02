@@ -35,6 +35,7 @@ class IncidentsController extends Controller
             'date' => $incident->created_at->format('Y-m-d'),
             'time' => $incident->created_at->format('H:i:s'),
         ];
+        $incident->processingTime = 129;
         $services = Service::all();
         $callTypes = CallType::all();
         $incidentTypes = IncidentType::all();
@@ -88,11 +89,11 @@ class IncidentsController extends Controller
                 'call_type.required' => 'Пожалуйста, выберите основную службу.'
             ]);
         $incident = Incident::findOrFail($id);
-        $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'source', 'area_id']);
+        $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'source', 'area_id', 'processing_time']);
         $data['call_type_id'] = $request->call_type;
         $data['incident_type_id'] = $request->incident_type;
         $incident->update($data);
-        $incident->services()->syncWithoutDetaching($request->services ?? []);
+        $incident->services()->syncWithoutDetaching(array_column($request->services, 'id') ?? []);
         return redirect()->route('dashboard')->with([
             'message' => 'Карточка успешно добавлена',
             'type' => 'success'

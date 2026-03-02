@@ -14,21 +14,29 @@ import TabsHeader from "@/Components/TabsHeader.vue";
 import TabHeaderButton from "@/Components/TabHeaderButton.vue";
 import Firefighters from "@/Pages/Incidents/Partials/Firefighters.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
-import LinkButton from "@/Components/LinkButton.vue";
-const props = defineProps(['incident']);
+const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes']);
 const viewMode = ref(true);
 provide('viewMode', viewMode)
+provide('directories', {
+    callTypes: props.callTypes,
+    incidentTypes: props.incidentTypes,
+    services: props.services,
+    areas: props.areas,
+    districts: props.districts
+})
 const form = useForm({
     id: props.incident.id,
     created_at: {
         date: props.incident.dt.date,
         time: props.incident.dt.time
     },
+    processing_time: props.incident.processingTime,
+    incoming_number: '',
     creator: props.incident.user.name,
     call_type: props.incident.call_type.id ?? 0,
     services: props.incident.services,
     incident_type: props.incident.type.id ?? 0,
-    source: props.incident.source,
+    source: '',
     is_training: props.incident.is_training,
     is_important: props.incident.is_important,
     area_id: props.incident.area_id,
@@ -46,7 +54,8 @@ const form = useForm({
     additional_street: props.incident.additional_street,
     district_of_city: props.incident.district_of_city,
     object: props.incident.object,
-    coordinates: props.incident.coordinates,
+    coordinates: [props.incident.longitude, props.incident.latitude].some(item => item !== null) ?
+        [props.incident.longitude, props.incident.latitude].join(',') : '',
     road: props.incident.road,
     metre: props.incident.metre,
     km: props.incident.km,
@@ -105,13 +114,12 @@ const form = useForm({
     }
 });
 
-console.log(form)
 
 const tabs = computed(() => ({
     UKIO: {
         template: UKIO,
         title: 'УКИО',
-        show:true
+        show:true,
     },
     EDDS: {
         template: EDDS,
@@ -151,8 +159,8 @@ const submit = () => {
 onUnmounted(() => {
     if (form.call_type === null) {
         form.call_type = 1
+        submit();
     }
-    submit();
 })
 </script>
 
@@ -169,7 +177,7 @@ onUnmounted(() => {
         </TabsHeader>
         <form @submit.prevent="submit" >
         <keep-alive>
-            <component :is="tabs[currentTab].template" :form="form" v-bind="$attrs"/>
+            <component :is="tabs[currentTab].template" :form="form"/>
         </keep-alive>
             <div class="text-right mt-6">
                 <PrimaryButton v-if="viewMode === true" @click="viewMode = false" type="button">Редактировать</PrimaryButton>

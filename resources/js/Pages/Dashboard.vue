@@ -6,11 +6,12 @@ export default {
 </script>
 <script setup>
 import { Head } from '@inertiajs/vue3';
-import {ref} from "vue";
+import {provide, ref} from "vue";
 import Incidents from "@/Pages/Dashboard/Incidents/Incidents.vue";
 import Reports from "@/Pages/Dashboard/Reports/Reports.vue";
 import TabPageButton from "@/Components/TabPageButton.vue";
-
+const props = defineProps(['incidents']);
+provide('incidents', props.incidents);
 const tabs = {
     indicates: {
         template: Incidents,

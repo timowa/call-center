@@ -15,6 +15,7 @@ class Incident extends Model
         'is_important' => 'boolean',
         'emergency_threat' => 'boolean',
         'threat_to_people' => 'boolean',
+        'is_nearby' => 'boolean'
     ];
 
     public function district()

@@ -1,8 +1,8 @@
-<script setup>
+    <script setup>
 import {computed, inject, onMounted, ref, useAttrs} from 'vue';
 
 const model = defineModel({
-    type: String,
+    type: [String, Number],
     required: true,
 });
 
@@ -18,7 +18,7 @@ const classes = computed(() => ({
     'bg-gray-200 cursor-not-allowed opacity-70': props.readonly
 }));
 
-const viewMode = inject('viewMode');
+const viewMode = inject('viewMode', ref(false));
 const disabled = computed(() => {
     if (props.readonly === true) {
         return true;
