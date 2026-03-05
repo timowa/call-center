@@ -40,7 +40,7 @@ const currentTabFire = ref(1);
     </TabsHeader>
     <Block>
         <keep-alive>
-            <component :is="tabs[currentTabFire].template" :form="form.services_info.firefighters" v-bind="$attrs"/>
+            <component :is="tabs[currentTabFire].template" :form="form.fireReport" v-bind="$attrs"/>
         </keep-alive>
 
     </Block>

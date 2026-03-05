@@ -6,7 +6,9 @@ const model = defineModel({
     required: true,
 });
 const isUkioForm = inject('isUkioForm', ref(false));
-const {isCreator} = inject('directories', ref(false))
+const {isCreator} = inject('directories', { isCreator: false })
+const viewMode = inject('viewMode', ref(false));
+
 const input = ref(null);
 const props = defineProps(['placeholder', 'readonly', 'allowEditIfNotCreator']);
 
@@ -19,7 +21,6 @@ const classes = computed(() => ({
     'bg-gray-200 cursor-not-allowed opacity-70': props.readonly
 }));
 
-const viewMode = inject('viewMode', ref(false));
 const disabled = computed(() => {
     if (props.readonly === true) {
         return true;

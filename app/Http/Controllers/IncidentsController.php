@@ -4,11 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Area;
 use App\Models\CallType;
+use App\Models\CauseOfTheFire;
+use App\Models\FireReport;
+use App\Models\FireReportType;
 use App\Models\Service;
 use App\Models\District;
 use App\Models\EmergencyType;
 use App\Models\Incident;
 use App\Models\IncidentType;
+use App\Models\UrbanObject;
+use App\Models\UrbanObjectType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -38,14 +43,24 @@ class IncidentsController extends Controller
     private function renderIncidentForm(int $id, bool $viewMode)
     {
         $incident = Incident::findOrFail($id);
-        $incident->loadMissing(['user', 'type', 'services', 'callType']);
-
+        $incident->loadMissing(['user', 'type', 'services', 'callType', 'fireReport']);
         $incident->dt = [
             'date' => $incident->created_at->format('Y-m-d'),
             'time' => $incident->created_at->format('H:i:s'),
         ];
 
         $incident->processingTime = 129;
+
+        $fireReportData = [
+            'report_types' => FireReportType::all(),
+            'types_of_fire_protection' => FireReport::getTypesOfProtection(),
+            'objects' => UrbanObject::all(),
+            'object_types' => UrbanObjectType::all(),
+            'water_sources' => FireReport::getWaterSources(),
+            'causes'=> CauseOfTheFire::all(),
+            'ranks' => FireReport::getRanks(),
+            'plans' => FireReport::getPlans()
+        ];
         return Inertia::render('Incidents/Edit', [
             'incident'       => $incident,
             'viewMode'       => $viewMode,
@@ -55,6 +70,7 @@ class IncidentsController extends Controller
             'emergencyTypes' => EmergencyType::all(),
             'areas'          => Area::all(),
             'districts'      => District::all(),
+            'fireReportData' => $fireReportData,
             'isCreator' => $incident->user->id === Auth::id(),
         ]);
     }
@@ -68,11 +84,21 @@ class IncidentsController extends Controller
                 'call_type.required' => 'Пожалуйста, выберите основную службу.'
             ]);
         $incident = Incident::findOrFail($id);
-        $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'source', 'area_id', 'processing_time', 'coordinates']);
+        $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'source', 'area_id', 'processing_time', 'coordinates', 'fireReport']);
         $data['call_type_id'] = $request->call_type ?: null;
         $data['incident_type_id'] = $request->incident_type ?: null;
         $incident->update($data);
         $incident->services()->syncWithoutDetaching(array_column($request->services, 'id') ?? []);
+
+        $fireReportData = $request->fireReport;
+        $fireReportData['incident_id'] = $incident->id;
+        $fireReportSearch = [];
+        if ($fireReportData['id']) {
+            $fireReportSearch['id'] = $fireReportData['id'];
+        } else {
+            $fireReportSearch['incident_id'] = $incident->id;;
+        }
+        FireReport::updateOrCreate($fireReportSearch, $fireReportData);
         return redirect()->route('dashboard')->with([
             'message' => 'Карточка успешно добавлена',
             'type' => 'success'

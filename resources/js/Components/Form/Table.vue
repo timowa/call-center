@@ -7,7 +7,7 @@ import AdditionalActionButton from "@/Components/AdditionalActionButton.vue";
 
 const viewMode = inject('viewMode');
 const isUkioForm = inject('isUkioForm', ref(false));
-const {isCreator} = inject('directories', ref(false))
+const {isCreator} = inject('directories', { isCreator: false })
 const props = defineProps({
     modelValue: {
         type: Array,

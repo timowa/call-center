@@ -81,15 +81,7 @@ const display = computed(()=>{
         'items-center': !props.vertical
     }
 });
-const readonly = computed(() => {
-    if (!isCreator && user.value.permissions.includes('incidents.can-edit-own-ukio')) {
-        if (props.allowEditElses) {
-            return false;
-        }
-        return true
-    }
-    return false;
-})
+
 
 </script>
 

@@ -14,13 +14,13 @@ import TabsHeader from "@/Components/TabsHeader.vue";
 import TabHeaderButton from "@/Components/TabHeaderButton.vue";
 import Firefighters from "@/Pages/Incidents/Partials/Firefighters.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import {getFireReportDefaults} from "@/Utils/fireReportForm.js";
 
-const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes', 'isCreator']);
+const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes', 'isCreator', 'fireReportData']);
 const viewMode = ref(false);
 const conditions = inject('conditions');
 const page = usePage();
 const user = computed(() => page.props.auth.user);
-
 const canSeeAllAreas = computed(() => {
     return user.value.permissions.includes('incidents.view.all-area');
 });
@@ -56,8 +56,9 @@ provide('directories', {
     services: props.services,
     areas: filteredAreas.value,
     districts: filteredDistricts.value,
-    isCreator: props.isCreator.value
+    isCreator: props.isCreator,
 })
+provide('fireReportDirectories', props.fireReportData)
 const form = useForm({
     id: props.incident.id,
     created_at: {
@@ -144,12 +145,11 @@ const form = useForm({
 
             }
         },
-        firefighters: {
-
-        }
-    }
+    },
+    fireReport: getFireReportDefaults(props.incident.fire_report)
 });
-
+console.log(props.incident.fire_report)
+console.log(form.fireReport)
 const tabs = computed(() => ({
     UKIO: {
         template: UKIO,
@@ -181,6 +181,7 @@ watch(() => tabs.value.EDDS.show, (isVisible) => {
 const currentTab = ref('UKIO');
 
 const submit = () => {
+    console.log('Данные к отправке:', form.data());
     form.put(route('incidents.update', props.incident.id), {
         preserveScroll: true, // Чтобы страница не прыгала вверх после сохранения
         onSuccess: () => {

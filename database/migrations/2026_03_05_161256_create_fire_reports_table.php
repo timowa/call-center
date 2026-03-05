@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('fire_reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('incident_id')->constrained('incidents');
+            $table->foreignId('incident_id')->unique()->constrained('incidents');
             $table->integer('condition')->default(1);
             $table->foreignId('report_type_id')->nullable()->constrained('fire_report_types');
             $table->boolean('is_error_card')->default(false);
             $table->integer('type_of_fire_protection')->nullable();
             $table->foreignId('object_id')->nullable()->constrained('urban_objects');
             $table->foreignId('object_type_id')->nullable()->constrained('urban_object_types');
+            $table->integer('plan')->nullable();
             $table->integer('rank')->nullable();
             $table->integer('card_number')->nullable();
             $table->integer('shift')->nullable();
@@ -32,11 +33,13 @@ return new class extends Migration
             $table->integer('injured_total')->nullable();
             $table->integer('injured_children')->nullable();
             $table->integer('injured_staff')->nullable();
-            $table->integer('rescued_total')->nullable();
             $table->integer('rescued_children')->nullable();
             $table->integer('rescued_staff')->nullable();
+            $table->integer('violated_children')->nullable();
+            $table->integer('violated_staff')->nullable();
             $table->json('info')->nullable();
             $table->json('barrels')->nullable();
+            $table->json('fire_extinguishing_agents')->nullable();
             $table->json('rtp')->nullable();
             $table->json('personnel')->nullable();
             $table->json('gdzs')->nullable();

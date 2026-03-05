@@ -87,5 +87,10 @@ class Incident extends Model
         return $this->belongsTo(EmergencyType::class);
     }
 
+    public function fireReport()
+    {
+        return $this->hasOne(FireReport::class);
+    }
+
 
 }

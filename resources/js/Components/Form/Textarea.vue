@@ -6,7 +6,7 @@ const model = defineModel({
     required: true,
 });
 const isUkioForm = inject('isUkioForm', ref(false));
-const {isCreator} = inject('directories', ref(false))
+const {isCreator} = inject('directories', { isCreator: false })
 const input = ref(null);
 const props = defineProps(['placeholder', 'readonly', 'allowEditIfNotCreator']);
 

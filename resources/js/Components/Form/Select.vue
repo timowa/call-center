@@ -2,7 +2,7 @@
 import {computed, inject, onMounted, ref} from 'vue';
 
 const isUkioForm = inject('isUkioForm', ref(false));
-const {isCreator} = inject('directories', ref(false))
+const {isCreator} = inject('directories', { isCreator: false })
 const model = defineModel();
 const props = defineProps({
     'placeholder': String,

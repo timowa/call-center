@@ -3,7 +3,7 @@ import {computed, inject, ref} from 'vue';
 
 const emit = defineEmits(['update:checked']);
 const isUkioForm = inject('isUkioForm', ref(false));
-const {isCreator} = inject('directories', ref(false))
+const {isCreator} = inject('directories', { isCreator: false })
 const props = defineProps({
     checked: {
         type: [Array, Boolean],
