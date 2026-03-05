@@ -8,6 +8,7 @@ import {computed, inject} from "vue";
 import Textarea from "@/Components/Form/Textarea.vue";
 import Table from "@/Components/Form/Table.vue";
 import {usePage} from "@inertiajs/vue3";
+import Datetime from "@/Components/Form/Datetime.vue";
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
@@ -36,7 +37,8 @@ const inputs = {
     checkbox: Checkbox,
     radio: Radio,
     textarea: Textarea,
-    table: Table
+    table: Table,
+    datetime: Datetime
 }
 const gridCols = {
     2: 'grid-cols-2',

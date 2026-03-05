@@ -16,9 +16,9 @@ defineProps(['form']);
 <template>
 <FormGroup :cols="6">
     <FormField label="Отделения" :col-span="6" type="table" :columns="columns" :vertical="true"/>
-    <FormField label="Локализация" type="text" :vertical="true" v-model="form.localized_at"/>
-    <FormField label="Ликвидация открытого огня" type="text" :vertical="true" v-model="form.fire_eliminated_at"/>
-    <FormField label="Ликвидация" type="text" :vertical="true" v-model="form.elimination_at"/>
+    <FormField label="Локализация" type="datetime" :vertical="true" v-model="form.localized_at"/>
+    <FormField label="Ликвидация открытого огня" type="datetime" :vertical="true" v-model="form.fire_eliminated_at"/>
+    <FormField label="Ликвидация" type="datetime" :vertical="true" v-model="form.elimination_at"/>
 </FormGroup>
 </template>
 

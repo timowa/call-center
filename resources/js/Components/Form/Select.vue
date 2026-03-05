@@ -1,58 +1,88 @@
 <script setup>
-import {computed, inject, onMounted, ref} from 'vue';
+import vSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
+import { computed, inject, ref } from 'vue';
 
-const isUkioForm = inject('isUkioForm', ref(false));
-const {isCreator} = inject('directories', { isCreator: false })
 const model = defineModel();
+
 const props = defineProps({
-    'placeholder': String,
-    'readonly': Boolean,
-    'options': Array,
-    allowEditIfNotCreator: Boolean
+    options: { type: Array, default: () => [] },
+    placeholder: String,
+    readonly: Boolean,
+    reduce: { type: Function, default: (option) => option.id  },
 });
+const isUkioForm = inject('isUkioForm', ref(false));
+const { isCreator } = inject('directories', { isCreator: false });
+const viewMode = inject('viewMode', ref(false));
 
-const classes = computed(() => ({
-    'bg-gray-200 cursor-not-allowed opacity-70': props.readonly
-}));
-
-const viewMode = inject('viewMode');
-const disabled = computed(() => {
-    if (props.disabled === true) {
-        return true;
-    }
-    if (viewMode.value === true) {
-        return true;
-    }
-    if (props.options?.length === 1) {
-        return true;
-    }
-    if (isUkioForm.value && !isCreator) {
-        if (props.allowEditIfNotCreator) {
-            return false;
-        }
-        return true;
-    }
+const isDisabled = computed(() => {
+    if (props.readonly) return true;
+    if (viewMode.value) return true;
+    if (isUkioForm.value && !isCreator) return true;
     return false;
-})
-defineExpose({ focus: () => input.value.focus() });
+});
 </script>
 
 <template>
-    <select
-        class="px-2 py-1 text-sm rounded-md border-gray-300 bg-grey-150 shadow-sm focus:outline-none focus:shadow-none focus:ring-0 focus-visible:ring-0 focus:inset-shadow-none focus:inset-ring-0 focus:border-gray-300 focus:border-b-4 disabled:bg-grey-220 disabled:cursor-not-allowed"
-        :class="classes"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        v-model="model">
-        <option value="" selected="selected" disabled="disabled" v-if="options?.length > 1"></option>
-        <option v-for="option in options"
-                :key="option.id"
-                :value="option.id"
-                v-text="option.name"
-        ></option>
-        </select>
+    <div class="v-select-wrapper">
+        <v-select
+            v-model="model"
+            :options="options"
+            :reduce="reduce"
+            :label="'name'"
+            :clearable="false"
+            :placeholder="placeholder"
+            :disabled="isDisabled"
+            class="custom-v-select"
+        >
+            <template #no-options>
+                <span class="text-xs text-gray-500">Ничего не найдено</span>
+            </template>
+        </v-select>
+    </div>
 </template>
 
-<style scoped>
+<style>
+.custom-v-select.vs--disabled .vs__dropdown-toggle {
+    @apply border-0 bg-grey-220 rounded-md !important;
+    padding: 2px 0;
+    min-height: 34px;
+}
 
+.custom-v-select .vs__selected {
+    @apply text-sm !important;
+}
+
+.custom-v-select.vs--disabled .vs__search {
+    @apply text-sm !important;
+    margin: 0;
+    @apply bg-grey-220 cursor-not-allowed !important;
+}
+.custom-v-select.vs--disabled .vs__open-indicator {
+    @apply text-sm !important;
+    margin: 0;
+    @apply bg-grey-220 cursor-not-allowed !important;
+}
+.custom-v-select.vs--disabled .vs__selected {
+    @apply text-sm !important;
+    margin: 0;
+    @apply bg-grey-220 cursor-not-allowed !important;
+}
+.custom-v-select.vs--disabled .vs__actions {
+    @apply text-sm !important;
+    margin: 0;
+    @apply bg-grey-220 cursor-not-allowed !important;
+}
+
+.custom-v-select .vs__dropdown-menu {
+    @apply text-sm shadow-lg border-gray-300 !important;
+}
+
+.custom-v-select.vs--open .vs__dropdown-toggle {
+    @apply border-b-4 border-gray-300 !important;
+}
+
+.vs--disabled .vs__dropdown-toggle. {
+    @apply bg-grey-220 cursor-not-allowed !important;
+}
 </style>
