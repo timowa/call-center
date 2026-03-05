@@ -8,7 +8,6 @@ use App\Models\Service;
 use App\Models\District;
 use App\Models\EmergencyType;
 use App\Models\IncidentType;
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -22,13 +21,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@mail.ru',
-            'password' => bcrypt('admin123'),
+        $this->call([
+            RolesAndPermissionsSeeder::class,
+            UserSeeder::class,
         ]);
-
         $incidentTypes = [
             'Лица в розыске',
             'Лифты / не работает лифт',
