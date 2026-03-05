@@ -6,23 +6,56 @@ export default {
 }
 </script>
 <script setup>
-import {Head, router, useForm} from "@inertiajs/vue3";
-import {computed, onUnmounted, provide, ref, watch} from "vue";
+import {Head, router, useForm, usePage} from "@inertiajs/vue3";
+import {computed, onUnmounted, provide, ref, watch, inject} from "vue";
 import UKIO from "@/Pages/Incidents/Partials/UKIO.vue";
 import EDDS from "@/Pages/Incidents/Partials/EDDS.vue";
 import TabsHeader from "@/Components/TabsHeader.vue";
 import TabHeaderButton from "@/Components/TabHeaderButton.vue";
 import Firefighters from "@/Pages/Incidents/Partials/Firefighters.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+
 const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes']);
 const viewMode = ref(false);
+const conditions = inject('conditions');
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+
+const canSeeAllAreas = computed(() => {
+    return user.value.permissions.includes('incidents.view.all-districts');
+});
+const canSeeAllCallTypes = computed(() => {
+    return user.value.permissions.includes('incidents.view.all-call_type')
+})
+
+const filteredAreas = computed(() => {
+    if (canSeeAllAreas.value || !user.value.area_id) {
+        return props.areas;
+    }
+    return props.areas.filter(area => area.id === user.value.area_id);
+});
+
+const filteredDistricts = computed(() => {
+    if (canSeeAllAreas.value || !user.value.area_id) {
+        return props.districts;
+    }
+    return props.districts.filter(district => district.area_id === user.value.area_id);
+});
+
+const filteredCallTypes = computed(() => {
+    if (canSeeAllCallTypes.value || !user.value.call_type_id) {
+        return props.callTypes
+    }
+    return props.callTypes.filter(callType => callType.id === user.value.call_type_id)
+})
+
 provide('viewMode', viewMode)
 provide('directories', {
-    callTypes: props.callTypes,
+    callTypes: filteredCallTypes.value,
     incidentTypes: props.incidentTypes,
     services: props.services,
-    areas: props.areas,
-    districts: props.districts
+    areas: filteredAreas.value,
+    districts: filteredDistricts.value
 })
 const form = useForm({
     id: props.incident.id,
@@ -31,16 +64,17 @@ const form = useForm({
         time: props.incident.dt.time
     },
     processing_time: props.incident.processingTime,
-    incoming_number: '',
+    incoming_number: props.incident.incoming_number,
+    condition: props.incident.condition,
     creator: props.incident.user.name,
-    call_type: props.incident.call_type.id ?? 0,
+    call_type: user.value.call_type_id ?? (props.incident.call_type ? props.incident.call_type?.id : 0),
     services: props.incident.services,
-    incident_type: props.incident.type.id ?? 0,
+    incident_type: props.incident.type ? props.incident.type.id : 0,
     source: '',
     is_training: props.incident.is_training,
     is_important: props.incident.is_important,
-    area_id: props.incident.area_id,
-    district_id: props.incident.district_id,
+    area_id: user.value.area_id ?? props.incident?.area_id ?? null,
+    district_id: props.incident?.district_id,
     street: props.incident.street,
     house_number: props.incident.house_number,
     corpus_number: props.incident.corpus_number,
@@ -115,12 +149,16 @@ const form = useForm({
     }
 });
 
-
+console.log(form)
 const tabs = computed(() => ({
     UKIO: {
         template: UKIO,
         title: 'УКИО',
         show:true,
+        condition: {
+            color: conditions[props.incident.condition].color,
+            name: conditions[props.incident.condition].name
+        }
     },
     EDDS: {
         template: EDDS,
@@ -174,7 +212,12 @@ onUnmounted(() => {
                 v-show="tab.show"
                 :active="currentTab === id"
                 @click="currentTab = id"
-            >{{tab.title}}</TabHeaderButton>
+            >
+                <div class="flex items-center gap-2">
+                    <div v-if="tab.condition" :class="['w-3 h-3 rounded-sm', tab.condition.color]"></div>
+                    {{tab.title}}
+                </div>
+                </TabHeaderButton>
         </TabsHeader>
         <form @submit.prevent="submit" >
         <keep-alive>
@@ -183,10 +226,10 @@ onUnmounted(() => {
             <div class="text-right mt-6">
                 <PrimaryButton v-if="viewMode === true" @click="viewMode = false" type="button">Редактировать</PrimaryButton>
                 <div v-if="viewMode !== true" class="flex justify-end gap-2">
-                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 2">Детская шалость</PrimaryButton>
-                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 1">Ложный</PrimaryButton>
-                    <PrimaryButton :disabled="form.processing">Передать без вызова</PrimaryButton>
-                    <PrimaryButton :disabled="form.processing">Переать с вызовом</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 2; form.condition = 5">Детская шалость</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 1; form.condition = 5">Ложный</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing || form.call_type === 0" @click="form.condition = 2">Передать без вызова</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing || form.call_type === 0" @click="form.condition = 2">Переать с вызовом</PrimaryButton>
 
                 </div>
             </div>

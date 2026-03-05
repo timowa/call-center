@@ -21,10 +21,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-        $this->call([
-            RolesAndPermissionsSeeder::class,
-            UserSeeder::class,
-        ]);
+
         $incidentTypes = [
             'Лица в розыске',
             'Лифты / не работает лифт',
@@ -127,5 +124,10 @@ class DatabaseSeeder extends Seeder
                 'name' => $type,
             ]);
         }
+
+        $this->call([
+            RolesAndPermissionsSeeder::class,
+            UserSeeder::class,
+        ]);
     }
 }

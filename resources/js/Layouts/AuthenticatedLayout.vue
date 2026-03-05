@@ -44,6 +44,15 @@ const modes = [
         actionTitle: 'Заблокироваться'
     }
 ];
+
+const conditions = ref({
+    1: {color: 'bg-red-500', name: 'Запрос в 112'},
+    2: {color: 'bg-green-500', name: 'Подключение'},
+    3: {color: 'bg-indigo-500', name: 'Реагирование'},
+    4: {color: 'bg-yellow-500', name: 'В работе'},
+    5: {color: 'bg-grey-370', name: 'Отработана'},
+    6: {color: 'bg-grey-370', name: 'Просмотр'},
+});
 const activeMode = ref(6);
 const lastActiveMode = ref(0);
 const seconds = ref(0);
@@ -77,6 +86,7 @@ provide('workMode', {
 provide('allWorkModes', {
     modes: readonly(modes)
 })
+provide('conditions', readonly(conditions.value));
 
 const page = usePage();
 watch(

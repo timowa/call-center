@@ -20,6 +20,10 @@ const disabled = computed(() => {
     if (viewMode.value === true) {
         return true;
     }
+    if (props.options?.length === 1) {
+        return true;
+    }
+    return false;
 })
 defineExpose({ focus: () => input.value.focus() });
 </script>
@@ -30,8 +34,8 @@ defineExpose({ focus: () => input.value.focus() });
         :class="classes"
         :placeholder="placeholder"
         :disabled="disabled"
-    v-model="model">
-        <option value="" selected="selected" disabled="disabled"></option>
+        v-model="model">
+        <option value="" selected="selected" disabled="disabled" v-if="options?.length > 1"></option>
         <option v-for="option in options"
                 :key="option.id"
                 :value="option.id"

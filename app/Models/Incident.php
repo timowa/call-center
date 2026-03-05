@@ -17,6 +17,28 @@ class Incident extends Model
         'threat_to_people' => 'boolean',
         'is_nearby' => 'boolean'
     ];
+    protected $appends = ['condition_info'];
+
+    CONST CONDITION_CALL = 1;
+    CONST CONDITION_CONNECTING = 2;
+    CONST CONDITION_RESPONSE = 3;
+    CONST CONDITION_PROCESSING = 4;
+    CONST CONDITION_DONE = 5;
+    CONST CONDITION_VIEW = 6;
+    const CONDITIONS = [
+        self::CONDITION_CALL => ['name' => 'Запрос в 112', 'color' => 'red'],
+        self::CONDITION_CONNECTING => ['name' => 'Подключение', 'color' => 'green'],
+        self::CONDITION_RESPONSE => ['name' => 'Реагирование', 'color' => 'indigo'],
+        self::CONDITION_PROCESSING => ['name' => 'В работе', 'color' => 'yellow'],
+        self::CONDITION_DONE => ['name' => 'Отработана', 'color' => 'black'],
+        self::CONDITION_VIEW => ['name' => 'Просмотр  ', 'color' => ''],
+    ];
+
+    public function getConditionInfoAttribute()
+    {
+        return self::CONDITIONS[$this->condition] ?? ['name' => 'Неизвестно', 'color' => 'gray'];
+    }
+
 
     public function district()
     {

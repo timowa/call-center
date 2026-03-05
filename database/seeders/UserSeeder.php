@@ -22,6 +22,7 @@ class UserSeeder extends Seeder
             'uid' => 100001,
             'password' => Hash::make('123456'),
             'area_id' => null,
+            'call_type_id' => null,
         ]);
         $cov->assignRole('cov_112');
 
@@ -31,6 +32,7 @@ class UserSeeder extends Seeder
                 'uid' => 200002,
                 'password' => Hash::make('123456'),
                 'area_id' => $areaCentral->id,
+                'call_type_id' => 4
             ]);
             $op01->assignRole('op_01');
         }
@@ -41,6 +43,7 @@ class UserSeeder extends Seeder
                 'uid' => 300003,
                 'password' => Hash::make('123456'),
                 'area_id' => $areaCentral->id,
+                'call_type_id' => 8
             ]);
             $edds->assignRole('edds');
         }

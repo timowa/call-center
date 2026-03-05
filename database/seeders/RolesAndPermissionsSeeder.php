@@ -18,11 +18,13 @@ class RolesAndPermissionsSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
         $permissions = [
             'incidents.create',
-            'incidents.view-all-districts',
-            'incidents.view-own-district',
+            'incidents.view.all-districts',
+            'incidents.view.own-district',
             'incidents.edit.all-fields',
             'incidents.edit.description-only',
             'incidents.edit.any-district',
+            'incidents.view.any-call_type',
+            'incidents.view.own-call_type',
             'tabs.01.edit', 'tabs.01.view',
             'tabs.04.edit', 'tabs.04.view',
             'tabs.jkh.edit', 'tabs.jkh.view',
@@ -34,21 +36,22 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $cov = Role::firstOrCreate(['name' => 'cov_112']);
         $cov->givePermissionTo([
-            'incidents.create', 'incidents.view-all-districts',
+            'incidents.create', 'incidents.view.all-districts',
             'incidents.edit.all-fields', 'incidents.edit.any-district',
+            'incidents.view.any-call_type',
             'tabs.all.view'
         ]);
 
         $op01 = Role::firstOrCreate(['name' => 'op_01']);
         $op01->givePermissionTo([
-            'incidents.create', 'incidents.view-own-district',
+            'incidents.create', 'incidents.view.own-district', 'incidents.view.own-call_type',
             'incidents.edit.description-only',
             'tabs.01.edit', 'tabs.01.view'
         ]);
 
         $edds = Role::firstOrCreate(['name' => 'edds']);
         $edds->givePermissionTo([
-            'incidents.create', 'incidents.view-own-district',
+            'incidents.create', 'incidents.view.own-district', 'incidents.view.own-call_type',
             'incidents.edit.all-fields',
             'tabs.all.view', 'tabs.jkh.edit'
         ]);

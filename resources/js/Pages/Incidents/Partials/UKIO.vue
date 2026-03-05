@@ -4,11 +4,16 @@ import FormField from "@/Components/Form/FormField.vue";
 import FormGroup from "@/Components/Form/FormGroup.vue";
 import InputLabel from "@/Components/Form/InputLabel.vue";
 import TextInput from "@/Components/Form/TextInput.vue";
-import {inject, ref, watch} from "vue";
+import {computed, inject, ref, watch} from "vue";
 import Block from "@/Components/Block.vue";
 const props = defineProps(['form']);
 const {callTypes, incidentTypes, areas, districts, services} = inject('directories');
-const checkedCallTypeServiceId = ref(null);
+const checkedCallTypeServiceId = computed(() => {
+    if (callTypes.length > 1) {
+        return null;
+    }
+    return callTypes[0].service_id;
+});
 watch(
     () => props.form.call_type,
     (newCallType) => {
@@ -16,7 +21,10 @@ watch(
 
         const callTypeData = callTypes.filter((callType) => callType.id === newCallType)[0];
 
-        if (callTypeData.service_id === null) return;
+        if (callTypeData.service_id === null) {
+            checkedCallTypeServiceId.value = null;
+            return;
+        }
 
         const index = props.form.services.indexOf(callTypeData.service_id);
         checkedCallTypeServiceId.value = callTypeData.service_id;

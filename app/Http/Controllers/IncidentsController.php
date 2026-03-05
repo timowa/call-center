@@ -20,63 +20,41 @@ class IncidentsController extends Controller
     {
         $incident = Incident::create([
             'user_id' => Auth::id(),
+            'incoming_number' => fake()->numerify('7##########'),
         ]);
         return redirect()->route('incidents.edit', ['id' => $incident->id]);
     }
 
     public function edit(int $id)
     {
-        $incident = Incident::findOrFail($id)
-            ->load('user')
-            ->load('type')
-            ->load('services')
-            ->load('callType');
-        $incident->dt = [
-            'date' => $incident->created_at->format('Y-m-d'),
-            'time' => $incident->created_at->format('H:i:s'),
-        ];
-        $incident->processingTime = 129;
-        $services = Service::all();
-        $callTypes = CallType::all();
-        $incidentTypes = IncidentType::all();
-        $emergencyTypes = EmergencyType::all();
-        $areas = Area::all();
-        $districts = District::all();
-        return Inertia::render('Incidents/Edit', [
-            'incident' => $incident,
-            'callTypes' => $callTypes,
-            'services' => $services,
-            'incidentTypes' => $incidentTypes,
-            'emergencyTypes' => $emergencyTypes,
-            'areas' => $areas,
-            'districts' => $districts,
-        ]);
+        return $this->renderIncidentForm($id, false);
     }
+
     public function view(int $id)
     {
-        $incident = Incident::findOrFail($id)
-            ->load('user')
-            ->load('type')
-            ->load('callType');
+        return $this->renderIncidentForm($id, true);
+    }
+
+    private function renderIncidentForm(int $id, bool $viewMode)
+    {
+        $incident = Incident::findOrFail($id);
+        $incident->loadMissing(['user', 'type', 'services', 'callType']);
+
         $incident->dt = [
             'date' => $incident->created_at->format('Y-m-d'),
             'time' => $incident->created_at->format('H:i:s'),
         ];
-        $incident->services = [];
-        $services = Service::all();
-        $callTypes = CallType::all();
-        $incidentTypes = IncidentType::all();
-        $emergencyTypes = EmergencyType::all();
-        $areas = Area::all();
-        $districts = District::all();
+
+        $incident->processingTime = 129;
         return Inertia::render('Incidents/Edit', [
-            'incident' => $incident,
-            'callTypes' => $callTypes,
-            'services' => $services,
-            'incidentTypes' => $incidentTypes,
-            'emergencyTypes' => $emergencyTypes,
-            'areas' => $areas,
-            'districts' => $districts,
+            'incident'       => $incident,
+            'viewMode'       => $viewMode,
+            'services'       => Service::all(),
+            'callTypes'      => CallType::all(),
+            'incidentTypes'  => IncidentType::all(),
+            'emergencyTypes' => EmergencyType::all(),
+            'areas'          => Area::all(),
+            'districts'      => District::all(),
         ]);
     }
 
@@ -89,9 +67,9 @@ class IncidentsController extends Controller
                 'call_type.required' => 'Пожалуйста, выберите основную службу.'
             ]);
         $incident = Incident::findOrFail($id);
-        $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'source', 'area_id', 'processing_time']);
-        $data['call_type_id'] = $request->call_type;
-        $data['incident_type_id'] = $request->incident_type;
+        $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'source', 'area_id', 'processing_time', 'coordinates']);
+        $data['call_type_id'] = $request->call_type ?: null;
+        $data['incident_type_id'] = $request->incident_type ?: null;
         $incident->update($data);
         $incident->services()->syncWithoutDetaching(array_column($request->services, 'id') ?? []);
         return redirect()->route('dashboard')->with([
@@ -102,7 +80,7 @@ class IncidentsController extends Controller
 
     public function dashboard()
     {
-        $incidents = Incident::select(['id','created_at', 'user_id', 'call_type_id', 'applicant_info->phone as applicant_phone', 'district_id'])
+        $incidents = Incident::select(['id','created_at', 'user_id', 'call_type_id', 'applicant_info->phone as applicant_phone', 'district_id', 'condition'])
             ->with(['user' => function($query) {
                 $query->select('id', 'name');
             },
@@ -120,7 +98,7 @@ class IncidentsController extends Controller
                     'datetime' => $incident->created_at->format('Y-m-d H:i:s'),
                     'creator' => $incident->user->name,
                     'operator' => '33 22 11',
-                    'status' => 1,
+                    'condition' => $incident->condition,
                     'call_type' => $incident->callType->name ?? '',
                     'applicant_phone' => $incident->applicant_phone,
                     'dialed_number' => '88005553535',

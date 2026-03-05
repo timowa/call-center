@@ -10,6 +10,7 @@ import DataTablesCore from 'datatables.net';
 
 
 const incidents = inject('incidents');
+const conditions = inject('conditions');
 
 
 const selectedIncident = ref(null);
@@ -28,18 +29,8 @@ const filterRowsButtons = [
         title: 'Созданные мной'
     }
 ];
-const statusMap = {
-    1: { label: 'Новая', color: '#10b981' }, // Зеленый
-    2: { label: 'В работе', color: '#3b82f6' }, // Синий
-    3: { label: 'Отработана', color: 'rgb(125, 133, 143)' }, // Тот самый серый
-    7: { label: 'Отказ', color: '#ef4444' }, // Красный
-};
-const typeMap = {
-    1: 'Пожарная',
-    2: 'Полиция',
-    3: 'Скорая',
-    4: 'Горгаз',
-};
+
+
 const activeFilterRowButton = ref(1);
 const activeFilterRowButtonClasses = computed(() => {
     return (buttonId) => ({
@@ -53,7 +44,7 @@ const tableColumns = ref([
     {data: 'creator', title: 'Создатель', visible: true},
     {data: 'operator', title: 'ФИО Оператора', visible: true},
     {data: 'id', title: 'УКИО', visible: true},
-    {data: 'status', title: 'Состояние', visible: true},
+    {data: 'condition', title: 'Состояние', visible: true},
     {data: 'call_type', title: 'Тип вызова', visible: true},
     {data: 'applicant_phone', title: 'Номер звонящего', visible: true},
     {data: 'dialed_number', title: 'Набранный номер', visible: true},
@@ -165,7 +156,13 @@ onMounted(function () {
                 :data="incidents"
                 :columns="tableColumns"
                 class="border-collapse border border-solid border-grey-300">
+                <template #column-4="props">
+                    <div class="flex items-center gap-2">
+                        <div :class="['w-3 h-3 rounded-sm', conditions[props.cellData]?.color]"></div>
+                        {{ conditions[props.cellData].name }}
+                    </div>
 
+                </template>
             </DataTable >
         </div>
     </Block>
