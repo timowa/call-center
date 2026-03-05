@@ -15,14 +15,14 @@ import TabHeaderButton from "@/Components/TabHeaderButton.vue";
 import Firefighters from "@/Pages/Incidents/Partials/Firefighters.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 
-const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes']);
+const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes', 'isCreator']);
 const viewMode = ref(false);
 const conditions = inject('conditions');
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 
 const canSeeAllAreas = computed(() => {
-    return user.value.permissions.includes('incidents.view.all-districts');
+    return user.value.permissions.includes('incidents.view.all-area');
 });
 const canSeeAllCallTypes = computed(() => {
     return user.value.permissions.includes('incidents.view.all-call_type')
@@ -55,7 +55,8 @@ provide('directories', {
     incidentTypes: props.incidentTypes,
     services: props.services,
     areas: filteredAreas.value,
-    districts: filteredDistricts.value
+    districts: filteredDistricts.value,
+    isCreator: props.isCreator.value
 })
 const form = useForm({
     id: props.incident.id,
@@ -149,7 +150,6 @@ const form = useForm({
     }
 });
 
-console.log(form)
 const tabs = computed(() => ({
     UKIO: {
         template: UKIO,

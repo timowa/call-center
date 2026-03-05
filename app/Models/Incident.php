@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\ScopeArea;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-
 class Incident extends Model
 {
 
@@ -33,6 +35,21 @@ class Incident extends Model
         self::CONDITION_DONE => ['name' => 'Отработана', 'color' => 'black'],
         self::CONDITION_VIEW => ['name' => 'Просмотр  ', 'color' => ''],
     ];
+    #[Scope]
+    protected function scopeArea(Builder $builder):void
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return;
+        }
+        if ($user->area_id && $user->hasPermissionTo('incidents.view.own-area')) {
+            $builder->whereHas('district', function ($query) use ($user) {
+                $query->where('area_id', $user->area_id);
+            })
+            ->orWhere('user_id', $user->id);
+        }
+    }
 
     public function getConditionInfoAttribute()
     {

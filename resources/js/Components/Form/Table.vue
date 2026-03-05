@@ -1,11 +1,13 @@
 <script setup>
-import { ref, computed } from 'vue';
+import {ref, computed, inject} from 'vue';
 import FormField from './FormField.vue';
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
-import LinkButton from "@/Components/LinkButton.vue";
-import AdditionalActionButton from "@/Components/AdditionalActionButton.vue"; // Убедись в правильности пути
+import AdditionalActionButton from "@/Components/AdditionalActionButton.vue";
 
+const viewMode = inject('viewMode');
+const isUkioForm = inject('isUkioForm', ref(false));
+const {isCreator} = inject('directories', ref(false))
 const props = defineProps({
     modelValue: {
         type: Array,
@@ -15,7 +17,8 @@ const props = defineProps({
         type: Array,
         required: true
     },
-    label: String
+    label: String,
+    allowEditIfNotCreator: Boolean
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -62,6 +65,24 @@ const remove = (index) => {
     const currentData = props.modelValue.filter((_, i) => i !== index);
     emit('update:modelValue', currentData);
 };
+const disabled = computed(() => {
+    if (props.disabled === true) {
+        return true;
+    }
+    if (viewMode.value === true) {
+        return true;
+    }
+    if (props.options?.length === 1) {
+        return true;
+    }
+    if (isUkioForm.value && !isCreator) {
+        if (props.allowEditIfNotCreator) {
+            return false;
+        }
+        return true;
+    }
+    return false;
+})
 </script>
 
 <template>
@@ -70,6 +91,7 @@ const remove = (index) => {
             <span class="font-bold text-gray-700">{{ label }}</span>
             <SecondaryButton
                 class="rounded-full p-2"
+                :disabled="disabled"
                 @click="openAdd"
             ><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

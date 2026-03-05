@@ -13,6 +13,7 @@ const gridCols = {
     3: 'grid-cols-3',
     4: 'grid-cols-4',
     6: 'grid-cols-6',
+    8: 'grid-cols-8',
 }
 
 </script>

@@ -1,11 +1,14 @@
 <script setup>
-import {computed, inject, onMounted} from 'vue';
+import {computed, inject, onMounted, ref} from 'vue';
 
+const isUkioForm = inject('isUkioForm', ref(false));
+const {isCreator} = inject('directories', ref(false))
 const model = defineModel();
 const props = defineProps({
     'placeholder': String,
     'readonly': Boolean,
-    'options': Array
+    'options': Array,
+    allowEditIfNotCreator: Boolean
 });
 
 const classes = computed(() => ({
@@ -21,6 +24,12 @@ const disabled = computed(() => {
         return true;
     }
     if (props.options?.length === 1) {
+        return true;
+    }
+    if (isUkioForm.value && !isCreator) {
+        if (props.allowEditIfNotCreator) {
+            return false;
+        }
         return true;
     }
     return false;

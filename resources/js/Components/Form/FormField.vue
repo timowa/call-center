@@ -4,10 +4,14 @@ import Select from "@/Components/Form/Select.vue";
 import Checkbox from "@/Components/Form/Checkbox.vue";
 import Radio from "@/Components/Form/Radio.vue";
 import InputLabel from "@/Components/Form/InputLabel.vue";
-import {computed} from "vue";
+import {computed, inject} from "vue";
 import Textarea from "@/Components/Form/Textarea.vue";
 import Table from "@/Components/Form/Table.vue";
+import {usePage} from "@inertiajs/vue3";
 
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+const {isCreator} = inject('directories')
 const props = defineProps({
     type: {
         type: String,
@@ -77,7 +81,15 @@ const display = computed(()=>{
         'items-center': !props.vertical
     }
 });
-
+const readonly = computed(() => {
+    if (!isCreator && user.value.permissions.includes('incidents.can-edit-own-ukio')) {
+        if (props.allowEditElses) {
+            return false;
+        }
+        return true
+    }
+    return false;
+})
 
 </script>
 

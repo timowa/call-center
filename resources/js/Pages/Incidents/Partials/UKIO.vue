@@ -4,16 +4,12 @@ import FormField from "@/Components/Form/FormField.vue";
 import FormGroup from "@/Components/Form/FormGroup.vue";
 import InputLabel from "@/Components/Form/InputLabel.vue";
 import TextInput from "@/Components/Form/TextInput.vue";
-import {computed, inject, ref, watch} from "vue";
+import {computed, inject, provide, ref, watch} from "vue";
 import Block from "@/Components/Block.vue";
 const props = defineProps(['form']);
 const {callTypes, incidentTypes, areas, districts, services} = inject('directories');
-const checkedCallTypeServiceId = computed(() => {
-    if (callTypes.length > 1) {
-        return null;
-    }
-    return callTypes[0].service_id;
-});
+const checkedCallTypeServiceId = ref(null);
+provide('isUkioForm', ref(true));
 watch(
     () => props.form.call_type,
     (newCallType) => {
@@ -120,7 +116,8 @@ watch(
             </div>
             <FormField v-model="form.number_of_victims" label="Пострадавших" :text-align="'right'"/>
             <FormField v-model="form.emergency_type_id" label="Тип ЧС" type="select"  :text-align="'right'"/>
-            <FormField label="Описание" v-model="form.description" :col-span="6" :grid-col="6" type="textarea"/>
+            <FormField label="Описание" :allow-edit-if-not-creator="true" v-model="form.description" :col-span="6" :grid-col="6" type="textarea"
+                       :allow-edit-elses="true"/>
 
         </FormGroup>
         <FormGroup title="Информация о заявителе" :cols="6">

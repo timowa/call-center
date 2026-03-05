@@ -16,12 +16,12 @@ class IncidentPolicy
     }
     public function update(User $user, Incident $incident)
     {
-        if ($user->district_id && $user->district_id !== $incident->district_id) {
+        if ($user->area_id && $user->area_id !== $incident->district->area_id) {
             return false;
         }
 
         if ($user->hasRole(['op_01', 'op_04'])) {
-            if ($incident->creator->role === $user->role) {
+            if ($incident->user->role === $user->role) {
                 return true;
             }
         }

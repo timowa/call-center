@@ -4,10 +4,15 @@ namespace Database\Seeders;
 
 use App\Models\Area;
 use App\Models\CallType;
+use App\Models\CauseOfTheFire;
+use App\Models\FireDepartment;
+use App\Models\FireReportType;
 use App\Models\Service;
 use App\Models\District;
 use App\Models\EmergencyType;
 use App\Models\IncidentType;
+use App\Models\UrbanObject;
+use App\Models\UrbanObjectType;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -124,6 +129,56 @@ class DatabaseSeeder extends Seeder
                 'name' => $type,
             ]);
         }
+
+
+        $fireReportTypes = [
+            'Акт самосожжения',
+            'Взрывы',
+            'Гибель на воде',
+            'ДТП',
+            'Дымокамера',
+            'Пожар',
+        ];
+        foreach ($fireReportTypes as $type) {
+            FireReportType::create([
+                'name' => $type,
+            ]);
+        }
+
+        $objectTypes = [
+            'Образование' => ['Школа №1', 'Детский сад "Солнышко"', 'Университет им. Пирогова'],
+            'Торговля' => ['ТЦ "Кристалл"', 'Рынок Центральный', 'Магазин "Пятерочка"'],
+            'Культура' => ['Кинотеатр "Мир"', 'Библиотека №5', 'Музей Краеведения'],
+        ];
+
+       foreach ($objectTypes as $type => $objectsList) {
+           UrbanObjectType::create(['name' => $type]);
+           foreach ($objectsList as $object) {
+               UrbanObject::create(['name' => $object, 'area_id' => 1]);
+           }
+       }
+
+       $causes = [
+           'Неосторожное обращение с огнем при курении',
+           'Нарушение правил устройства и эксплуатации электрооборудования',
+           'Нарушение правил пожарной безопасности при проведении огневых работ',
+           'Нарушение правил устройства и эксплуатации печного отопления',
+           'Детская шалость с огнем',
+           'Поджог (умышленные действия)',
+           'Грозовые разряды (природный фактор)',
+           'Нарушение правил эксплуатации бытовых газовых устройств',
+           'Неисправность узлов и механизмов транспортного средства',
+           'Самовозгорание веществ и материалов'
+       ];
+       foreach ($causes as $cause) {
+           CauseOfTheFire::create(['name' => $cause]);
+       }
+
+       for ($i = 0; $i < 10; $i++) {
+           FireDepartment::create([
+               'name' => $i . ' ПСЧ'
+           ]);
+       }
 
         $this->call([
             RolesAndPermissionsSeeder::class,

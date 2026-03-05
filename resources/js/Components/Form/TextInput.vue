@@ -5,9 +5,10 @@ const model = defineModel({
     type: [String, Number],
     required: true,
 });
-
+const isUkioForm = inject('isUkioForm', ref(false));
+const {isCreator} = inject('directories', ref(false))
 const input = ref(null);
-const props = defineProps(['placeholder', 'readonly']);
+const props = defineProps(['placeholder', 'readonly', 'allowEditIfNotCreator']);
 
 onMounted(() => {
     if (input.value.hasAttribute('autofocus')) {
@@ -24,6 +25,12 @@ const disabled = computed(() => {
         return true;
     }
     if (viewMode !== undefined && viewMode.value === true) {
+        return true;
+    }
+    if (isUkioForm.value && !isCreator) {
+        if (props.allowEditIfNotCreator) {
+            return false;
+        }
         return true;
     }
 })

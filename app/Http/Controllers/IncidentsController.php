@@ -55,6 +55,7 @@ class IncidentsController extends Controller
             'emergencyTypes' => EmergencyType::all(),
             'areas'          => Area::all(),
             'districts'      => District::all(),
+            'isCreator' => $incident->user->id === Auth::id(),
         ]);
     }
 
@@ -80,7 +81,7 @@ class IncidentsController extends Controller
 
     public function dashboard()
     {
-        $incidents = Incident::select(['id','created_at', 'user_id', 'call_type_id', 'applicant_info->phone as applicant_phone', 'district_id', 'condition'])
+        $incidents = Incident::scopeArea()->select(['id','created_at', 'user_id', 'call_type_id', 'applicant_info->phone as applicant_phone', 'district_id','condition'])
             ->with(['user' => function($query) {
                 $query->select('id', 'name');
             },
