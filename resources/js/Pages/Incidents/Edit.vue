@@ -15,7 +15,7 @@ import TabHeaderButton from "@/Components/TabHeaderButton.vue";
 import Firefighters from "@/Pages/Incidents/Partials/Firefighters.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes']);
-const viewMode = ref(true);
+const viewMode = ref(false);
 provide('viewMode', viewMode)
 provide('directories', {
     callTypes: props.callTypes,
@@ -108,7 +108,8 @@ const form = useForm({
             response: {
 
             }
-
+        },
+        firefighters: {
 
         }
     }

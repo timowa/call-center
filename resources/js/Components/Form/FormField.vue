@@ -6,6 +6,7 @@ import Radio from "@/Components/Form/Radio.vue";
 import InputLabel from "@/Components/Form/InputLabel.vue";
 import {computed} from "vue";
 import Textarea from "@/Components/Form/Textarea.vue";
+import Table from "@/Components/Form/Table.vue";
 
 const props = defineProps({
     type: {
@@ -30,7 +31,8 @@ const inputs = {
     select: Select,
     checkbox: Checkbox,
     radio: Radio,
-    textarea: Textarea
+    textarea: Textarea,
+    table: Table
 }
 const gridCols = {
     2: 'grid-cols-2',
@@ -46,6 +48,7 @@ const colEnd = {
     6: 'col-end-7',
 }
 const colSpans = {
+    1: '',
     2: 'col-span-2',
     3: 'col-span-3',
     4: 'col-span-4',
@@ -53,6 +56,7 @@ const colSpans = {
     6: 'col-span-6',
 }
 const isCheckbox = props.type === 'checkbox' || props.type === 'radio';
+const isTable = props.type === 'table';
 const inputClasses = computed(()=>{
     if (isCheckbox || props.vertical) return {};
     return {
@@ -67,9 +71,9 @@ const display = computed(()=>{
 
     return {
         'grid gap-6': !props.vertical,
-        'grid grid-rows-2': props.vertical,
+        'grid grid-rows-2': props.vertical && !isTable,
         [gridCols[props.gridCol]]: !props.vertical && props.gridCol > 1,
-        [colSpans[props.colSpan]]: props.colSpan > 1,
+        [colSpans[props.colSpan]]: props.colSpan > 0,
         'items-center': !props.vertical
     }
 });
@@ -79,9 +83,9 @@ const display = computed(()=>{
 
 <template>
     <div class="align-center text-13 " :class="display">
-        <InputLabel v-bind="$attrs" v-if="$attrs.label && !isCheckbox"/>
+        <InputLabel v-bind="$attrs" v-if="$attrs.label && !isCheckbox && !isTable"/>
         <component v-bind="$attrs" :is="inputs[type]" class="flex-shrink-0" :class="inputClasses"></component>
-        <InputLabel v-bind="$attrs" v-if="$attrs.label && isCheckbox"/>
+        <InputLabel v-bind="$attrs" v-if="$attrs.label && isCheckbox && !isTable"/>
 
     </div>
 

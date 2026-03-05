@@ -65,9 +65,7 @@ const emit = defineEmits(['close', 'submit']);
     </div>
     <template #footer>
         <div class="flex justify-between">
-            <LinkButton
-            :title="'Сбросить'"
-            />
+            <LinkButton>Сбросить</LinkButton>
             <div>
                 <SecondaryButton class="mr-4" @click="emit('close')"> Закрыть</SecondaryButton>
                 <PrimaryButton>Сохранить</PrimaryButton>
