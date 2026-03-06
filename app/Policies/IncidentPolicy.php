@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\FireReport;
 use App\Models\Incident;
 use App\Models\User;
 
@@ -28,4 +29,5 @@ class IncidentPolicy
 
         return true;
     }
+
 }

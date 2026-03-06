@@ -71,7 +71,7 @@ class IncidentsController extends Controller
             'areas'          => Area::all(),
             'districts'      => District::all(),
             'fireReportData' => $fireReportData,
-            'isCreator' => $incident->user->id === Auth::id(),
+            'isCreator' => $incident->user->id === Auth::id() || Auth::user()->hasRole('cov_112'),
         ]);
     }
 
@@ -84,7 +84,7 @@ class IncidentsController extends Controller
                 'call_type.required' => 'Пожалуйста, выберите основную службу.'
             ]);
         $incident = Incident::findOrFail($id);
-        $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'source', 'area_id', 'processing_time', 'coordinates', 'fireReport']);
+        $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'area_id', 'processing_time', 'coordinates', 'fireReport']);
         $data['call_type_id'] = $request->call_type ?: null;
         $data['incident_type_id'] = $request->incident_type ?: null;
         $incident->update($data);
@@ -93,7 +93,7 @@ class IncidentsController extends Controller
         $fireReportData = $request->fireReport;
         $fireReportData['incident_id'] = $incident->id;
         $fireReportSearch = [];
-        if ($fireReportData['id']) {
+        if (isset($fireReportData['id'])) {
             $fireReportSearch['id'] = $fireReportData['id'];
         } else {
             $fireReportSearch['incident_id'] = $incident->id;;
@@ -107,16 +107,21 @@ class IncidentsController extends Controller
 
     public function dashboard()
     {
-        $incidents = Incident::scopeArea()->select(['id','created_at', 'user_id', 'call_type_id', 'applicant_info->phone as applicant_phone', 'district_id','condition'])
-            ->with(['user' => function($query) {
-                $query->select('id', 'name');
-            },
+        $incidents = Incident::scopeArea()->select(['id','created_at', 'user_id', 'call_type_id', 'incoming_number', 'district_id','condition'])
+            ->with([
+                'user' => function($query) {
+                    $query->select('id', 'name');
+                    },
                 'callType' => function($query) {
-                $query->select('id', 'name', 'service_id');
-                },
+                    $query->select('id', 'name', 'service_id');
+                    },
                 'district' => function($query) {
-                $query->select('id', 'name');
-                }])
+                    $query->select('id', 'name');
+                    },
+                'fireReport' => function($query) {
+                    $query->select('id', 'condition', 'incident_id');
+                    }
+                    ])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($incident) {
@@ -127,9 +132,10 @@ class IncidentsController extends Controller
                     'operator' => '33 22 11',
                     'condition' => $incident->condition,
                     'call_type' => $incident->callType->name ?? '',
-                    'applicant_phone' => $incident->applicant_phone,
+                    'incoming_number' => $incident->incoming_number,
                     'dialed_number' => '88005553535',
                     'district_name' => $incident->district->name ?? 'Не указано',
+                    'fireReport' => $incident->fireReport ?? null,
                 ];
             });
         return Inertia::render('Dashboard', ['incidents' => $incidents]);

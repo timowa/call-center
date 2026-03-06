@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DistrictController;
+use App\Http\Controllers\FireReportController;
 use App\Http\Controllers\IncidentsController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/incidents/edit/{id}', [IncidentsController::class, 'edit'])->name('incidents.edit');
     Route::get('/incidents/view/{id}', [IncidentsController::class, 'view'])->name('incidents.view');
     Route::put('/incidents/update/{id}', [IncidentsController::class, 'update'])->name('incidents.update');
+
+    Route::put('/fireReport/set-status-connected/{id}', [FireReportController::class, 'setStatusConnected'])->name('fireReport.set-status-connected');
 });
 
 require __DIR__.'/auth.php';

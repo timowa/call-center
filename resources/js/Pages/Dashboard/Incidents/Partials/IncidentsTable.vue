@@ -1,17 +1,17 @@
 <script setup>
 import {computed, inject, onMounted, ref} from "vue";
 import ModeChanger from "@/Pages/Dashboard/Incidents/Partials/ModeChanger.vue";
-import {router} from "@inertiajs/vue3";
+import {router, usePage} from "@inertiajs/vue3";
 import Block from "@/Components/Block.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net';
-
+import {getConditionColor, getConditionLabel} from '@/Utils/conditions.js'
 
 const incidents = inject('incidents');
-const conditions = inject('conditions');
-
+const page = usePage();
+const user = computed(() => page.props.auth.user);
 
 const selectedIncident = ref(null);
 DataTable.use(DataTablesCore);
@@ -44,9 +44,16 @@ const tableColumns = ref([
     {data: 'creator', title: 'Создатель', visible: true},
     {data: 'operator', title: 'ФИО Оператора', visible: true},
     {data: 'id', title: 'УКИО', visible: true},
-    {data: 'condition', title: 'Состояние', visible: true},
+    {data: (i, l, c) => {
+            if (user.value.roles.includes('cov_112')) {
+                return i.condition;
+            }
+            if (user.value.roles.includes('op_01')) {
+                return i.fireReport.condition
+            }
+        }, title: 'Состояние', visible: true},
     {data: 'call_type', title: 'Тип вызова', visible: true},
-    {data: 'applicant_phone', title: 'Номер звонящего', visible: true},
+    {data: 'incoming_number', title: 'Номер звонящего', visible: true},
     {data: 'dialed_number', title: 'Набранный номер', visible: true},
     {data: 'district_name', title: 'Место происшествия', visible: true},
 ]);
@@ -81,27 +88,25 @@ const previewData = computed(() => {
         {'title': 'Создатель', 'ref': selectedIncident.value.creator},
         {'title': 'ФИО оператора', 'ref': selectedIncident.value.operator},
         {'title': 'УКИО', 'ref': selectedIncident.value.id},
-        {'title': 'Состояние', 'ref': ''},
-        {'title': '01', 'ref': ''},
+        {'title': 'Состояние', 'ref': selectedIncident.value.condition, key: 'condition'},
+        {'title': 'Источник', 'ref': selectedIncident.value.source},
+        {'title': '01', 'ref': selectedIncident.value.fireReport?.condition, key: 'condition'},
         {'title': '02', 'ref': ''},
         {'title': '03', 'ref': ''},
         {'title': '04', 'ref': ''},
         {'title': 'АТ', 'ref': ''},
         {'title': 'ЕЖС', 'ref': ''},
         {'title': 'Тип вызова', 'ref': selectedIncident.value.call_type},
-        {'title': 'Номер звонящего', 'ref': selectedIncident.value.applicant_phone},
-        {'title': 'Набранный номер', 'ref': ''},
-        {'title': 'Место происшествия', 'ref': ''},
+        {'title': 'Номер звонящего', 'ref': selectedIncident.value.incoming_number},
+        {'title': 'Набранный номер', 'ref': selectedIncident.value.dialed_number},
         {'title': 'Район', 'ref': ''},
         {'title': 'Округ', 'ref': ''},
         {'title': 'Улица происшествия', 'ref': ''},
         {'title': 'Район города', 'ref': ''},
-        {'title': 'Фамилия звонившего', 'ref': ''},
-        {'title': 'Тип происшествия', 'ref': ''},
-        {'title': 'Регион', 'ref': ''},
-        {'title': 'Контакный телефон', 'ref': ''},
-        {'title': 'Дата рождения', 'ref': ''},
-        {'title': 'Описание происшествия', 'ref': ''},
+        {'title': 'Фамилия звонившего', 'ref': selectedIncident.value.applicant_info?.lastname},
+        {'title': 'Контакный телефон', 'ref': selectedIncident.value.applicant_info?.phone},
+        {'title': 'Дата рождения', 'ref': selectedIncident.value.applicant_info?.birthday},
+        {'title': 'Описание происшествия', 'ref': selectedIncident.value.description},
     ]
 });
 
@@ -158,8 +163,8 @@ onMounted(function () {
                 class="border-collapse border border-solid border-grey-300">
                 <template #column-4="props">
                     <div class="flex items-center gap-2">
-                        <div :class="['w-3 h-3 rounded-sm', conditions[props.cellData]?.color]"></div>
-                        {{ conditions[props.cellData].name }}
+                        <div :class="['w-3 h-3 rounded-sm', getConditionColor(props.cellData)]"></div>
+                        {{ getConditionLabel(props.cellData) }}
                     </div>
 
                 </template>
@@ -175,7 +180,13 @@ onMounted(function () {
                 v-for="data in previewData"
                 class="grid grid-cols-2">
                 <div class="text-grey-350 text-sm">{{ data.title }}</div>
-                <div class="text-sm">{{ data.ref }}</div>
+                <div v-if="data.key === 'condition'">
+                    <div class="flex items-center gap-2 text-sm">
+                        <div :class="['w-2 h-2 rounded-sm', getConditionColor(data.ref)]"></div>
+                        {{ getConditionLabel(data.ref) }}
+                    </div>
+                </div>
+                <div class="text-sm" v-else>{{ data.ref }}</div>
             </div>
             <div v-if="selectedIncident !== null" class="mt-6">
                 <div class="grid grid-cols-4 gap-3">

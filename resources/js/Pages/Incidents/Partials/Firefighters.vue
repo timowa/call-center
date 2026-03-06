@@ -3,12 +3,17 @@
 import Block from "@/Components/Block.vue";
 import TabHeaderButton from "@/Components/TabHeaderButton.vue";
 import TabsHeader from "@/Components/TabsHeader.vue";
-import {ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import Firefighters_first from "@/Pages/Incidents/Partials/Firefighters_first.vue";
 import Firefighters_second from "@/Pages/Incidents/Partials/Firefighters_second.vue";
 import Firefighters_third from "@/Pages/Incidents/Partials/Firefighters_third.vue";
 import Firefighters_forth from "@/Pages/Incidents/Partials/Firefighters_forth.vue";
-defineProps(['form']);
+import axios  from "axios";
+import {usePage} from "@inertiajs/vue3";
+
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+const props = defineProps(['form']);
 const tabs = {
     1: {
         title: 'Первичная информация',
@@ -28,6 +33,16 @@ const tabs = {
     }
 };
 const currentTabFire = ref(1);
+onMounted(function() {
+    const fireReportId = props.form.fireReport.id;
+    if (fireReportId === null) {
+        return;
+    }
+    if (user.value.roles.includes('op_01')) {
+        axios.put(route('fireReport.set-status-connected', fireReportId));
+        return;
+    }
+})
 </script>
 
 <template>

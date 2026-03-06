@@ -30,6 +30,12 @@ watch(
     },
     { immediate: true }
 );
+const sources = [
+    {id: 1, name: 'Без вызова'},
+    {is:2, name: 'Телефон'},
+    {id:3, name: 'СМС'},
+    {id:4, name: 'Датчики'}
+];
 </script>
 
 <template>
@@ -42,7 +48,7 @@ watch(
             <FormField label="Время регистрации" v-model="form.created_at.time" :readonly="true"  :text-align="'right'" />
             <FormField label="Создатель" v-model="form.creator" :readonly="true"  :text-align="'right'" />
             <FormField label="Тип происшествия" type="select" v-model="form.incident_type" :col-span="4" :grid-col="4" :options="incidentTypes"/>
-            <FormField label="Источник" v-model="form.source"  :text-align="'right'"/>
+            <FormField label="Источник" v-model="form.source" type="select" :options="sources"  :text-align="'right'"/>
             <FormField label="Тип вызова"
                        type="select"
                        v-model="form.call_type"

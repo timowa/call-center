@@ -15,6 +15,7 @@ import TabHeaderButton from "@/Components/TabHeaderButton.vue";
 import Firefighters from "@/Pages/Incidents/Partials/Firefighters.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import {getFireReportDefaults} from "@/Utils/fireReportForm.js";
+import {getCondition} from "@/Utils/conditions.js";
 
 const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes', 'isCreator', 'fireReportData']);
 const viewMode = ref(false);
@@ -72,7 +73,7 @@ const form = useForm({
     call_type: user.value.call_type_id ?? (props.incident.call_type ? props.incident.call_type?.id : 0),
     services: props.incident.services,
     incident_type: props.incident.type ? props.incident.type.id : 0,
-    source: '',
+    source: props.incident.source,
     is_training: props.incident.is_training,
     is_important: props.incident.is_important,
     area_id: user.value.area_id ?? props.incident?.area_id ?? null,
@@ -148,17 +149,12 @@ const form = useForm({
     },
     fireReport: getFireReportDefaults(props.incident.fire_report)
 });
-console.log(props.incident.fire_report)
-console.log(form.fireReport)
 const tabs = computed(() => ({
     UKIO: {
         template: UKIO,
         title: 'УКИО',
         show:true,
-        condition: {
-            color: conditions[props.incident.condition].color,
-            name: conditions[props.incident.condition].name
-        }
+        condition: getCondition(props.incident.condition)
     },
     EDDS: {
         template: EDDS,
@@ -170,7 +166,8 @@ const tabs = computed(() => ({
         template: Firefighters,
         title: '01',
         service_id: 4,
-        show: form.services.includes(4) || form.call_type === 4
+        show: form.services.includes(4) || form.call_type === 4,
+        condition: getCondition(props.incident.fire_report?.condition)
     }
 }));
 watch(() => tabs.value.EDDS.show, (isVisible) => {

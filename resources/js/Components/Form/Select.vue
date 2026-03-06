@@ -33,7 +33,7 @@ const isDisabled = computed(() => {
             :clearable="false"
             :placeholder="placeholder"
             :disabled="isDisabled"
-            class="custom-v-select"
+            class="custom-v-select bg-grey-150 disabled:bg-grey-220 disabled:cursor-not-allowed"
         >
             <template #no-options>
                 <span class="text-xs text-gray-500">Ничего не найдено</span>

@@ -89,7 +89,7 @@ class Incident extends Model
 
     public function fireReport()
     {
-        return $this->hasOne(FireReport::class);
+        return $this->hasOne(FireReport::class, 'incident_id', 'id');
     }
 
 
