@@ -4,6 +4,7 @@ use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\FireReportController;
 use App\Http\Controllers\IncidentsController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SuggestionsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -25,6 +26,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/incidents/update/{id}', [IncidentsController::class, 'update'])->name('incidents.update');
 
     Route::put('/fireReport/set-status-connected/{id}', [FireReportController::class, 'setStatusConnected'])->name('fireReport.set-status-connected');
+
+    Route::post('/suggestions', [SuggestionsController::class, 'clean'])->name('suggestions.clean');
 });
 
 require __DIR__.'/auth.php';

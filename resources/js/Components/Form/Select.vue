@@ -7,7 +7,7 @@ const model = defineModel();
 
 const props = defineProps({
     options: { type: Array, default: () => [] },
-    placeholder: String,
+    placeholder: {type: String, default: ''},
     readonly: Boolean,
     reduce: { type: Function, default: (option) => option.id  },
 });
@@ -21,6 +21,12 @@ const isDisabled = computed(() => {
     if (isUkioForm.value && !isCreator) return true;
     return false;
 });
+
+const emit = defineEmits(['search']);
+
+const onSearch = (search, loading) => {
+    emit('search', search, loading);
+};
 </script>
 
 <template>
@@ -33,10 +39,15 @@ const isDisabled = computed(() => {
             :clearable="false"
             :placeholder="placeholder"
             :disabled="isDisabled"
+            :filterable="!$attrs.onSearch" @search="onSearch"
             class="custom-v-select bg-grey-150 disabled:bg-grey-220 disabled:cursor-not-allowed"
         >
-            <template #no-options>
-                <span class="text-xs text-gray-500">Ничего не найдено</span>
+
+            <template #no-options="{ search, searching }">
+                <span v-if="searching" class="text-xs text-gray-500">
+                    Ничего не найдено по запросу "{{ search }}"
+                </span>
+                <span v-else class="text-xs text-gray-500">Начните вводить название...</span>
             </template>
         </v-select>
     </div>

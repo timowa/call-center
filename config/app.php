@@ -123,4 +123,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'dadata_api_key' => env('APP_DADA_API_KEY', ''),
+    'dadata_api_secret' => env('APP_DADA_API_SECRET', ''),
+
 ];

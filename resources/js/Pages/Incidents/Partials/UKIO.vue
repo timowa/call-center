@@ -6,6 +6,7 @@ import InputLabel from "@/Components/Form/InputLabel.vue";
 import TextInput from "@/Components/Form/TextInput.vue";
 import {computed, inject, provide, ref, watch} from "vue";
 import Block from "@/Components/Block.vue";
+import {getStreets} from "@/Utils/dadata.js";
 const props = defineProps(['form']);
 const {callTypes, incidentTypes, areas, districts, services} = inject('directories');
 const checkedCallTypeServiceId = ref(null);
@@ -36,6 +37,73 @@ const sources = [
     {id:3, name: 'СМС'},
     {id:4, name: 'Датчики'}
 ];
+
+const filteredDistricts = computed(() => {
+    if (!props.form.area_id) {
+        return districts;
+    }
+    return districts.filter(district => district.area_id === props.form.area_id);
+});
+
+watch(() => props.form.area_id, () => {
+    props.form.district_id = null;
+});
+
+const selectedAreaName = computed(() => {
+    return areas.find(a => a.id === props.form.area_id)?.id || '';
+});
+
+const selectedDistrictName = computed(() => {
+    return filteredDistricts.value.find(d => d.id === props.form.district_id)?.id || '';
+});
+
+const streetsOptions = ref([]);
+let timeout = null;
+
+const updateStreets = async (search = '') => {
+    if (!props.form.district_id) {
+        streetsOptions.value = [];
+        return;
+    }
+
+    try {
+        const data = await getStreets(
+            selectedAreaName.value,
+            selectedDistrictName.value,
+            search
+        );
+        console.log(data)
+        streetsOptions.value = data.map(item => ({
+            id: item.id,
+            name: item.name
+        }));
+    } catch (e) {
+        console.error("Ошибка при получении улиц:", e);
+        streetsOptions.value = [];
+    }
+};
+const onStreetSearch = (search) => {
+    clearTimeout(timeout);
+
+    if (!search) {
+        updateStreets();
+        return;
+    }
+
+    timeout = setTimeout(() => {
+        updateStreets(search);
+    }, 250);
+};
+
+watch(() => props.form.district_id, (newDistrictId) => {
+    props.form.street = null;
+
+    if (newDistrictId) {
+        updateStreets();
+    } else {
+        streetsOptions.value = [];
+    }
+});
 </script>
 
 <template>
@@ -79,9 +147,16 @@ const sources = [
                        v-model="form.district_id"
                        label="Округ"
                        :text-align="'right'"
-                       :options="districts"
+                       :options="filteredDistricts"
             />
-            <FormField v-model="form.street" label="Улица" :text-align="'right'"/>
+            <FormField
+                v-model="form.street"
+                type="select"
+                :options="streetsOptions"
+                :filterable="false"
+                @search="onStreetSearch"
+                label="Улица"
+                :text-align="'right'"/>
             <InputLabel label="Дом"/>
             <div class="grid grid-cols-5 gap-2">
                 <TextInput v-model="form.house_number" class="col-span-2"/>
