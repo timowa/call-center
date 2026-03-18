@@ -6,7 +6,8 @@ import InputLabel from "@/Components/Form/InputLabel.vue";
 import TextInput from "@/Components/Form/TextInput.vue";
 import {computed, inject, provide, ref, watch} from "vue";
 import Block from "@/Components/Block.vue";
-import {getStreets} from "@/Utils/dadata.js";
+import {addressSearch} from "@/Composables/addressSearch.js";
+import {fetchCoordinates} from "@/Composables/getCoordinates.js";
 const props = defineProps(['form']);
 const {callTypes, incidentTypes, areas, districts, services} = inject('directories');
 const checkedCallTypeServiceId = ref(null);
@@ -49,59 +50,28 @@ watch(() => props.form.area_id, () => {
     props.form.district_id = null;
 });
 
-const selectedAreaName = computed(() => {
-    return areas.find(a => a.id === props.form.area_id)?.id || '';
-});
-
-const selectedDistrictName = computed(() => {
-    return filteredDistricts.value.find(d => d.id === props.form.district_id)?.id || '';
-});
-
-const streetsOptions = ref([]);
-let timeout = null;
-
-const updateStreets = async (search = '') => {
-    if (!props.form.district_id) {
-        streetsOptions.value = [];
-        return;
-    }
-
-    try {
-        const data = await getStreets(
-            selectedAreaName.value,
-            selectedDistrictName.value,
-            search
-        );
-        console.log(data)
-        streetsOptions.value = data.map(item => ({
-            id: item.id,
-            name: item.name
-        }));
-    } catch (e) {
-        console.error("Ошибка при получении улиц:", e);
-        streetsOptions.value = [];
-    }
-};
-const onStreetSearch = (search) => {
-    clearTimeout(timeout);
-
-    if (!search) {
-        updateStreets();
-        return;
-    }
-
-    timeout = setTimeout(() => {
-        updateStreets(search);
-    }, 250);
-};
-
-watch(() => props.form.district_id, (newDistrictId) => {
+const streets = addressSearch();
+watch(() => props.form.district_id, (newVal) => {
     props.form.street = null;
+    if (newVal) {
+        streets.loadInitial(props.form.area_id, props.form.district_id);
+    }
+});
+const coordsService = fetchCoordinates();
 
-    if (newDistrictId) {
-        updateStreets();
+watch(
+    () => [props.form.area_id, props.form.district_id, props.form.street, props.form.house_number, props.form.corpus_number],
+    async ([area, district, street, house, corpus]) => {
+        await coordsService.fetch(area, district, street, house, corpus);
+    }
+);
+
+watch(() => coordsService.coordinates.value, (newCoords) => {
+    console.log(newCoords)
+    if (newCoords) {
+        props.form.coordinates = `${newCoords.longitude}, ${newCoords.latitude}`;
     } else {
-        streetsOptions.value = [];
+        props.form.coordinates = '';
     }
 });
 </script>
@@ -152,9 +122,9 @@ watch(() => props.form.district_id, (newDistrictId) => {
             <FormField
                 v-model="form.street"
                 type="select"
-                :options="streetsOptions"
+                :options="streets.options.value"
                 :filterable="false"
-                @search="onStreetSearch"
+                @search="(query) => streets.onSearch(query, props.form.area_id, props.form.district_id)"
                 label="Улица"
                 :text-align="'right'"/>
             <InputLabel label="Дом"/>
@@ -178,7 +148,7 @@ watch(() => props.form.district_id, (newDistrictId) => {
             <FormField v-model="form.additional_street" label="Доп. улица" :text-align="'right'"/>
             <FormField v-model="form.district_of_city" type="select" label="Район города" />
             <FormField v-model="form.object" type="select" label="Объект" :text-align="'right'"/>
-            <FormField v-model="form.coordinates" label="Координаты" :text-align="'right'"/>
+            <FormField v-model="form.coordinates" label="Координаты" :text-align="'right'" :readonly="true"/>
             <FormField v-model="form.road" type="text" label="Дорога" />
             <InputLabel label="Метр" text-align="right"/>
             <div class="grid grid-cols-5 gap-2">

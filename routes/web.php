@@ -27,7 +27,8 @@ Route::middleware('auth')->group(function () {
 
     Route::put('/fireReport/set-status-connected/{id}', [FireReportController::class, 'setStatusConnected'])->name('fireReport.set-status-connected');
 
-    Route::post('/suggestions', [SuggestionsController::class, 'clean'])->name('suggestions.clean');
+    Route::post('/suggestions/get-address', [SuggestionsController::class, 'addresses'])->name('suggestions.addresses');
+    Route::post('/suggestions/get-coordinates', [SuggestionsController::class, 'coordinates'])->name('suggestions.coordinates');
 });
 
 require __DIR__.'/auth.php';

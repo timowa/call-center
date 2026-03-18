@@ -215,12 +215,12 @@ onUnmounted(() => {
                     <div v-if="tab.condition" :class="['w-3 h-3 rounded-sm', tab.condition.color]"></div>
                     {{tab.title}}
                 </div>
-                </TabHeaderButton>
+            </TabHeaderButton>
         </TabsHeader>
         <form @submit.prevent="submit" >
-        <keep-alive>
-            <component :is="tabs[currentTab].template" :form="form"/>
-        </keep-alive>
+            <keep-alive>
+                <component :is="tabs[currentTab].template" :form="form"/>
+            </keep-alive>
             <div class="text-right mt-6">
                 <PrimaryButton v-if="viewMode === true" @click="viewMode = false" type="button">Редактировать</PrimaryButton>
                 <div v-if="viewMode !== true" class="flex justify-end gap-2">
@@ -232,6 +232,7 @@ onUnmounted(() => {
                 </div>
             </div>
         </form>
+
     </div>
 </template>
 
