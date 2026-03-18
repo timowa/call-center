@@ -58,7 +58,7 @@ watch(() => props.form.district_id, (newVal) => {
     }
 });
 const coordsService = fetchCoordinates();
-
+const {mapCoordinates, setCoordinates} = inject('mapCoordinates');
 watch(
     () => [props.form.area_id, props.form.district_id, props.form.street, props.form.house_number, props.form.corpus_number],
     async ([area, district, street, house, corpus]) => {
@@ -67,9 +67,9 @@ watch(
 );
 
 watch(() => coordsService.coordinates.value, (newCoords) => {
-    console.log(newCoords)
     if (newCoords) {
-        props.form.coordinates = `${newCoords.longitude}, ${newCoords.latitude}`;
+        props.form.coordinates = `${newCoords.latitude}, ${newCoords.longitude}`;
+        setCoordinates({longitude: newCoords.longitude, latitude: newCoords.latitude})
     } else {
         props.form.coordinates = '';
     }

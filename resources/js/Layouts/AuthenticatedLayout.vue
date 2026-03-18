@@ -133,7 +133,10 @@ watch(() => page.props.errors, (errors) => {
                         <slot v-if="$slots['top-content']" name="top-content"></slot>
                     </div>
                     <div class="flex h-full gap-6">
-                        <slot />
+                        <div class="w-4/5">
+                            <slot />
+
+                        </div>
                         <aside class="w-1/5" v-if="$slots['right-panel']">
                             <slot name="right-panel"  />
                         </aside>

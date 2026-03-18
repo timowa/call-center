@@ -23,7 +23,7 @@ return new  class extends Migration
             $table->foreignId('district_id')->nullable()->constrained('districts');
             $table->text('street')->nullable();
             $table->integer('house_number')->nullable();
-            $table->integer('corpus_number')->nullable();
+            $table->char('corpus_number', 6)->nullable();
             $table->integer('apartment_number')->nullable();
             $table->integer('entrance_number')->nullable();
             $table->integer('entrance_code')->nullable();

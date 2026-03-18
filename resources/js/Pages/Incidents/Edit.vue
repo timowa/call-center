@@ -1,21 +1,18 @@
-<script>
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 
-export default {
-    layout: AuthenticatedLayout
-}
-</script>
 <script setup>
 import {Head, router, useForm, usePage} from "@inertiajs/vue3";
 import {computed, onUnmounted, provide, ref, watch, inject} from "vue";
 import UKIO from "@/Pages/Incidents/Partials/UKIO.vue";
 import EDDS from "@/Pages/Incidents/Partials/EDDS.vue";
+import IncidentMap from "@/Pages/Incidents/Partials/IncidentMap.vue";
 import TabsHeader from "@/Components/TabsHeader.vue";
 import TabHeaderButton from "@/Components/TabHeaderButton.vue";
 import Firefighters from "@/Pages/Incidents/Partials/Firefighters.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import {getFireReportDefaults} from "@/Utils/fireReportForm.js";
 import {getCondition} from "@/Utils/conditions.js";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import Block from "@/Components/Block.vue";
 
 const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes', 'isCreator', 'fireReportData']);
 const viewMode = ref(false);
@@ -60,6 +57,14 @@ provide('directories', {
     isCreator: props.isCreator,
 })
 provide('fireReportDirectories', props.fireReportData)
+const defaultCoordinates = {latitude: 53.722356, longitude: 91.443699}
+const mapCoordinates = ref(defaultCoordinates);
+provide('mapCoordinates', {
+    data: mapCoordinates,
+    setCoordinates: (val) => mapCoordinates.value = val
+})
+
+
 const form = useForm({
     id: props.incident.id,
     created_at: {
@@ -170,23 +175,37 @@ const tabs = computed(() => ({
         condition: getCondition(props.incident.fire_report?.condition)
     }
 }));
+
+const rightTabs =  computed(() => ({
+    map: {
+        template: IncidentMap,
+        title: 'Карта'
+    },
+    history: {
+        template: '',
+        title: 'История'
+    },
+    calls: {
+        template: '',
+        title: 'Звонки и СМС'
+    }
+}))
 watch(() => tabs.value.EDDS.show, (isVisible) => {
     if (!isVisible && currentTab.value === 'EDDS') {
         currentTab.value = 'UKIO';
     }
 });
 const currentTab = ref('UKIO');
+const currentRightTab = ref('map');
 
 const submit = () => {
     console.log('Данные к отправке:', form.data());
     form.put(route('incidents.update', props.incident.id), {
-        preserveScroll: true, // Чтобы страница не прыгала вверх после сохранения
+        preserveScroll: true,
         onSuccess: () => {
-            // Можно добавить уведомление
             console.log('Данные успешно обновлены');
         },
         onError: (errors) => {
-            // Вывод ошибок валидации в консоль для отладки
             console.error('Ошибки валидации:', errors);
         },
     });
@@ -203,21 +222,41 @@ onUnmounted(() => {
 
 <template>
     <Head title="Dashboard" />
-    <div class="w-full h-full bg-grey-200 border-gray-300 border-2 rounded-md p-2">
-        <TabsHeader>
-            <TabHeaderButton
-                v-for="(tab, id) in tabs"
-                v-show="tab.show"
-                :active="currentTab === id"
-                @click="currentTab = id"
-            >
-                <div class="flex items-center gap-2">
-                    <div v-if="tab.condition" :class="['w-3 h-3 rounded-sm', tab.condition.color]"></div>
-                    {{tab.title}}
+    <AuthenticatedLayout>
+        <template #top-content>
+            <div class="flex gap-6">
+                <div class="w-4/5">
+                    <TabsHeader>
+                        <TabHeaderButton
+                            v-for="(tab, id) in tabs"
+                            v-show="tab.show"
+                            :active="currentTab === id"
+                            @click="currentTab = id"
+                        >
+                            <div class="flex items-center gap-2">
+                                <div v-if="tab.condition" :class="['w-3 h-3 rounded-sm', tab.condition.color]"></div>
+                                {{tab.title}}
+                            </div>
+                        </TabHeaderButton>
+                    </TabsHeader>
                 </div>
-            </TabHeaderButton>
-        </TabsHeader>
-        <form @submit.prevent="submit" >
+                <div class="w-1/5">
+                    <TabsHeader>
+                        <TabHeaderButton
+                            v-for="(tab, id) in rightTabs"
+                            :active="currentRightTab === id"
+                            @click="currentRightTab = id"
+                        >
+                            <div class="flex items-center gap-2">
+                                {{tab.title}}
+                            </div>
+                        </TabHeaderButton>
+                    </TabsHeader>
+                </div>
+            </div>
+
+        </template>
+        <form @submit.prevent="submit">
             <keep-alive>
                 <component :is="tabs[currentTab].template" :form="form"/>
             </keep-alive>
@@ -228,12 +267,20 @@ onUnmounted(() => {
                     <PrimaryButton :disabled="form.processing" @click="form.call_type = 1; form.condition = 5">Ложный</PrimaryButton>
                     <PrimaryButton :disabled="form.processing || form.call_type === 0" @click="form.condition = 2">Передать без вызова</PrimaryButton>
                     <PrimaryButton :disabled="form.processing || form.call_type === 0" @click="form.condition = 2">Переать с вызовом</PrimaryButton>
-
                 </div>
             </div>
         </form>
 
-    </div>
+        <template #right-panel>
+            <Block>
+                <keep-alive>
+                    <component :is="rightTabs[currentRightTab].template" />
+                </keep-alive>
+            </Block>
+        </template>
+
+    </AuthenticatedLayout>
+
 </template>
 
 <style scoped>
