@@ -128,8 +128,17 @@ watch(() => page.props.errors, (errors) => {
             <Header></Header>
             <div class="flex flex-1 overflow-hidden p-2 bg-grey-100 gap-3">
                 <Aside></Aside>
-                <main class="flex-1 w-4/5">
-                    <slot />
+                <main class="w-full bg-grey-200 border-gray-300 border-2 rounded-md p-2 flex flex-col">
+                    <div class="flex flex-col gap-3">
+                        <slot v-if="$slots['top-content']" name="top-content"></slot>
+                    </div>
+                    <div class="flex h-full gap-6">
+                        <slot />
+                        <aside class="w-1/5" v-if="$slots['right-panel']">
+                            <slot name="right-panel"  />
+                        </aside>
+                    </div>
+
                 </main>
             </div>
 

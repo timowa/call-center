@@ -6,7 +6,7 @@ import TextInput from "@/Components/Form/TextInput.vue";
 </script>
 
 <template>
-<aside class="w-1/5 bg-white pb-20 flex flex-col">
+<aside class="w-1/10 bg-white pb-20 flex flex-col">
 <div class="bg-primary rounded-t-lg py-2 px-6">
     <span class="text-md text-white">Управление активностями</span>
 </div>
