@@ -1,10 +1,6 @@
-<script>
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-</script>
+
 <script setup>
 import {provide, ref} from "vue";
-import Incidents from "@/Pages/Dashboard/Incidents/Incidents.vue";
-import Reports from "@/Pages/Dashboard/Reports/Reports.vue";
 import IncidentPreview from "@/Pages/Dashboard/Incidents/Partials/IncidentPreview.vue";
 import TabPageButton from "@/Components/TabPageButton.vue";
 import {Head} from "@inertiajs/vue3";
@@ -17,17 +13,7 @@ import FilterModal from "@/Pages/Dashboard/Incidents/Partials/FilterModal.vue";
 import IncidentsTable from "@/Pages/Dashboard/Incidents/Partials/IncidentsTable.vue";
 const props = defineProps(['incidents']);
 provide('incidents', props.incidents);
-const tabs = {
-    incidents: {
-        template: Incidents,
-        title: 'Происшествия',
 
-    },
-    reports: {
-        template: Reports,
-        title: 'Отчеты'
-    }
-};
 const selectedIncident = ref(null);
 
 provide('selectedIncident', {

@@ -12,11 +12,14 @@ const props = defineProps({
     reduce: { type: Function, default: (option) => option.id  },
 });
 const viewMode = inject('viewMode', ref(false));
+const hasNotPermissionToEdit = inject('hasNotPermissionToEdit', false)
 
 const isDisabled = computed(() => {
     if (props.readonly) return true;
     if (viewMode.value) return true;
-    if (isUkioForm.value && !isCreator) return true;
+    if (hasNotPermissionToEdit.value === true) {
+        return true;
+    }
     return false;
 });
 

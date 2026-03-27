@@ -36,7 +36,6 @@ const activeFilterRowButtonClasses = computed(() => {
     'text-grey-350': activeFilterRowButton.value !== buttonId
 })});
 
-
 const tableColumns = ref([
     {data: 'datetime', title: 'Дата', visible: true},
     {data: 'creator', title: 'Создатель', visible: true},

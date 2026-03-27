@@ -6,8 +6,9 @@ const model = defineModel({
     required: true,
 });
 const input = ref(null);
-const props = defineProps(['placeholder', 'readonly', 'allowEditIfNotCreator']);
-
+const props = defineProps(['placeholder', 'readonly', 'canEdit']);
+const hasNotPermissionToEditInject = inject('hasNotPermissionToEdit', false)
+const hasNotPermissionToEdit = !props.canEdit && hasNotPermissionToEditInject;
 onMounted(() => {
     if (input.value.hasAttribute('autofocus')) {
         input.value.focus();
@@ -24,6 +25,10 @@ const disabled = computed(() => {
     if (viewMode.value === true) {
         return true;
     }
+    if (hasNotPermissionToEdit.value === true) {
+        return true;
+    }
+    return false;
 })
 
 defineExpose({ focus: () => input.value.focus() });

@@ -13,6 +13,7 @@ import {getFireReportDefaults} from "@/Utils/fireReportForm.js";
 import {getCondition} from "@/Utils/conditions.js";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import Block from "@/Components/Block.vue";
+import {userHasPermissionTo} from "@/Utils/permissions.js";
 
 const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes', 'isCreator', 'fireReportData']);
 const viewMode = ref(true);
@@ -154,20 +155,20 @@ const tabs = computed(() => ({
     UKIO: {
         template: UKIO,
         title: 'УКИО',
-        show:true,
+        show: userHasPermissionTo('ukio.view'),
         condition: getCondition(props.incident.condition)
     },
     EDDS: {
         template: EDDS,
         title: 'ЕДДС/ЖКХ',
-        show: form.services.includes(8) || form.call_type === 8,
+        show: (form.services.includes(8) || form.call_type === 8) && userHasPermissionTo('edds.view'),
         service_id: 8
     },
     FIREFIGHTERS: {
         template: Firefighters,
         title: '01',
         service_id: 4,
-        show: form.services.includes(4) || form.call_type === 4,
+        show: (form.services.includes(4) || form.call_type === 4) && userHasPermissionTo('01.view'),
         condition: getCondition(props.incident.fire_report?.condition)
     }
 }));
@@ -195,7 +196,6 @@ const currentTab = ref('UKIO');
 const currentRightTab = ref('map');
 
 const submit = () => {
-    console.log('Данные к отправке:', form.data());
     form.put(route('incidents.update', props.incident.id), {
         preserveScroll: true,
         onSuccess: () => {

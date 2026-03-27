@@ -20,6 +20,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue']);
+const hasNotPermissionToEdit = inject('hasNotPermissionToEdit', false)
 
 const isModalOpen = ref(false);
 const editingIndex = ref(null);
@@ -70,6 +71,9 @@ const disabled = computed(() => {
         return true;
     }
     if (props.options?.length === 1) {
+        return true;
+    }
+    if (hasNotPermissionToEdit.value === true) {
         return true;
     }
     return false;

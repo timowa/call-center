@@ -24,7 +24,6 @@ const mapSettings = computed(() => {
         },
     };
 });
-console.log(mapSettings.value)
 </script>
 
 <template>

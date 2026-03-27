@@ -92,7 +92,6 @@ const page = usePage();
 watch(
     () => page.props.flash,
     (flash) => {
-        console.log(flash)
         if (flash && flash.message) {
             new Noty({
                 text: flash.message,

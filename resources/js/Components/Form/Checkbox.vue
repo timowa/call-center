@@ -13,6 +13,7 @@ const props = defineProps({
     disabled: Boolean
 });
 
+const hasNotPermissionToEdit = inject('hasNotPermissionToEdit', false)
 const proxyChecked = computed({
     get() {
         if (Array.isArray(props.checked)) {
@@ -46,6 +47,9 @@ const disabled = computed(() => {
         return true;
     }
     if (viewMode.value === true) {
+        return true;
+    }
+    if (hasNotPermissionToEdit.value === true) {
         return true;
     }
     return false;

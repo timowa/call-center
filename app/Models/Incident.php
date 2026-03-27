@@ -43,7 +43,7 @@ class Incident extends Model
         if (!$user) {
             return;
         }
-        if ($user->area_id && $user->hasPermissionTo('incidents.view.own-area')) {
+        if ($user->area_id && $user->hasRole('cov_112')) {
             $builder->whereHas('district', function ($query) use ($user) {
                 $query->where('area_id', $user->area_id);
             })

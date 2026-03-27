@@ -8,6 +8,7 @@ import {computed, inject, provide, ref, watch} from "vue";
 import Block from "@/Components/Block.vue";
 import {addressSearch} from "@/Composables/addressSearch.js";
 import {fetchCoordinates} from "@/Composables/getCoordinates.js";
+import {userHasPermissionTo} from "@/Utils/permissions.js";
 const props = defineProps(['form']);
 const {callTypes, incidentTypes, areas, districts, services} = inject('directories');
 const checkedCallTypeServiceId = ref(null);
@@ -74,6 +75,9 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
         props.form.coordinates = '';
     }
 });
+
+const hasNotPermissionToEdit = ref(!userHasPermissionTo('ukio.edit'));
+provide('hasNotPermissionToEdit', hasNotPermissionToEdit);
 </script>
 
 <template>
@@ -157,7 +161,8 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
             </div>
             <FormField v-model:checked="form.is_nearby" label="Рядом" type="checkbox" :col-span="2"/>
             <FormField label="Адресный участок" v-model="form.address_section" :col-span="6" :grid-col="6" type="textarea"/>
-            <FormField label="Доп. инфо" v-model="form.additional_info" :col-span="6" :grid-col="6" type="textarea"/>
+            <FormField label="Доп. инфо" v-model="form.additional_info" :col-span="6" :grid-col="6" type="textarea"
+                       :can-edit="userHasPermissionTo('ukio.edit-description')"/>
         </FormGroup>
 
         <FormGroup label="Описание происшествия" :cols="6">

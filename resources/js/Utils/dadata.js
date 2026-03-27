@@ -2,7 +2,6 @@ import axios from "axios";
 import {router} from "@inertiajs/vue3";
 
 export function getGeo(area_id, district_id, street, house_number, corpus_number) {
-    console.log(1)
     const getStreets = async (area_id, district_id, street) => {
         const query = {
             area_id: area_id,
