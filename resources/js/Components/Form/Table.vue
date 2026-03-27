@@ -6,8 +6,6 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import AdditionalActionButton from "@/Components/AdditionalActionButton.vue";
 
 const viewMode = inject('viewMode');
-const isUkioForm = inject('isUkioForm', ref(false));
-const {isCreator} = inject('directories', { isCreator: false })
 const props = defineProps({
     modelValue: {
         type: Array,
@@ -23,7 +21,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
-// Состояние модалки и редактируемой строки
 const isModalOpen = ref(false);
 const editingIndex = ref(null);
 const formEntries = ref({});
@@ -73,12 +70,6 @@ const disabled = computed(() => {
         return true;
     }
     if (props.options?.length === 1) {
-        return true;
-    }
-    if (isUkioForm.value && !isCreator) {
-        if (props.allowEditIfNotCreator) {
-            return false;
-        }
         return true;
     }
     return false;

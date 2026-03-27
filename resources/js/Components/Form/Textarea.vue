@@ -5,8 +5,6 @@ const model = defineModel({
     type: String,
     required: true,
 });
-const isUkioForm = inject('isUkioForm', ref(false));
-const {isCreator} = inject('directories', { isCreator: false })
 const input = ref(null);
 const props = defineProps(['placeholder', 'readonly', 'allowEditIfNotCreator']);
 
@@ -24,12 +22,6 @@ const disabled = computed(() => {
         return true;
     }
     if (viewMode.value === true) {
-        return true;
-    }
-    if (isUkioForm.value && !isCreator) {
-        if (props.allowEditIfNotCreator) {
-            return false;
-        }
         return true;
     }
 })

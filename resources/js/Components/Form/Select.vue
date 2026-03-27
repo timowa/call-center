@@ -11,8 +11,6 @@ const props = defineProps({
     readonly: Boolean,
     reduce: { type: Function, default: (option) => option.id  },
 });
-const isUkioForm = inject('isUkioForm', ref(false));
-const { isCreator } = inject('directories', { isCreator: false });
 const viewMode = inject('viewMode', ref(false));
 
 const isDisabled = computed(() => {

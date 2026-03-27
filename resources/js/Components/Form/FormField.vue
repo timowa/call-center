@@ -10,9 +10,6 @@ import Table from "@/Components/Form/Table.vue";
 import {usePage} from "@inertiajs/vue3";
 import Datetime from "@/Components/Form/Datetime.vue";
 
-const page = usePage();
-const user = computed(() => page.props.auth.user);
-const {isCreator} = inject('directories')
 const props = defineProps({
     type: {
         type: String,

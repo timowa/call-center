@@ -2,8 +2,6 @@
 import {computed, inject, ref} from 'vue';
 
 const emit = defineEmits(['update:checked']);
-const isUkioForm = inject('isUkioForm', ref(false));
-const {isCreator} = inject('directories', { isCreator: false })
 const props = defineProps({
     checked: {
         type: [Array, Boolean],
@@ -12,8 +10,7 @@ const props = defineProps({
     value: {
         default: null,
     },
-    disabled: Boolean,
-    allowEditIfNotCreator: Boolean
+    disabled: Boolean
 });
 
 const proxyChecked = computed({
@@ -32,12 +29,6 @@ const disabled = computed(() => {
         return true;
     }
     if (viewMode.value === true) {
-        return true;
-    }
-    if (isUkioForm.value && !isCreator) {
-        if (props.allowEditIfNotCreator) {
-            return false;
-        }
         return true;
     }
 })
