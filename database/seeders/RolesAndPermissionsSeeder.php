@@ -17,19 +17,9 @@ class RolesAndPermissionsSeeder extends Seeder
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
         $permissions = [
-            'incidents.create',
-            'incidents.view.all-area',
-            'incidents.view.own-area',
-            'incidents.edit.all-fields',
-            'incidents.edit.description-only',
-            'incidents.view.any-call_type',
-            'incidents.view.own-call_type',
-            'incidents.can-edit-own-ukio',
-            'incidents.can-edit-all-ukio',
-            'tabs.01.edit', 'tabs.01.view',
-            'tabs.04.edit', 'tabs.04.view',
-            'tabs.jkh.edit', 'tabs.jkh.view',
-            'tabs.all.view',
+            'ukio.create', 'ukio.view', 'ukio.edit', 'ukio.edit-description',
+            '01.create', '01.view', '01.edit',
+            'edds.create', 'edds.view', 'edds.edit'
         ];
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
@@ -37,27 +27,21 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $cov = Role::firstOrCreate(['name' => 'cov_112']);
         $cov->givePermissionTo([
-            'incidents.create', 'incidents.view.all-area',
-            'incidents.edit.all-fields',
-            'incidents.view.any-call_type',
-            'incidents.can-edit-all-ukio',
-            'tabs.all.view',
+            'ukio.create', 'ukio.view', 'ukio.edit', 'ukio.edit-description',
+            '01.create', '01.view',
+            'edds.create', 'edds.view',
         ]);
 
         $op01 = Role::firstOrCreate(['name' => 'op_01']);
         $op01->givePermissionTo([
-            'incidents.create', 'incidents.view.own-area', 'incidents.view.own-call_type',
-            'incidents.edit.description-only',
-            'incidents.can-edit-own-ukio',
-            'tabs.01.edit', 'tabs.01.view',
+            'ukio.create', 'ukio.view', 'ukio.edit-description',
+            '01.create', '01.view', '01.edit',
         ]);
 
         $edds = Role::firstOrCreate(['name' => 'edds']);
         $edds->givePermissionTo([
-            'incidents.create', 'incidents.view.own-area', 'incidents.view.own-call_type',
-            'incidents.edit.all-fields',
-            'incidents.can-edit-own-ukio',
-            'tabs.all.view', 'tabs.jkh.edit'
+            'ukio.create', 'ukio.view', 'ukio.edit-description',
+            'edds.create', 'edds.view'
         ]);
     }
 }

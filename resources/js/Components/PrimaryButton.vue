@@ -5,6 +5,9 @@ const props = defineProps({
 });
 const viewMode = inject('viewMode', ref(false));
 const disabled = computed(() => {
+    if (props.disabled === false) {
+        return false;
+    }
     if (props.disabled === true) {
         return true;
     }

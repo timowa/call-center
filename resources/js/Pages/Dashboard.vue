@@ -13,6 +13,8 @@ import LinkButton from "@/Components/LinkButton.vue";
 import ActiveFiltersRow from "@/Components/ActiveFiltersRow.vue";
 import FilterButton from "@/Components/FilterButton.vue";
 import ModeChanger from "@/Pages/Dashboard/Incidents/Partials/ModeChanger.vue";
+import FilterModal from "@/Pages/Dashboard/Incidents/Partials/FilterModal.vue";
+import IncidentsTable from "@/Pages/Dashboard/Incidents/Partials/IncidentsTable.vue";
 const props = defineProps(['incidents']);
 provide('incidents', props.incidents);
 const tabs = {
@@ -27,6 +29,7 @@ const tabs = {
     }
 };
 const selectedIncident = ref(null);
+
 provide('selectedIncident', {
     data: selectedIncident,
     setSelected: (val) => {
@@ -40,6 +43,7 @@ const currentTab = ref('incidents')
 <template>
     <Head title="Dashboard" />
     <AuthenticatedLayout>
+
         <template #top-content>
             <div class="flex gap-6">
                 <TabPageButton
@@ -78,13 +82,13 @@ const currentTab = ref('incidents')
                 </div>
             </div>
             <ActiveFiltersRow/>
+        </template>
+        <template #main-tabs>
             <ModeChanger/>
-
         </template>
 
-        <keep-alive>
-            <component :is="tabs[currentTab].template" v-bind="$attrs"/>
-        </keep-alive>
+        <IncidentsTable/>
+        <FilterModal :show="isFilterOpen" @close="isFilterOpen = false"/>
 
         <template #right-panel>
             <IncidentPreview></IncidentPreview>

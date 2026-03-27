@@ -15,33 +15,29 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import Block from "@/Components/Block.vue";
 
 const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes', 'isCreator', 'fireReportData']);
-const viewMode = ref(false);
-const conditions = inject('conditions');
+const viewMode = ref(true);
 const page = usePage();
 const user = computed(() => page.props.auth.user);
-const canSeeAllAreas = computed(() => {
-    return user.value.permissions.includes('incidents.view.all-area');
+const isCov = computed(() => {
+    return user.value.roles.includes('cov_112');
 });
-const canSeeAllCallTypes = computed(() => {
-    return user.value.permissions.includes('incidents.view.all-call_type')
-})
 
 const filteredAreas = computed(() => {
-    if (canSeeAllAreas.value || !user.value.area_id) {
+    if (isCov.value ) {
         return props.areas;
     }
     return props.areas.filter(area => area.id === user.value.area_id);
 });
 
 const filteredDistricts = computed(() => {
-    if (canSeeAllAreas.value || !user.value.area_id) {
+    if (isCov.value) {
         return props.districts;
     }
     return props.districts.filter(district => district.area_id === user.value.area_id);
 });
 
 const filteredCallTypes = computed(() => {
-    if (canSeeAllCallTypes.value || !user.value.call_type_id) {
+    if (isCov.value) {
         return props.callTypes
     }
     return props.callTypes.filter(callType => callType.id === user.value.call_type_id)
@@ -223,45 +219,41 @@ onUnmounted(() => {
 <template>
     <Head title="Dashboard" />
     <AuthenticatedLayout>
-        <template #top-content>
-            <div class="flex gap-6">
-                <div class="w-4/5">
-                    <TabsHeader>
-                        <TabHeaderButton
-                            v-for="(tab, id) in tabs"
-                            v-show="tab.show"
-                            :active="currentTab === id"
-                            @click="currentTab = id"
-                        >
-                            <div class="flex items-center gap-2">
-                                <div v-if="tab.condition" :class="['w-3 h-3 rounded-sm', tab.condition.color]"></div>
-                                {{tab.title}}
-                            </div>
-                        </TabHeaderButton>
-                    </TabsHeader>
-                </div>
-                <div class="w-1/5">
-                    <TabsHeader>
-                        <TabHeaderButton
-                            v-for="(tab, id) in rightTabs"
-                            :active="currentRightTab === id"
-                            @click="currentRightTab = id"
-                        >
-                            <div class="flex items-center gap-2">
-                                {{tab.title}}
-                            </div>
-                        </TabHeaderButton>
-                    </TabsHeader>
-                </div>
-            </div>
-
+        <template #main-tabs>
+            <TabsHeader>
+                <TabHeaderButton
+                    v-for="(tab, id) in tabs"
+                    v-show="tab.show"
+                    :active="currentTab === id"
+                    @click="currentTab = id"
+                >
+                    <div class="flex items-center gap-2">
+                        <div v-if="tab.condition" :class="['w-3 h-3 rounded-sm', tab.condition.color]"></div>
+                        {{tab.title}}
+                    </div>
+                </TabHeaderButton>
+            </TabsHeader>
         </template>
+        <template #right-panel-tabs>
+            <TabsHeader>
+                <TabHeaderButton
+                    v-for="(tab, id) in rightTabs"
+                    :active="currentRightTab === id"
+                    @click="currentRightTab = id"
+                >
+                    <div class="flex items-center gap-2">
+                        {{tab.title}}
+                    </div>
+                </TabHeaderButton>
+            </TabsHeader>
+        </template>
+
         <form @submit.prevent="submit">
             <keep-alive>
                 <component :is="tabs[currentTab].template" :form="form"/>
             </keep-alive>
             <div class="text-right mt-6">
-                <PrimaryButton v-if="viewMode === true" @click="viewMode = false" type="button">Редактировать</PrimaryButton>
+                <PrimaryButton v-if="viewMode === true" @click="viewMode = false" type="button" :disabled="false">Редактировать</PrimaryButton>
                 <div v-if="viewMode !== true" class="flex justify-end gap-2">
                     <PrimaryButton :disabled="form.processing" @click="form.call_type = 2; form.condition = 5">Детская шалость</PrimaryButton>
                     <PrimaryButton :disabled="form.processing" @click="form.call_type = 1; form.condition = 5">Ложный</PrimaryButton>

@@ -96,7 +96,7 @@ watch(
         if (flash && flash.message) {
             new Noty({
                 text: flash.message,
-                type: flash.type || 'info', // success, error, warning, info
+                type: flash.type || 'info',
                 timeout: 3000,
                 layout: 'topRight',
                 theme: 'metroui'
@@ -107,12 +107,11 @@ watch(
 );
 watch(() => page.props.errors, (errors) => {
     if (Object.keys(errors).length > 0) {
-        // Проходимся по всем ошибкам и выводим каждую в отдельном Noty
         Object.values(errors).forEach(error => {
             new Noty({
                 text: error,
                 type: 'error',
-                timeout: 5000, // Ошибки лучше показывать дольше
+                timeout: 5000,
                 layout: 'topRight',
                 theme: 'metroui'
             }).show();
@@ -122,29 +121,42 @@ watch(() => page.props.errors, (errors) => {
 </script>
 
 <template>
-    <div>
-        <div class="min-h-screen bg-grey-100 flex flex-col">
+    <div class="min-h-screen bg-grey-100 flex flex-col h-screen overflow-hidden">
+        <Header />
 
-            <Header></Header>
-            <div class="flex flex-1 overflow-hidden p-2 bg-grey-100 gap-3">
-                <Aside></Aside>
-                <main class="w-full bg-grey-200 border-gray-300 border-2 rounded-md p-2 flex flex-col">
-                    <div class="flex flex-col gap-3">
-                        <slot v-if="$slots['top-content']" name="top-content"></slot>
-                    </div>
-                    <div class="flex h-full gap-6">
-                        <div class="w-4/5">
-                            <slot />
+        <div class="flex flex-1 overflow-hidden p-2 gap-3">
+            <Aside />
 
+            <main class="flex-1 bg-grey-200 border-gray-300 border-2 rounded-md p-3 flex flex-col overflow-hidden">
+
+                <div v-if="$slots['top-content']" class="flex flex-col gap-3 flex-shrink-0">
+                    <slot name="top-content" />
+                </div>
+
+                <div class="grid grid-rows-[auto_1fr] flex-1 overflow-hidden gap-x-6"
+                     :class="[ $slots['right-panel'] ? 'grid-cols-[1fr_384px]' : 'grid-cols-1' ]">
+
+                    <template v-if="$slots['main-tabs'] || $slots['right-panel-tabs']">
+                        <div class=" min-h-[42px] flex items-end">
+                            <slot name="main-tabs" />
                         </div>
-                        <aside class="w-1/5" v-if="$slots['right-panel']">
-                            <slot name="right-panel"  />
-                        </aside>
+
+                        <div v-if="$slots['right-panel']"
+                             class="min-h-[42px] flex items-end">
+                            <slot name="right-panel-tabs" />
+                        </div>
+                    </template>
+
+                    <div class="overflow-y-auto border-r border-gray-300 relative custom-scrollbar bg-white/50">
+                        <slot />
                     </div>
 
-                </main>
-            </div>
+                    <aside v-if="$slots['right-panel']" class="overflow-y-auto bg-white relative custom-scrollbar">
+                        <slot name="right-panel" />
+                    </aside>
+                </div>
 
+            </main>
         </div>
     </div>
 </template>

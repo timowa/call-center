@@ -26,7 +26,14 @@ class IncidentsController extends Controller
         $incident = Incident::create([
             'user_id' => Auth::id(),
             'incoming_number' => fake()->numerify('7##########'),
+            'condition' => 1
         ]);
+        if (Auth::user()->hasRole('op_01')) {
+            FireReport::create([
+                'incident_id' => $incident->id,
+                'condition' => 1
+            ]);
+        }
         return redirect()->route('incidents.edit', ['id' => $incident->id]);
     }
 

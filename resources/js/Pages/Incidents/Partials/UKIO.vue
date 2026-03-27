@@ -167,8 +167,7 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
             </div>
             <FormField v-model="form.number_of_victims" label="Пострадавших" :text-align="'right'"/>
             <FormField v-model="form.emergency_type_id" label="Тип ЧС" type="select"  :text-align="'right'"/>
-            <FormField label="Описание" :allow-edit-if-not-creator="true" v-model="form.description" :col-span="6" :grid-col="6" type="textarea"
-                       :allow-edit-elses="true"/>
+            <FormField label="Описание" v-model="form.description" :col-span="6" :grid-col="6" type="textarea" />
 
         </FormGroup>
         <FormGroup title="Информация о заявителе" :cols="6">

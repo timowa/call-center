@@ -47,7 +47,7 @@ const tableColumns = ref([
                 return i.condition;
             }
             if (user.value.roles.includes('op_01')) {
-                return i.fireReport.condition
+                return i.fireReport?.condition
             }
         }, title: 'Состояние', visible: true},
     {data: 'call_type', title: 'Тип вызова', visible: true},
@@ -75,7 +75,10 @@ const tableOptions = ref({
     order: [[0, 'desc']],
     searchPanes: {
         controls: false
-    }
+    },
+    scrollCollapse: true,
+    fixedHeader: true,
+    info: false
 });
 
 let dt;
@@ -106,8 +109,8 @@ onMounted(function () {
 </script>
 
 <template>
-    <Block class="col-span-3">
-        <div class="flex gap-2">
+    <Block class="h-full flex flex-col overflow-hidden">
+        <div class="flex gap-2 flex-shrink-0">
             <button
                 v-for="button in filterRowsButtons"
                 v-text="button.title"
@@ -115,13 +118,13 @@ onMounted(function () {
                 class="px-4 py-4 text-sm"
             ></button>
         </div>
-        <div class="overflow-auto h-full px-2">
+        <div class="flex-1 overflow-auto px-2 relative">
             <DataTable
                 ref="table"
                 :options="tableOptions"
                 :data="incidents"
                 :columns="tableColumns"
-                class="border-collapse border border-solid border-grey-300">
+                class="border-collapse border border-solid border-grey-300 w-full h-full">
                 <template #column-4="props">
                     <div class="flex items-center gap-2">
                         <div :class="['w-3 h-3 rounded-sm', getConditionColor(props.cellData)]"></div>
@@ -135,6 +138,11 @@ onMounted(function () {
 </template>
 
 <style scoped>
+:deep(.border-collapse) thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
 :deep(.border-collapse) th,
 :deep(.border-collapse) td {
     padding: 5px 12px;
@@ -163,5 +171,20 @@ onMounted(function () {
 :deep(.border-collapse) th.dt-ordering-desc,
 :deep(.border-collapse) th.dt-ordering-asc {
     box-shadow: inset 0 0 10px theme('colors.grey-220');
+}
+:deep(.dataTables_wrapper) {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+:deep(.dataTable) {
+    width: 100% !important;
+    margin-top: 0 !important;
+}
+
+
+:deep(.dataTable) {
+    border-spacing: 0;
 }
 </style>

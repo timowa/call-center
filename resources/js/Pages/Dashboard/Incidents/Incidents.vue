@@ -10,7 +10,7 @@ const isColsOpen = ref(false);
 
 <template>
     <div class="w-full">
-        <IncidentsTable :incident="selectedIncident"/>
+        <IncidentsTable/>
         <FilterModal :show="isFilterOpen" @close="isFilterOpen = false"/>
     </div>
 
