@@ -1,9 +1,9 @@
 
 <script setup>
-import {provide, ref} from "vue";
+import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import IncidentPreview from "@/Pages/Dashboard/Incidents/Partials/IncidentPreview.vue";
 import TabPageButton from "@/Components/TabPageButton.vue";
-import {Head, router} from "@inertiajs/vue3";
+import {Head, router, useForm, usePage} from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import LinkButton from "@/Components/LinkButton.vue";
 import ActiveFiltersRow from "@/Components/ActiveFiltersRow.vue";
@@ -12,11 +12,13 @@ import ModeChanger from "@/Pages/Dashboard/Incidents/Partials/ModeChanger.vue";
 import FilterModal from "@/Pages/Dashboard/Incidents/Partials/FilterModal.vue";
 import IncidentsTable from "@/Pages/Dashboard/Incidents/Partials/IncidentsTable.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
+import ActiveFilterButton from "@/Components/ActiveFilterButton.vue";
+import {getConditionLabel} from "@/Utils/conditions.js";
 const props = defineProps(['incidents']);
-provide('incidents', props.incidents);
+provide('incidents', computed(() => props.incidents));
 
 const selectedIncident = ref(null);
-
+const page = usePage();
 provide('selectedIncident', {
     data: selectedIncident,
     setSelected: (val) => {
@@ -31,7 +33,6 @@ const showAlarmOverlay = ref(false);
 const audio = ref(null);
 
 const activateAlarm = () => {
-    console.log(1)
     showAlarmOverlay.value = true;
 
     if (!audio.value) {
@@ -51,6 +52,128 @@ const acceptCall = () => {
 
     router.post(route('incidents.create-from-call'), );
 };
+
+const isFilterOpen = ref(false);
+const savedFilters = JSON.parse(localStorage.getItem('filter')) || {};
+const filterForm = useForm({
+    ...{
+        service_id: null,
+        call_type_id: null,
+        is_training: false,
+        is_important: false,
+        emergency_threat: false,
+        period_day: false,
+        period_custom: false,
+        period: [],
+        conditions: [],
+        area_id: null,
+        district_id: null,
+        source_id: null,
+        creator: null,
+        incoming_number: null,
+        applicant_lastname: null,
+        applicant_firstname: null,
+        applicant_surname: null,
+        applicant_phone: null,
+    },
+    ...savedFilters
+
+});
+const getFilterLabel = (key) => {
+    const labels = {
+        service_id: 'Служба',
+        call_type_id: 'Тип вызова',
+        is_training: 'Учебная',
+        is_important: 'Важная',
+        emergency_threat: 'Экстримальный',
+        period_day: 'Период: 24 часа',
+        period_custom: 'Указанный период',
+        conditions: 'Сосотяния',
+        area_id: 'Район',
+        district_id: 'Округ',
+        source_id: 'Источник',
+        creator: 'Создатель',
+        incoming_number: 'Номер звонящего',
+        applicant_lastname: 'Фамилия заявителя',
+        applicant_firstname: 'Имя заявителя',
+        applicant_surname: 'Отчество заявителя',
+        applicant_phone: 'Номер телефона заявителя',
+    };
+    return labels[key] || key;
+};
+const formatFilterValue = (key) => {
+    const value = filterForm[key];
+
+    if (Array.isArray(value)) {
+        if (key === 'conditions') {
+            return Object.values(value).map((condition) => {
+                return getConditionLabel(condition)
+            }).join(', ')
+        }
+    };
+    if (typeof value === 'boolean') return 'Да';
+    return value;
+};
+const clearSingleFilter = (key) => {
+    filterForm[key] = Array.isArray(filterForm[key]) ? [] : null;
+    if (typeof filterForm[key] === 'boolean') filterForm[key] = false;
+    applyFilters();
+};
+const applyFilters = () => {
+    localStorage.setItem('filter', JSON.stringify(filterForm.data()));
+    updateTable();
+};
+
+const updateTable = () => {
+    if (isFilterOpen.value === true) {
+        return;
+    }
+    filterForm.post(route('incidents.dashboard'), {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['incidents'],
+        onSuccess: () => {
+            isFilterOpen.value = false;
+        }
+    });
+}
+
+let interval = null;
+
+onUnmounted(() => {
+    clearInterval(interval);
+});
+
+onMounted(() => {
+    const saved = localStorage.getItem('filter');
+    if (saved) {
+        filterForm.defaults(JSON.parse(saved));
+        filterForm.reset();
+    }
+    updateTable();
+    interval = setInterval(updateTable, 5000);
+});
+
+const activeFilters = computed(() => {
+    const data = filterForm.data();
+
+    return Object.keys(data).reduce((acc, key) => {
+        const value = data[key];
+        const isFilled =
+            value !== null &&
+            value !== undefined &&
+            value !== '' &&
+            !(Array.isArray(value) && value.length === 0) &&
+            !(typeof value === 'boolean' && value === false);
+
+        if (isFilled) {
+            acc[key] = value;
+        }
+
+        return acc;
+    }, {});
+});
+
 </script>
 
 <template>
@@ -95,14 +218,22 @@ const acceptCall = () => {
                     />
                 </div>
             </div>
-            <ActiveFiltersRow/>
+            <div class="py-4 flex gap-4">
+                <ActiveFilterButton
+                    v-for="(value, key) in activeFilters"
+                    :key="key"
+                    @remove="clearSingleFilter(key)"
+                >
+                    {{getFilterLabel(key)}}: {{formatFilterValue(key)}}
+                </ActiveFilterButton>
+            </div>
         </template>
         <template #main-tabs>
             <ModeChanger/>
         </template>
 
         <IncidentsTable/>
-        <FilterModal :show="isFilterOpen" @close="isFilterOpen = false"/>
+        <FilterModal :show="isFilterOpen" @close="isFilterOpen = false" :form="filterForm" @submit="applyFilters" @reset="applyFilters"/>
 
         <template #right-panel>
             <IncidentPreview></IncidentPreview>

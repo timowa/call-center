@@ -87,7 +87,7 @@ const display = computed(()=>{
 <template>
     <div class="align-center text-13 " :class="display">
         <InputLabel v-bind="$attrs" v-if="$attrs.label && !isCheckbox && !isTable"/>
-        <component v-bind="$attrs" :is="inputs[type]" class="flex-shrink-0" :class="inputClasses"></component>
+        <component v-bind="$attrs" :is="inputs[type]"  class="flex-shrink-0" :class="inputClasses"></component>
         <InputLabel v-bind="$attrs" v-if="$attrs.label && isCheckbox && !isTable"/>
 
     </div>

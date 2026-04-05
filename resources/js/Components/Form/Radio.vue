@@ -24,7 +24,7 @@ const proxyChecked = computed({
     },
 });
 const bgColor = props.disabled ? 'bg-grey-200' : 'bg-white'
-const viewMode = inject('viewMode');
+const viewMode = inject('viewMode', false);
 const disabled = computed(() => {
     if (props.disabled === true) {
         return true;

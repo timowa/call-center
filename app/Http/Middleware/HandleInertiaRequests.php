@@ -3,6 +3,12 @@
 namespace App\Http\Middleware;
 
 use App\Condition;
+use App\Models\Area;
+use App\Models\CallType;
+use App\Models\District;
+use App\Models\EmergencyType;
+use App\Models\IncidentType;
+use App\Models\Service;
 use App\SourceType;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -52,7 +58,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'dictionaries' => [
                 'conditions' => collect(Condition::cases())->mapWithKeys(fn($s) => [
-                    $s->value => ['name' => $s->label(), 'color' => $s->color()],
+                    $s->value => ['name' => $s->label(), 'color' => $s->color(), 'id' => $s->value],
                 ]),
                 'sources' => collect(SourceType::cases())->map(function ($item) {
                     return ['id' => $item->value, 'name' => $item->label()];
@@ -61,6 +67,14 @@ class HandleInertiaRequests extends Middleware
             ],
             'constants' => [
                 'sources' => collect(SourceType::cases())->pluck('value', 'name')->toArray(),
+            ],
+            'directories' => [
+                'services'       => Service::all(),
+                'callTypes'      => CallType::all(),
+                'incidentTypes'  => IncidentType::all(),
+                'emergencyTypes' => EmergencyType::all(),
+                'areas'          => Area::all(),
+                'districts'      => District::all(),
             ]
 
         ];

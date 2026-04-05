@@ -6,16 +6,10 @@ use App\Condition;
 use App\Events\IncidentCardViewed;
 use App\Events\IncidentCreated;
 use App\Events\IncidentUpdated;
-use App\Models\Area;
-use App\Models\CallType;
 use App\Models\CauseOfTheFire;
 use App\Models\FireReport;
 use App\Models\FireReportType;
-use App\Models\Service;
-use App\Models\District;
-use App\Models\EmergencyType;
 use App\Models\Incident;
-use App\Models\IncidentType;
 use App\Models\UrbanObject;
 use App\Models\UrbanObjectType;
 use App\SourceType;
@@ -76,12 +70,6 @@ class IncidentsController extends Controller
         ];
         return Inertia::render('Incidents/Edit', [
             'incident'       => $incident,
-            'services'       => Service::all(),
-            'callTypes'      => CallType::all(),
-            'incidentTypes'  => IncidentType::all(),
-            'emergencyTypes' => EmergencyType::all(),
-            'areas'          => Area::all(),
-            'districts'      => District::all(),
             'fireReportData' => $fireReportData,
         ]);
     }
@@ -123,24 +111,36 @@ class IncidentsController extends Controller
         ]);
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $incidents = Incident::scopeArea()->select(['id','created_at', 'user_id', 'call_type_id', 'incoming_number', 'district_id','condition'])
+        $query = Incident::scopeArea()->select(['id','created_at', 'user_id', 'call_type_id', 'incoming_number', 'district_id','condition'])
             ->with([
-                'user' => function($query) {
-                    $query->select('id', 'name');
-                    },
-                'callType' => function($query) {
-                    $query->select('id', 'name', 'service_id');
-                    },
-                'district' => function($query) {
-                    $query->select('id', 'name');
-                    },
-                'fireReport' => function($query) {
-                    $query->select('id', 'condition', 'incident_id');
-                    }
-                    ])
-            ->orderBy('created_at', 'desc')
+                'user:id,name',
+                'callType:id,name,service_id',
+                'district:id,name',
+                'fireReport:id,condition,incident_id'
+            ]);
+        $query->when($request->service_id, function ($query, $serviceId) {
+            return $query->where('service_id', $serviceId);
+        });
+        $query->when($request->call_type_id, function ($query, $serviceId) {
+            return $query->where('call_type_id', $serviceId);
+        });
+        $query->when($request->is_training, function ($query, $serviceId) {
+            return $query->where('is_training', $serviceId);
+        });
+        $query->when($request->is_important, function ($query, $serviceId) {
+            return $query->where('is_important', $serviceId);
+        });
+        $query->when($request->emergency_threat, function ($query, $serviceId) {
+            return $query->where('emergency_threat', $serviceId);
+        });
+        $query->when($request->conditions, function ($query, $conditions) {
+            return $query->whereIn('condition', $conditions);
+        });
+
+
+        $incidents = $query->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($incident) {
                 return [

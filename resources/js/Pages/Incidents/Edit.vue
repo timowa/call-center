@@ -15,7 +15,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import Block from "@/Components/Block.vue";
 import {userHasPermissionTo} from "@/Utils/permissions.js";
 
-const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes', 'fireReportData', 'flash']);
+const props = defineProps(['incident', 'fireReportData', 'flash']);
 
 
 
@@ -29,30 +29,30 @@ const isCov = computed(() => {
 
 const filteredAreas = computed(() => {
     if (isCov.value ) {
-        return props.areas;
+        return page.props.directories.areas;
     }
-    return props.areas.filter(area => area.id === user.value.area_id);
+    return page.props.directories.areas.filter(area => area.id === user.value.area_id);
 });
 
 const filteredDistricts = computed(() => {
     if (isCov.value) {
-        return props.districts;
+        return page.props.directories.districts;
     }
-    return props.districts.filter(district => district.area_id === user.value.area_id);
+    return page.props.directories.districts.filter(district => district.area_id === user.value.area_id);
 });
 
 const filteredCallTypes = computed(() => {
     if (isCov.value) {
-        return props.callTypes
+        return page.props.directories.callTypes
     }
-    return props.callTypes.filter(callType => callType.id === user.value.call_type_id)
+    return page.props.directories.callTypes.filter(callType => callType.id === user.value.call_type_id)
 })
 
 provide('viewMode', viewMode)
 provide('directories', {
     callTypes: filteredCallTypes.value,
-    incidentTypes: props.incidentTypes,
-    services: props.services,
+    incidentTypes: page.props.directories.incidentTypes,
+    services: page.props.directories.services,
     sources: page.props.dictionaries.sources,
     areas: filteredAreas.value,
     districts: filteredDistricts.value
