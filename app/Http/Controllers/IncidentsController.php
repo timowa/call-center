@@ -12,6 +12,7 @@ use App\Models\District;
 use App\Models\EmergencyType;
 use App\Models\Incident;
 use App\Models\IncidentType;
+use App\Models\Source;
 use App\Models\UrbanObject;
 use App\Models\UrbanObjectType;
 use Illuminate\Http\Request;
@@ -26,7 +27,8 @@ class IncidentsController extends Controller
         $incident = Incident::create([
             'user_id' => Auth::id(),
             'incoming_number' => fake()->numerify('7##########'),
-            'condition' => 1
+            'condition' => 1,
+            'source_id' => 1
         ]);
         if (Auth::user()->hasRole('op_01')) {
             FireReport::create([
@@ -34,20 +36,10 @@ class IncidentsController extends Controller
                 'condition' => 1
             ]);
         }
-        return redirect()->route('incidents.edit', ['id' => $incident->id]);
+        return redirect()->route('incidents.edit', ['id' => $incident->id])->with('isNewIncident', true);
     }
 
     public function edit(int $id)
-    {
-        return $this->renderIncidentForm($id, false);
-    }
-
-    public function view(int $id)
-    {
-        return $this->renderIncidentForm($id, true);
-    }
-
-    private function renderIncidentForm(int $id, bool $viewMode)
     {
         $incident = Incident::findOrFail($id);
         $incident->loadMissing(['user', 'type', 'services', 'callType', 'fireReport']);
@@ -55,6 +47,12 @@ class IncidentsController extends Controller
             'date' => $incident->created_at->format('Y-m-d'),
             'time' => $incident->created_at->format('H:i:s'),
         ];
+
+        if (Auth::user()->hasRole('op_01')) {
+            $incident->fireReport->update([
+                'condition' => 3
+            ]);
+        }
 
         $incident->processingTime = 129;
 
@@ -70,15 +68,14 @@ class IncidentsController extends Controller
         ];
         return Inertia::render('Incidents/Edit', [
             'incident'       => $incident,
-            'viewMode'       => $viewMode,
             'services'       => Service::all(),
             'callTypes'      => CallType::all(),
             'incidentTypes'  => IncidentType::all(),
             'emergencyTypes' => EmergencyType::all(),
             'areas'          => Area::all(),
             'districts'      => District::all(),
+            'sources'        => Source::all(),
             'fireReportData' => $fireReportData,
-            'isCreator' => $incident->user->id === Auth::id() || Auth::user()->hasRole('cov_112'),
         ]);
     }
 
@@ -91,6 +88,12 @@ class IncidentsController extends Controller
                 'call_type.required' => 'Пожалуйста, выберите основную службу.'
             ]);
         $incident = Incident::findOrFail($id);
+
+        if (Auth::user()->hasRole('op_01')) {
+            $incident->fireReport->update([
+                'condition' => 4
+            ]);
+        }
         $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'area_id', 'processing_time', 'coordinates', 'fireReport']);
         $data['call_type_id'] = $request->call_type ?: null;
         $data['incident_type_id'] = $request->incident_type ?: null;

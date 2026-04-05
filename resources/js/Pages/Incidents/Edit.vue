@@ -15,13 +15,17 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import Block from "@/Components/Block.vue";
 import {userHasPermissionTo} from "@/Utils/permissions.js";
 
-const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes', 'isCreator', 'fireReportData']);
-const viewMode = ref(true);
+const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes', 'fireReportData', 'sources', 'flash']);
+
+
+
+const viewMode = ref(props.flash?.isNewIncident !== true);
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 const isCov = computed(() => {
     return user.value.roles.includes('cov_112');
 });
+
 
 const filteredAreas = computed(() => {
     if (isCov.value ) {
@@ -49,9 +53,9 @@ provide('directories', {
     callTypes: filteredCallTypes.value,
     incidentTypes: props.incidentTypes,
     services: props.services,
+    sources: props.sources,
     areas: filteredAreas.value,
-    districts: filteredDistricts.value,
-    isCreator: props.isCreator,
+    districts: filteredDistricts.value
 })
 provide('fireReportDirectories', props.fireReportData)
 const defaultCoordinates = {latitude: 53.722356, longitude: 91.443699}
@@ -75,7 +79,7 @@ const form = useForm({
     call_type: user.value.call_type_id ?? (props.incident.call_type ? props.incident.call_type?.id : null),
     services: props.incident.services,
     incident_type: props.incident.type ? props.incident.type.id : null,
-    source: props.incident.source,
+    source_id: props.incident.source_id,
     is_training: props.incident.is_training,
     is_important: props.incident.is_important,
     area_id: user.value.area_id ?? props.incident?.area_id ?? null,
@@ -254,9 +258,12 @@ onUnmounted(() => {
             </keep-alive>
             <div class="text-right mt-6">
                 <PrimaryButton v-if="viewMode === true" @click="viewMode = false" type="button" :disabled="false">Редактировать</PrimaryButton>
-                <div v-if="viewMode !== true" class="flex justify-end gap-2">
-                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 2; form.condition = 5">Детская шалость</PrimaryButton>
+                <PrimaryButton v-if="viewMode !== true && form.source_id === 1" @click="viewMode = false" :disabled="false">Сохранить
+                </PrimaryButton>
+                <div v-if="viewMode !== true && form.condition === 1 && form.source_id === 2" class="flex justify-end gap-2">
+                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 3; form.condition = 5">Справочный</PrimaryButton>
                     <PrimaryButton :disabled="form.processing" @click="form.call_type = 1; form.condition = 5">Ложный</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 2; form.condition = 5">Детская шалость</PrimaryButton>
                     <PrimaryButton :disabled="form.processing || form.call_type === 0" @click="form.condition = 2">Передать без вызова</PrimaryButton>
                     <PrimaryButton :disabled="form.processing || form.call_type === 0" @click="form.condition = 2">Переать с вызовом</PrimaryButton>
                 </div>
