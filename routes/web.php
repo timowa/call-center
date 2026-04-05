@@ -20,7 +20,8 @@ Route::middleware('auth')->group(function () {
 
 
     Route::get('/incidents/dashboard', [IncidentsController::class, 'dashboard'])->name('incidents.dashboard');
-    Route::get('/incidents/create', [IncidentsController::class, 'create'])->name('incidents.create');
+    Route::get('/incidents/create-instant', [IncidentsController::class, 'createInstant'])->name('incidents.create-instant');
+    Route::post('/incidents/create-from-call', [IncidentsController::class, 'createFromCall'])->name('incidents.create-from-call');
     Route::get('/incidents/edit/{id}', [IncidentsController::class, 'edit'])->name('incidents.edit');
     Route::put('/incidents/update/{id}', [IncidentsController::class, 'update'])->name('incidents.update');
 

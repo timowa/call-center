@@ -8,7 +8,7 @@ const defaultConditions = {
     3: { color: 'bg-indigo-500', name: 'Реагирование' },
     4: { color: 'bg-yellow-500', name: 'В работе' },
     5: { color: 'bg-grey-370', name: 'Отработана' },
-    6: { color: 'bg-grey-370', name: 'Просмотр' },
+    6: { color: 'bg-blue-400', name: 'Просмотр' },
 };
 
 const getDictionary = () => {

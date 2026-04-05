@@ -41,6 +41,7 @@ export default {
         'bg-indigo-500',
         'bg-yellow-500',
         'bg-grey-370',
+        'bg-blue-400',
     ],
     plugins: [forms],
 };

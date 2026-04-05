@@ -3,7 +3,7 @@
 import {provide, ref} from "vue";
 import IncidentPreview from "@/Pages/Dashboard/Incidents/Partials/IncidentPreview.vue";
 import TabPageButton from "@/Components/TabPageButton.vue";
-import {Head} from "@inertiajs/vue3";
+import {Head, router} from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import LinkButton from "@/Components/LinkButton.vue";
 import ActiveFiltersRow from "@/Components/ActiveFiltersRow.vue";
@@ -11,6 +11,7 @@ import FilterButton from "@/Components/FilterButton.vue";
 import ModeChanger from "@/Pages/Dashboard/Incidents/Partials/ModeChanger.vue";
 import FilterModal from "@/Pages/Dashboard/Incidents/Partials/FilterModal.vue";
 import IncidentsTable from "@/Pages/Dashboard/Incidents/Partials/IncidentsTable.vue";
+import SecondaryButton from "@/Components/SecondaryButton.vue";
 const props = defineProps(['incidents']);
 provide('incidents', props.incidents);
 
@@ -24,6 +25,32 @@ provide('selectedIncident', {
 });
 
 const currentTab = ref('incidents')
+
+
+const showAlarmOverlay = ref(false);
+const audio = ref(null);
+
+const activateAlarm = () => {
+    console.log(1)
+    showAlarmOverlay.value = true;
+
+    if (!audio.value) {
+        audio.value = new Audio('/alert.mp3');
+        audio.value.loop = true;
+    }
+    audio.value.play().catch(e => console.log("Нужно взаимодействие с юзером для звука"));
+};
+
+const acceptCall = () => {
+    if (audio.value) {
+        audio.value.pause();
+        audio.value.currentTime = 0;
+    }
+
+    showAlarmOverlay.value = false;
+
+    router.post(route('incidents.create-from-call'), );
+};
 </script>
 
 <template>
@@ -44,7 +71,7 @@ const currentTab = ref('incidents')
                 <div class="flex gap-12">
                     <span class="text-lg">Карточки происшествий</span>
                     <LinkButton
-                        :href="route('incidents.create')"
+                        :href="route('incidents.create-instant')"
                     >
                     <span class="mr-3">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -53,6 +80,7 @@ const currentTab = ref('incidents')
                         </span>
                         Создать карточку
                     </LinkButton>
+                    <SecondaryButton @click="activateAlarm()" >Принять вызов</SecondaryButton>
                 </div>
                 <div class="flex gap-6">
                     <FilterButton
@@ -79,6 +107,36 @@ const currentTab = ref('incidents')
         <template #right-panel>
             <IncidentPreview></IncidentPreview>
         </template>
+
+        <Teleport to="body">
+            <Transition name="fade">
+                <div v-if="showAlarmOverlay"
+                     class="fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-center backdrop-blur-sm"
+                >
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-red-600 rounded-full animate-ping opacity-25"></div>
+
+                        <button
+                            @click="acceptCall"
+                            class="relative w-64 h-64 bg-red-600 hover:bg-red-500 text-white rounded-full
+                               shadow-[0_0_50px_rgba(220,38,38,0.5)] border-8 border-white/20
+                               flex items-center justify-center text-3xl font-black uppercase tracking-tighter
+                               transition-transform active:scale-95"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                 class="size-24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+                            </svg>
+
+                        </button>
+                    </div>
+
+                    <p class="mt-12 text-white animate-pulse font-mono text-xl tracking-widest uppercase">
+                        Принять
+                    </p>
+                </div>
+            </Transition>
+        </Teleport>
 
 </AuthenticatedLayout>
 </template>

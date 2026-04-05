@@ -14,7 +14,7 @@ return new  class extends Migration
         Schema::create('incidents', function (Blueprint $table) {
             $table->id();
             $table->integer('condition')->default(1);
-            $table->foreignId('source_id')->constrained('sources');
+            $table->integer('source_id')->default(1);
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('incident_type_id')->nullable()->constrained('incident_types');
             $table->foreignId('call_type_id')->nullable()->constrained('call_types');

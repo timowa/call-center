@@ -15,7 +15,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import Block from "@/Components/Block.vue";
 import {userHasPermissionTo} from "@/Utils/permissions.js";
 
-const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes', 'fireReportData', 'sources', 'flash']);
+const props = defineProps(['incident', 'incidentTypes', 'services', 'areas', 'districts', 'callTypes', 'fireReportData', 'flash']);
 
 
 
@@ -53,7 +53,7 @@ provide('directories', {
     callTypes: filteredCallTypes.value,
     incidentTypes: props.incidentTypes,
     services: props.services,
-    sources: props.sources,
+    sources: page.props.dictionaries.sources,
     areas: filteredAreas.value,
     districts: filteredDistricts.value
 })
@@ -259,15 +259,15 @@ onUnmounted(() => {
             </keep-alive>
             <div class="text-right mt-6 gap-2 flex justify-end">
                 <PrimaryButton v-if="viewMode === true" @click="viewMode = false" type="button" :disabled="false">Редактировать</PrimaryButton>
-                <PrimaryButton v-if="viewMode !== true && form.source_id === 1" :disabled="false">Сохранить</PrimaryButton>
-                <PrimaryButton v-if="viewMode !== true && form.source_id === 1" :disabled="false" @click="form.action = 'complete'">
+                <PrimaryButton v-if="viewMode !== true && form.source_id === page.props.constants.sources.INSTANT" :disabled="false">Сохранить</PrimaryButton>
+                <PrimaryButton v-if="viewMode !== true && form.source_id === page.props.constants.sources.INSTANT" :disabled="false" @click="form.action = 'complete'">
                     Завершить работу с карточкой</PrimaryButton>
-                <div v-if="viewMode !== true && form.condition === 1 && form.source_id === 2" class="flex justify-end gap-2">
-                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 3; form.condition = 5">Справочный</PrimaryButton>
-                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 1; form.condition = 5">Ложный</PrimaryButton>
-                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 2; form.condition = 5">Детская шалость</PrimaryButton>
-                    <PrimaryButton :disabled="form.processing || form.call_type === 0" @click="form.condition = 2">Передать без вызова</PrimaryButton>
-                    <PrimaryButton :disabled="form.processing || form.call_type === 0" @click="form.condition = 2">Переать с вызовом</PrimaryButton>
+                <div v-if="viewMode !== true && form.source_id === page.props.constants.sources.CALL" class="flex justify-end gap-2">
+                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 3; form.action = 'complete'">Справочный</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 1; form.action = 'complete'">Ложный</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing" @click="form.call_type = 2; form.action = 'complete'">Детская шалость</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing || form.call_type === 0" >Передать без вызова</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing || form.call_type === 0" >Переать с вызовом</PrimaryButton>
                 </div>
             </div>
         </form>

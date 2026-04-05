@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Condition;
+use App\SourceType;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -52,7 +53,14 @@ class HandleInertiaRequests extends Middleware
             'dictionaries' => [
                 'conditions' => collect(Condition::cases())->mapWithKeys(fn($s) => [
                     $s->value => ['name' => $s->label(), 'color' => $s->color()],
-                ])
+                ]),
+                'sources' => collect(SourceType::cases())->map(function ($item) {
+                    return ['id' => $item->value, 'name' => $item->label()];
+                })->toArray(),
+
+            ],
+            'constants' => [
+                'sources' => collect(SourceType::cases())->pluck('value', 'name')->toArray(),
             ]
 
         ];

@@ -16,9 +16,9 @@ use App\Models\District;
 use App\Models\EmergencyType;
 use App\Models\Incident;
 use App\Models\IncidentType;
-use App\Models\Source;
 use App\Models\UrbanObject;
 use App\Models\UrbanObjectType;
+use App\SourceType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -26,12 +26,12 @@ use Inertia\Inertia;
 class IncidentsController extends Controller
 {
 
-    public function create()
+    private function create(SourceType $sourceType)
     {
         $incident = Incident::create([
             'user_id' => Auth::id(),
             'incoming_number' => fake()->numerify('7##########'),
-            'source_id' => 1
+            'source_id' => $sourceType
         ]);
         if (Auth::user()->hasRole('op_01')) {
             FireReport::create([
@@ -40,6 +40,16 @@ class IncidentsController extends Controller
         }
         event(new IncidentCreated($incident));
         return redirect()->route('incidents.edit', ['id' => $incident->id])->with('isNewIncident', true);
+    }
+
+    public function createInstant()
+    {
+        return $this->create(SourceType::INSTANT);
+    }
+
+    public function createFromCall()
+    {
+        return $this->create(SourceType::CALL);
     }
 
     public function edit(int $id)
@@ -72,7 +82,6 @@ class IncidentsController extends Controller
             'emergencyTypes' => EmergencyType::all(),
             'areas'          => Area::all(),
             'districts'      => District::all(),
-            'sources'        => Source::all(),
             'fireReportData' => $fireReportData,
         ]);
     }

@@ -31,7 +31,7 @@ enum Condition: int
             self::RESPONSE => 'bg-indigo-500',
             self::AT_WORK => 'bg-yellow-500',
             self::DONE => 'bg-grey-370',
-            self::WATCHING => 'bg-grey-370'
+            self::WATCHING => 'bg-blue-400'
         };
     }
 

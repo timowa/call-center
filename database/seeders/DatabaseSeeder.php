@@ -11,7 +11,6 @@ use App\Models\Service;
 use App\Models\District;
 use App\Models\EmergencyType;
 use App\Models\IncidentType;
-use App\Models\Source;
 use App\Models\UrbanObject;
 use App\Models\UrbanObjectType;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -27,19 +26,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-
-        $sources = [
-            'Без вызова',
-            'Телефон',
-            'СМС',
-            'Датчики'
-        ];
-
-        foreach ($sources as $source) {
-            Source::create([
-                'name' => $source
-            ]);
-        }
 
         $incidentTypes = [
             'Лица в розыске',
