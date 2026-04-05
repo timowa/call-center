@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Condition;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -48,6 +49,11 @@ class HandleInertiaRequests extends Middleware
                 'type' => fn () => $request->session()->get('type'),
                 'isNewIncident' => fn () => $request->session()->get('isNewIncident')
             ],
+            'dictionaries' => [
+                'conditions' => collect(Condition::cases())->mapWithKeys(fn($s) => [
+                    $s->value => ['name' => $s->label(), 'color' => $s->color()],
+                ])
+            ]
 
         ];
     }

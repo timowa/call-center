@@ -24,8 +24,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/incidents/edit/{id}', [IncidentsController::class, 'edit'])->name('incidents.edit');
     Route::put('/incidents/update/{id}', [IncidentsController::class, 'update'])->name('incidents.update');
 
-    Route::put('/fireReport/set-status-connected/{id}', [FireReportController::class, 'setStatusConnected'])->name('fireReport.set-status-connected');
-
     Route::post('/suggestions/get-address', [SuggestionsController::class, 'addresses'])->name('suggestions.addresses');
     Route::post('/suggestions/get-coordinates', [SuggestionsController::class, 'coordinates'])->name('suggestions.coordinates');
 });

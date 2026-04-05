@@ -47,6 +47,7 @@ return new class extends Migration
             $table->timestamp('localized_at')->nullable();
             $table->timestamp('fire_eliminated_at')->nullable();
             $table->timestamp('elimination_at')->nullable();
+            $table->timestamp('viewed_at')->nullable();
             $table->timestamps();
         });
     }

@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Condition;
+use App\Events\IncidentCardViewed;
+use App\Events\IncidentCreated;
+use App\Events\IncidentUpdated;
 use App\Models\Area;
 use App\Models\CallType;
 use App\Models\CauseOfTheFire;
@@ -27,32 +31,26 @@ class IncidentsController extends Controller
         $incident = Incident::create([
             'user_id' => Auth::id(),
             'incoming_number' => fake()->numerify('7##########'),
-            'condition' => 1,
             'source_id' => 1
         ]);
         if (Auth::user()->hasRole('op_01')) {
             FireReport::create([
                 'incident_id' => $incident->id,
-                'condition' => 1
             ]);
         }
+        event(new IncidentCreated($incident));
         return redirect()->route('incidents.edit', ['id' => $incident->id])->with('isNewIncident', true);
     }
 
     public function edit(int $id)
     {
         $incident = Incident::findOrFail($id);
-        $incident->loadMissing(['user', 'type', 'services', 'callType', 'fireReport']);
+        event(new IncidentCardViewed($incident));
+        $incident->load(['user', 'type', 'services', 'callType', 'fireReport']);
         $incident->dt = [
             'date' => $incident->created_at->format('Y-m-d'),
             'time' => $incident->created_at->format('H:i:s'),
         ];
-
-        if (Auth::user()->hasRole('op_01')) {
-            $incident->fireReport->update([
-                'condition' => 3
-            ]);
-        }
 
         $incident->processingTime = 129;
 
@@ -89,15 +87,16 @@ class IncidentsController extends Controller
             ]);
         $incident = Incident::findOrFail($id);
 
-        if (Auth::user()->hasRole('op_01')) {
-            $incident->fireReport->update([
-                'condition' => 4
-            ]);
-        }
-        $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'area_id', 'processing_time', 'coordinates', 'fireReport']);
+        $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'area_id', 'processing_time', 'coordinates', 'fireReport', 'action']);
         $data['call_type_id'] = $request->call_type ?: null;
         $data['incident_type_id'] = $request->incident_type ?: null;
+
+        if ($request->action === 'complete') {
+            $data['condition'] = Condition::DONE;
+        }
+
         $incident->update($data);
+        event(new IncidentUpdated($incident));
         $incident->services()->syncWithoutDetaching(array_column($request->services, 'id') ?? []);
 
         $fireReportData = $request->fireReport;

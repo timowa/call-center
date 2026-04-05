@@ -35,6 +35,12 @@ export default {
             }
         },
     },
-
+    safelist: [
+        'bg-red-500',
+        'bg-green-500',
+        'bg-indigo-500',
+        'bg-yellow-500',
+        'bg-grey-370',
+    ],
     plugins: [forms],
 };

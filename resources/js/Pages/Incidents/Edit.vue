@@ -153,7 +153,8 @@ const form = useForm({
             }
         },
     },
-    fireReport: getFireReportDefaults(props.incident.fire_report)
+    fireReport: getFireReportDefaults(props.incident.fire_report),
+    action: ''
 });
 const tabs = computed(() => ({
     UKIO: {
@@ -256,10 +257,11 @@ onUnmounted(() => {
             <keep-alive>
                 <component :is="tabs[currentTab].template" :form="form"/>
             </keep-alive>
-            <div class="text-right mt-6">
+            <div class="text-right mt-6 gap-2 flex justify-end">
                 <PrimaryButton v-if="viewMode === true" @click="viewMode = false" type="button" :disabled="false">Редактировать</PrimaryButton>
-                <PrimaryButton v-if="viewMode !== true && form.source_id === 1" @click="viewMode = false" :disabled="false">Сохранить
-                </PrimaryButton>
+                <PrimaryButton v-if="viewMode !== true && form.source_id === 1" :disabled="false">Сохранить</PrimaryButton>
+                <PrimaryButton v-if="viewMode !== true && form.source_id === 1" :disabled="false" @click="form.action = 'complete'">
+                    Завершить работу с карточкой</PrimaryButton>
                 <div v-if="viewMode !== true && form.condition === 1 && form.source_id === 2" class="flex justify-end gap-2">
                     <PrimaryButton :disabled="form.processing" @click="form.call_type = 3; form.condition = 5">Справочный</PrimaryButton>
                     <PrimaryButton :disabled="form.processing" @click="form.call_type = 1; form.condition = 5">Ложный</PrimaryButton>

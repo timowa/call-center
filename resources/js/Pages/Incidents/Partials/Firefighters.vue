@@ -38,10 +38,6 @@ onMounted(function() {
     if (fireReportId === null) {
         return;
     }
-    if (user.value.roles.includes('op_01')) {
-        axios.put(route('fireReport.set-status-connected', fireReportId));
-        return;
-    }
 })
 </script>
 
