@@ -121,8 +121,8 @@ const clearSingleFilter = (key) => {
 };
 const applyFilters = () => {
     localStorage.setItem('filter', JSON.stringify(filterForm.data()));
-    updateTable();
     isFilterOpen.value = false;
+    updateTable();
 };
 
 const updateTable = () => {
@@ -139,6 +139,11 @@ const updateTable = () => {
     });
 }
 
+let interval = null;
+
+onUnmounted(() => {
+    clearInterval(interval);
+});
 
 onMounted(() => {
     const saved = localStorage.getItem('filter');
@@ -147,6 +152,7 @@ onMounted(() => {
         filterForm.reset();
     }
     updateTable();
+    interval = setInterval(updateTable, 5000);
 });
 
 const activeFilters = computed(() => {

@@ -119,7 +119,6 @@ class IncidentsController extends Controller
                 'callType:id,name,service_id',
                 'district:id,name',
                 'fireReport:id,condition,incident_id',
-                'services:id,name'
             ])
             ->when($request->service_id, function ($query, $serviceId) {
                 return $query->whereHas('services', function ($q) use ($serviceId) {
@@ -127,17 +126,9 @@ class IncidentsController extends Controller
                 });
             })
             ->when($request->call_type_id, fn($q, $id) => $q->where('call_type_id', $id))
-            ->when($request->is_training, fn($q, $val) => $q->where('is_training', $val))
-            ->when($request->is_important, fn($q, $val) => $q->where('is_important', $val))
-            ->when($request->emergency_threat, fn($q, $val) => $q->where('emergency_threat', $val))
             ->when($request->conditions, fn($q, $cond) => $q->whereIn('condition', (array)$cond))
-
-            ->orderBy('created_at', 'desc')
-            ->paginate(30)
-            ->withQueryString();
-
-
-        $incidents->getCollection()->transform(function ($incident) {
+            ->orderBy('created_at', 'desc')->get();
+        $incidents->transform(function ($incident) {
             return [
                 'id' => $incident->id,
                 'datetime' => $incident->created_at->toDateTimeString(),
