@@ -25,9 +25,7 @@ const disabled = computed(() => {
     if (viewMode.value === true) {
         return true;
     }
-    if (hasNotPermissionToEdit.value === true) {
-        return true;
-    }
+
     return false;
 })
 

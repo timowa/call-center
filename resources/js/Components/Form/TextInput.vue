@@ -26,9 +26,7 @@ const disabled = computed(() => {
     if (viewMode !== undefined && viewMode.value === true) {
         return true;
     }
-    if (hasNotPermissionToEdit.value === true) {
-        return true;
-    }
+
     return false;
 })
 defineExpose({ focus: () => input.value.focus() });

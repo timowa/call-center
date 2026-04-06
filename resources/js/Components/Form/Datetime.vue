@@ -16,9 +16,7 @@ const hasNotPermissionToEdit = inject('hasNotPermissionToEdit', false)
 const isDisabled = computed(() => {
     if (props.readonly === true) return true;
     if (viewMode.value === true) return true;
-    if (hasNotPermissionToEdit.value === true) {
-        return true;
-    }
+
     return false;
 });
 </script>

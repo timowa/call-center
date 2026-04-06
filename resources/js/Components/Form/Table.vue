@@ -73,9 +73,7 @@ const disabled = computed(() => {
     if (props.options?.length === 1) {
         return true;
     }
-    if (hasNotPermissionToEdit.value === true) {
-        return true;
-    }
+
     return false;
 })
 </script>
