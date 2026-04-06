@@ -122,6 +122,7 @@ const clearSingleFilter = (key) => {
 const applyFilters = () => {
     localStorage.setItem('filter', JSON.stringify(filterForm.data()));
     updateTable();
+    isFilterOpen.value = false;
 };
 
 const updateTable = () => {
