@@ -35,7 +35,8 @@ const activeFilterRowButtonClasses = computed(() => {
     'text-primary-light': activeFilterRowButton.value === buttonId,
     'text-grey-350': activeFilterRowButton.value !== buttonId
 })});
-
+const tableData = incidents.value.data;
+console.log(tableData)
 const tableColumns = ref([
     {data: 'datetime', title: 'Дата', visible: true},
     {data: 'creator', title: 'Создатель', visible: true},
@@ -121,7 +122,7 @@ onMounted(function () {
             <DataTable
                 ref="table"
                 :options="tableOptions"
-                :data="incidents"
+                :data="tableData"
                 :columns="tableColumns"
                 class="border-collapse border border-solid border-grey-300 w-full h-full">
                 <template #column-4="props">

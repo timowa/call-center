@@ -113,49 +113,44 @@ class IncidentsController extends Controller
 
     public function dashboard(Request $request)
     {
-        $query = Incident::scopeArea()->select(['id','created_at', 'user_id', 'call_type_id', 'incoming_number', 'district_id','condition'])
+        $incidents = Incident::scopeArea()->select(['id','created_at', 'user_id', 'call_type_id', 'incoming_number', 'district_id','condition'])
             ->with([
                 'user:id,name',
                 'callType:id,name,service_id',
                 'district:id,name',
-                'fireReport:id,condition,incident_id'
-            ]);
-        $query->when($request->service_id, function ($query, $serviceId) {
-            return $query->where('service_id', $serviceId);
-        });
-        $query->when($request->call_type_id, function ($query, $serviceId) {
-            return $query->where('call_type_id', $serviceId);
-        });
-        $query->when($request->is_training, function ($query, $serviceId) {
-            return $query->where('is_training', $serviceId);
-        });
-        $query->when($request->is_important, function ($query, $serviceId) {
-            return $query->where('is_important', $serviceId);
-        });
-        $query->when($request->emergency_threat, function ($query, $serviceId) {
-            return $query->where('emergency_threat', $serviceId);
-        });
-        $query->when($request->conditions, function ($query, $conditions) {
-            return $query->whereIn('condition', $conditions);
-        });
+                'fireReport:id,condition,incident_id',
+                'services:id,name'
+            ])
+            ->when($request->service_id, function ($query, $serviceId) {
+                return $query->whereHas('services', function ($q) use ($serviceId) {
+                    $q->where('services.id', $serviceId);
+                });
+            })
+            ->when($request->call_type_id, fn($q, $id) => $q->where('call_type_id', $id))
+            ->when($request->is_training, fn($q, $val) => $q->where('is_training', $val))
+            ->when($request->is_important, fn($q, $val) => $q->where('is_important', $val))
+            ->when($request->emergency_threat, fn($q, $val) => $q->where('emergency_threat', $val))
+            ->when($request->conditions, fn($q, $cond) => $q->whereIn('condition', (array)$cond))
+
+            ->orderBy('created_at', 'desc')
+            ->paginate(30)
+            ->withQueryString();
 
 
-        $incidents = $query->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($incident) {
-                return [
-                    'id' => $incident->id,
-                    'datetime' => $incident->created_at->format('Y-m-d H:i:s'),
-                    'creator' => $incident->user->name,
-                    'operator' => '33 22 11',
-                    'condition' => $incident->condition,
-                    'call_type' => $incident->callType->name ?? '',
-                    'incoming_number' => $incident->incoming_number,
-                    'dialed_number' => '88005553535',
-                    'district_name' => $incident->district->name ?? 'Не указано',
-                    'fireReport' => $incident->fireReport ?? null,
-                ];
-            });
+        $incidents->getCollection()->transform(function ($incident) {
+            return [
+                'id' => $incident->id,
+                'datetime' => $incident->created_at->toDateTimeString(),
+                'creator' => $incident->user->name ?? 'Система',
+                'operator' => '33 22 11',
+                'condition' => $incident->condition,
+                'call_type' => $incident->callType->name ?? '',
+                'incoming_number' => $incident->incoming_number,
+                'dialed_number' => '88005553535',
+                'district_name' => $incident->district->name ?? 'Не указано',
+                'fireReport' => $incident->fireReport,
+            ];
+        });
         return Inertia::render('Dashboard', ['incidents' => $incidents]);
     }
 }

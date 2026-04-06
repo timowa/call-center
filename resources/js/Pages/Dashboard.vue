@@ -139,11 +139,6 @@ const updateTable = () => {
     });
 }
 
-let interval = null;
-
-onUnmounted(() => {
-    clearInterval(interval);
-});
 
 onMounted(() => {
     const saved = localStorage.getItem('filter');
@@ -152,7 +147,6 @@ onMounted(() => {
         filterForm.reset();
     }
     updateTable();
-    interval = setInterval(updateTable, 5000);
 });
 
 const activeFilters = computed(() => {
