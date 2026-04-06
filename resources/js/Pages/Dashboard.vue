@@ -152,7 +152,6 @@ onMounted(() => {
         filterForm.reset();
     }
     updateTable();
-    interval = setInterval(updateTable, 5000);
 });
 
 const activeFilters = computed(() => {
