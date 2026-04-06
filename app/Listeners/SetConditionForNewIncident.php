@@ -14,12 +14,18 @@ class SetConditionForNewIncident
     public function handle(IncidentCreated $event): void
     {
         $incident = $event->incident;
+        $actionType = $event->actionType;
         $incident->load('fireReport');
-        if (is_null($incident->fireReport)) {
-            $incident->update(['condition' => Condition::REQUEST]);
+        if (is_null($actionType)) {
+            $condition = Condition::CONNECTING;
         } else {
-            $incident->update(['condition' => Condition::CONNECTING]);
-            $incident->fireReport()->update(['condition' => Condition::CONNECTING]);
+            $condition = Condition::DONE;
+        }
+        $incident->condition = $condition;
+        $incident->save();
+        if (!is_null($incident->fireReport)) {
+            $incident->fireReport->condition = $condition;
+            $incident->fireReport->save();
         }
 
     }

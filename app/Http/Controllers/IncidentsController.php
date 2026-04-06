@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\CallType;
 use App\Condition;
 use App\Events\IncidentCardViewed;
 use App\Events\IncidentCreated;
@@ -49,7 +50,6 @@ class IncidentsController extends Controller
             $mode = 'view';
         }
         $incident = Incident::findOrFail($id);
-        event(new IncidentCardViewed($incident));
         $incident->load(['user', 'type', 'fireReport']);
         $incident->created_at_dt = [
             'date' => $incident->created_at->format('Y-m-d'),
@@ -73,15 +73,8 @@ class IncidentsController extends Controller
     public function update(IncidentRequest $request, int $id)
     {
         $incident = Incident::findOrFail($id);
-        $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'area_id', 'processing_time', 'coordinates', 'fireReport', 'action']);
-        $data['call_type_id'] = $request->call_type ?: null;
-        $data['incident_type_id'] = $request->incident_type ?: null;
 
-        if ($request->action === 'complete') {
-            $data['condition'] = Condition::DONE;
-        }
-
-        $incident->update($data);
+        $incident->update($request->all());
         event(new IncidentUpdated($incident));
 
 
@@ -103,11 +96,11 @@ class IncidentsController extends Controller
     public function store(IncidentRequest $request)
     {
         try {
-            DB::transaction(function () use ($request) {
+            $incident = DB::transaction(function () use ($request) {
                 $incident = new Incident();
                 $incident->fill($request->all());
                 $incident->user()->associate(Auth::user());
-                $incident->save();;
+                $incident->save();
 
                 if ($request->filled('services')) {
                     foreach ($request->services as $service_id) {
@@ -119,7 +112,13 @@ class IncidentsController extends Controller
                         }
                     }
                 }
+                return $incident;
             });
+            $actionType = $request->actionType;
+            if (is_array($actionType)) {
+                $actionType = null;
+            }
+            event(new IncidentCreated($incident, $actionType));
 
             return redirect()->route('dashboard')->with([
                 'message' => 'Карточка успешно создана',
@@ -136,7 +135,7 @@ class IncidentsController extends Controller
 
     public function dashboard(Request $request)
     {
-        $incidents = Incident::scopeArea()->select(['id','created_at', 'user_id', 'call_type_id', 'incoming_number', 'district_id','condition'])
+        $incidents = Incident::scopeArea()->scopeUser()->select(['id','created_at', 'user_id', 'call_type_id', 'incoming_number', 'district_id','condition'])
             ->with([
                 'user:id,name',
                 'district:id,name',
@@ -153,7 +152,7 @@ class IncidentsController extends Controller
                 'creator' => $incident->user->name ?? 'Система',
                 'operator' => '33 22 11',
                 'condition' => $incident->condition,
-                'call_type' => $incident->callType->name ?? '',
+                'call_type' => $incident->call_type_id->label(),
                 'incoming_number' => $incident->incoming_number,
                 'dialed_number' => '88005553535',
                 'district_name' => $incident->district->name ?? 'Не указано',

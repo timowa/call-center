@@ -154,7 +154,7 @@ const form = useForm({
         },
     },
     fireReport: getFireReportDefaults(props.incident.fire_report),
-    action: ''
+    actionType: ''
 });
 const tabs = computed(() => ({
     UKIO: {
@@ -200,8 +200,17 @@ watch(() => tabs.value.EDDS.show, (isVisible) => {
 const currentTab = ref('UKIO');
 const currentRightTab = ref('map');
 
-const submit = () => {
+const submit = (actionType) => {
     if (createMode.value) {
+        form.actionType = actionType;
+        if (actionType === 'help') {
+            form.call_type_id = page.props.constants.callTypes.HELP
+        } else if (actionType === 'false') {
+            form.call_type_id = page.props.constants.callTypes.FALSE
+        } else if (actionType === 'child') {
+            form.call_type_id = page.props.constants.callTypes.CHILD
+        }
+
         form.post(route('incidents.store'), {
             preserveScroll: true,
             onSuccess: () => {
@@ -287,19 +296,23 @@ watch(() => form.errors, (errors) => {
             <div class="mt-6 px-6">
                 <div class="flex justify-between">
                     <LinkButton :href="route('incidents.dashboard')">Отмена</LinkButton>
-                    <PrimaryButton v-if="createMode">Сохранить</PrimaryButton>
+
                     <PrimaryButton v-if="viewMode" @click="router.get(route('incidents.edit', incident.id));" type="button">Редактировать</PrimaryButton>
-                    <div v-if="editMode && form.source_id === page.props.constants.sources.CALL" class="flex gap-2">
-                        <PrimaryButton :disabled="form.processing" @click="form.call_type = 3; form.action = 'complete'">Справочный</PrimaryButton>
-                        <PrimaryButton :disabled="form.processing" @click="form.call_type = 1; form.action = 'complete'">Ложный</PrimaryButton>
-                        <PrimaryButton :disabled="form.processing" @click="form.call_type = 2; form.action = 'complete'">Детская шалость</PrimaryButton>
+                    <PrimaryButton v-if="editMode" @click="submit">Сохранить</PrimaryButton>
+
+                    <div v-if="createMode && form.source_id === page.props.constants.sources.INSTANT" class="flex gap-2">
+                        <PrimaryButton @click="submit">Сохранить</PrimaryButton>
+                        <PrimaryButton @click="submit('complete')">Завершить работу с карточкой</PrimaryButton>
+                    </div>
+
+                    <div v-if="createMode && form.source_id === page.props.constants.sources.CALL" class="flex gap-2">
+                        <PrimaryButton :disabled="form.processing" @click="submit('help')">Справочный</PrimaryButton>
+                        <PrimaryButton :disabled="form.processing" @click="submit('false')">Ложный</PrimaryButton>
+                        <PrimaryButton :disabled="form.processing" @click="submit('child')">Детская шалость</PrimaryButton>
                         <PrimaryButton :disabled="form.processing || form.call_type === 0" >Передать без вызова</PrimaryButton>
                         <PrimaryButton :disabled="form.processing || form.call_type === 0" >Переать с вызовом</PrimaryButton>
                     </div>
-                    <div v-if="editMode && form.source_id === page.props.constants.sources.INSTANT">
-                        <PrimaryButton  :disabled="false">Сохранить</PrimaryButton>
-                        <PrimaryButton  :disabled="false" @click="form.action = 'complete'"> Завершить работу с карточкой</PrimaryButton>
-                    </div>
+
                 </div>
             </div>
 

@@ -71,6 +71,17 @@ class Incident extends Model
             ->orWhere('user_id', $user->id);
         }
     }
+    #[Scope]
+    protected function scopeUser(Builder $builder):void
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return;
+        }
+        if ($user->hasRole('op_01')) {
+            $builder->whereHas('fireReport');
+        }
+    }
 
 
 
