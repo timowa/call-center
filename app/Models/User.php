@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\CallType;
+use Grpc\Call;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -43,6 +45,7 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'call_type_id' => CallType::class,
         ];
     }
     public function getRouteKeyName()

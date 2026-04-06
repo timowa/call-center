@@ -14,13 +14,13 @@ import {getCondition} from "@/Utils/conditions.js";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import Block from "@/Components/Block.vue";
 import {userHasPermissionTo} from "@/Utils/permissions.js";
-import SecondaryButton from "@/Components/SecondaryButton.vue";
+import LinkButton from "@/Components/LinkButton.vue";
 
-const props = defineProps(['incident', 'fireReportData', 'flash']);
+const props = defineProps(['incident', 'fireReportData', 'flash', 'mode']);
+const createMode = computed(() => props.mode === 'create');
+const viewMode = computed(() => props.mode === 'view');
+const editMode = computed(() => props.mode === 'edit');
 
-
-
-const viewMode = ref(props.flash?.isNewIncident !== true);
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 const isCov = computed(() => {
@@ -44,21 +44,20 @@ const filteredDistricts = computed(() => {
 
 const filteredCallTypes = computed(() => {
     if (isCov.value) {
-        return page.props.directories.callTypes
+        return page.props.dictionaries.callTypes
     }
-    return page.props.directories.callTypes.filter(callType => callType.id === user.value.call_type_id)
+    return page.props.dictionaries.callTypes.filter(callType => callType.id === user.value.call_type_id)
 })
 
 provide('viewMode', viewMode)
 provide('directories', {
     callTypes: filteredCallTypes.value,
     incidentTypes: page.props.directories.incidentTypes,
-    services: page.props.directories.services,
+    services: page.props.dictionaries.services,
     sources: page.props.dictionaries.sources,
     areas: filteredAreas.value,
     districts: filteredDistricts.value
 })
-provide('fireReportDirectories', props.fireReportData)
 const defaultCoordinates = {latitude: 53.722356, longitude: 91.443699}
 const mapCoordinates = ref(defaultCoordinates);
 provide('mapCoordinates', {
@@ -68,49 +67,49 @@ provide('mapCoordinates', {
 
 
 const form = useForm({
-    id: props.incident.id,
+    id: props.incident.id ?? 0,
     created_at: {
-        date: props.incident.dt.date,
-        time: props.incident.dt.time
+        date: props.incident.created_at_dt?.date,
+        time: props.incident.created_at_dt?.time
     },
-    processing_time: props.incident.processingTime,
-    incoming_number: props.incident.incoming_number,
-    condition: props.incident.condition,
-    creator: props.incident.user.name,
-    call_type: user.value.call_type_id ?? (props.incident.call_type ? props.incident.call_type?.id : null),
-    services: props.incident.services,
+    processing_time: props.incident.processingTime ?? 0,
+    incoming_number: props.incident.incoming_number ?? 0,
+    condition: props.incident.condition ?? 0,
+    creator: props.incident.user ? props.incident.user.name : user.name,
+    call_type_id: user.value.call_type_id ?? (props.incident.call_type ? props.incident.call_type?.id : null),
+    services: props.incident.services ?? [],
     incident_type: props.incident.type ? props.incident.type.id : null,
-    source_id: props.incident.source_id,
-    is_training: props.incident.is_training,
-    is_important: props.incident.is_important,
+    source_id: props.incident.source_id ?? 0,
+    is_training: props.incident.is_training ?? false,
+    is_important: props.incident.is_important ?? false,
     area_id: user.value.area_id ?? props.incident?.area_id ?? null,
-    district_id: props.incident?.district_id,
-    street: props.incident.street,
-    house_number: props.incident.house_number,
-    corpus_number: props.incident.corpus_number,
-    apartment_number: props.incident.apartment_number,
-    entrance_number: props.incident.entrance_number,
-    entrance_code: props.incident.entrance_code,
-    floor: props.incident.floor,
-    number_of_floors: props.incident.number_of_floors,
-    ownership: props.incident.ownership,
-    building: props.incident.building,
-    additional_street: props.incident.additional_street,
-    district_of_city: props.incident.district_of_city,
-    object: props.incident.object,
+    district_id: props.incident?.district_id ?? null,
+    street: props.incident.street ?? null,
+    house_number: props.incident.house_number ?? null,
+    corpus_number: props.incident.corpus_number ?? null,
+    apartment_number: props.incident.apartment_number ?? null,
+    entrance_number: props.incident.entrance_number ?? null,
+    entrance_code: props.incident.entrance_code ?? null,
+    floor: props.incident.floor ?? null,
+    number_of_floors: props.incident.number_of_floors ?? null,
+    ownership: props.incident.ownership ?? null,
+    building: props.incident.building ?? null,
+    additional_street: props.incident.additional_street ?? null,
+    district_of_city: props.incident.district_of_city ?? null,
+    object: props.incident.object ?? null,
     coordinates: [props.incident.longitude, props.incident.latitude].some(item => item !== null) ?
         [props.incident.longitude, props.incident.latitude].join(',') : '',
-    road: props.incident.road,
-    metre: props.incident.metre,
-    km: props.incident.km,
-    is_nearby: props.incident.is_nearby,
-    address_section: props.incident.address_section,
-    additional_info: props.incident.additional_info,
-    emergency_threat: props.incident.emergency_threat,
-    threat_to_people: props.incident.threat_to_people,
-    number_of_victims: props.incident.number_of_victims,
-    emergency_type_id: props.incident.emergency_type_id,
-    description: props.incident.description,
+    road: props.incident.road ?? null,
+    metre: props.incident.metre ?? null,
+    km: props.incident.km ?? null,
+    is_nearby: props.incident.is_nearby ?? false,
+    address_section: props.incident.address_section ?? null,
+    additional_info: props.incident.additional_info ?? null,
+    emergency_threat: props.incident.emergency_threat ?? false,
+    threat_to_people: props.incident.threat_to_people ?? null,
+    number_of_victims: props.incident.number_of_victims ?? null,
+    emergency_type_id: props.incident.emergency_type_id ?? null,
+    description: props.incident.description ?? null,
     applicant_info: props.incident.applicant_info || {
         lastname: '',
         firstname: '',
@@ -167,14 +166,14 @@ const tabs = computed(() => ({
     EDDS: {
         template: EDDS,
         title: 'ЕДДС/ЖКХ',
-        show: (form.services.includes(8) || form.call_type === 8) && userHasPermissionTo('edds.view'),
-        service_id: 8
+        show: form.services.includes(page.props.constants.services.EDDS) && userHasPermissionTo('edds.view'),
+        service_id: page.props.constants.services.EDDS
     },
     FIREFIGHTERS: {
         template: Firefighters,
         title: '01',
-        service_id: 4,
-        show: (form.services.includes(4) || form.call_type === 4) && userHasPermissionTo('01.view'),
+        service_id: page.props.constants.services.FIREFIGHTERS,
+        show: form.services.includes(page.props.constants.services.FIREFIGHTERS) && userHasPermissionTo('01.view'),
         condition: getCondition(props.incident.fire_report?.condition)
     }
 }));
@@ -202,15 +201,29 @@ const currentTab = ref('UKIO');
 const currentRightTab = ref('map');
 
 const submit = () => {
-    form.put(route('incidents.update', props.incident.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            console.log('Данные успешно обновлены');
-        },
-        onError: (errors) => {
-            console.error('Ошибки валидации:', errors);
-        },
-    });
+    if (createMode.value) {
+        form.post(route('incidents.store'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                console.log('Данные успешно обновлены');
+            },
+            onError: (errors) => {
+                console.error('Ошибки валидации:', errors);
+            },
+        })
+    }
+    if (editMode.value) {
+        form.put(route('incidents.update', props.incident.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                console.log('Данные успешно обновлены');
+            },
+            onError: (errors) => {
+                console.error('Ошибки валидации:', errors);
+            },
+        });
+    }
+
 }
 
 
@@ -219,6 +232,19 @@ onUnmounted(() => {
         form.call_type = 1
         submit();
     }
+})
+
+watch(() => form.data(), (newData, oldData) => {
+    Object.keys(newData).forEach(key => {
+        if (newData[key] !== oldData[key]) {
+            form.clearErrors(key);
+        }
+    });
+}, { deep: true });
+watch(() => form.errors, (errors) => {
+    setTimeout(() => {
+        form.clearErrors()
+    }, 3000)
 })
 </script>
 
@@ -258,20 +284,21 @@ onUnmounted(() => {
             <keep-alive>
                 <component :is="tabs[currentTab].template" :form="form"/>
             </keep-alive>
-            <div class="flex justify-between mt-6 px-6">
-                <SecondaryButton v-if="viewMode !== true" @click="form.action = 'cancel'" type="submit">Отмена</SecondaryButton>
-                <div class="text-right  gap-2 flex justify-between float-end">
-                    <PrimaryButton v-if="viewMode === true" @click="viewMode = false" type="button" :disabled="false">Редактировать</PrimaryButton>
-                    <div v-if="viewMode !== true && form.source_id === page.props.constants.sources.INSTANT">
-                        <PrimaryButton  :disabled="false">Сохранить</PrimaryButton>
-                        <PrimaryButton  :disabled="false" @click="form.action = 'complete'"> Завершить работу с карточкой</PrimaryButton>
-                    </div>
-                    <div v-if="viewMode !== true && form.source_id === page.props.constants.sources.CALL" class="flex gap-2">
+            <div class="mt-6 px-6">
+                <div class="flex justify-between">
+                    <LinkButton :href="route('incidents.dashboard')">Отмена</LinkButton>
+                    <PrimaryButton v-if="createMode">Сохранить</PrimaryButton>
+                    <PrimaryButton v-if="viewMode" @click="router.get(route('incidents.edit', incident.id));" type="button">Редактировать</PrimaryButton>
+                    <div v-if="editMode && form.source_id === page.props.constants.sources.CALL" class="flex gap-2">
                         <PrimaryButton :disabled="form.processing" @click="form.call_type = 3; form.action = 'complete'">Справочный</PrimaryButton>
                         <PrimaryButton :disabled="form.processing" @click="form.call_type = 1; form.action = 'complete'">Ложный</PrimaryButton>
                         <PrimaryButton :disabled="form.processing" @click="form.call_type = 2; form.action = 'complete'">Детская шалость</PrimaryButton>
                         <PrimaryButton :disabled="form.processing || form.call_type === 0" >Передать без вызова</PrimaryButton>
                         <PrimaryButton :disabled="form.processing || form.call_type === 0" >Переать с вызовом</PrimaryButton>
+                    </div>
+                    <div v-if="editMode && form.source_id === page.props.constants.sources.INSTANT">
+                        <PrimaryButton  :disabled="false">Сохранить</PrimaryButton>
+                        <PrimaryButton  :disabled="false" @click="form.action = 'complete'"> Завершить работу с карточкой</PrimaryButton>
                     </div>
                 </div>
             </div>

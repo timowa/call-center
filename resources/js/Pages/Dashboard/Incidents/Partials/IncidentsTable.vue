@@ -101,7 +101,7 @@ onMounted(function () {
     dt.on('dblclick', 'tr', (e) => {
         const rowData = dt.row(e.currentTarget).data();
         if (rowData && rowData.id) {
-            router.get(route('incidents.edit', rowData.id));
+            router.get(route('incidents.view', rowData.id));
         }
     });
 });

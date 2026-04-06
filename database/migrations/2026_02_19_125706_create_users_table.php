@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('uid')->unique();
             $table->string('password');
             $table->foreignId('area_id')->nullable()->constrained();
-            $table->foreignId('call_type_id')->nullable()->constrained();
+            $table->integer('call_type_id')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

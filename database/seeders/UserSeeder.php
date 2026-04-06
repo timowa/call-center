@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\CallType;
 use App\Models\Area;
 use App\Models\User;
+use Grpc\Call;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -32,7 +34,7 @@ class UserSeeder extends Seeder
                 'uid' => 200002,
                 'password' => Hash::make('123456'),
                 'area_id' => $areaCentral->id,
-                'call_type_id' => 4
+                'call_type_id' => CallType::FIREFIGHTERS
             ]);
             $op01->assignRole('op_01');
         }
@@ -43,7 +45,7 @@ class UserSeeder extends Seeder
                 'uid' => 300003,
                 'password' => Hash::make('123456'),
                 'area_id' => $areaCentral->id,
-                'call_type_id' => 8
+                'call_type_id' => CallType::EDDS
             ]);
             $edds->assignRole('edds');
         }

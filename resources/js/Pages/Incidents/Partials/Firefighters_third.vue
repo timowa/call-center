@@ -3,10 +3,10 @@
 import FormGroup from "@/Components/Form/FormGroup.vue";
 import FormField from "@/Components/Form/FormField.vue";
 import {inject} from "vue";
+import {FireReportDirectories} from "@/Utils/FireReportDirectories.js";
 
 defineProps(['form']);
 
-const {causes} = inject('fireReportDirectories')
 </script>
 
 <template>
@@ -42,7 +42,7 @@ const {causes} = inject('fireReportDirectories')
         </FormGroup>
     </FormGroup>
     <FormGroup title="Причина пожара">
-        <FormField label="Причина" type="select" :vertical="true" v-model="form.cause_id" :options="causes"></FormField>
+        <FormField label="Причина" type="select" :vertical="true" v-model="form.cause_id" :options="FireReportDirectories.fireService.causes"></FormField>
         <FormField label="Уточнения" :vertical="true" v-model="form.info.corrections"></FormField>
     </FormGroup>
 </template>

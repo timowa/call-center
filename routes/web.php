@@ -1,13 +1,9 @@
 <?php
 
-use App\Http\Controllers\DistrictController;
-use App\Http\Controllers\FireReportController;
 use App\Http\Controllers\IncidentsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SuggestionsController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', fn () => redirect(route('incidents.dashboard')));
 
@@ -20,9 +16,14 @@ Route::middleware('auth')->group(function () {
 
 
     Route::match(['get', 'post'],'/incidents/dashboard', [IncidentsController::class, 'dashboard'])->name('incidents.dashboard');
+
     Route::get('/incidents/create-instant', [IncidentsController::class, 'createInstant'])->name('incidents.create-instant');
-    Route::post('/incidents/create-from-call', [IncidentsController::class, 'createFromCall'])->name('incidents.create-from-call');
+    Route::get('/incidents/create-from-call', [IncidentsController::class, 'createFromCall'])->name('incidents.create-from-call');
     Route::get('/incidents/edit/{id}', [IncidentsController::class, 'edit'])->name('incidents.edit');
+    Route::get('/incidents/view/{id}', [IncidentsController::class, 'view'])->name('incidents.view');
+
+    Route::post('/incidents/store', [IncidentsController::class, 'store'])->name('incidents.store');
+
     Route::put('/incidents/update/{id}', [IncidentsController::class, 'update'])->name('incidents.update');
 
     Route::post('/suggestions/get-address', [SuggestionsController::class, 'addresses'])->name('suggestions.addresses');

@@ -9,29 +9,53 @@ import Block from "@/Components/Block.vue";
 import {addressSearch} from "@/Composables/addressSearch.js";
 import {fetchCoordinates} from "@/Composables/getCoordinates.js";
 import {userHasPermissionTo} from "@/Utils/permissions.js";
+import {usePage} from "@inertiajs/vue3";
+import {FireReportDirectories} from "@/Utils/FireReportDirectories.js";
 const props = defineProps(['form']);
+const page = usePage();
 const {callTypes, incidentTypes, areas, districts, services, sources} = inject('directories');
 const checkedCallTypeServiceId = ref(null);
-provide('isUkioForm', ref(true));
+
 watch(
-    () => props.form.call_type,
+    () => props.form.call_type_id,
     (newCallType) => {
+        if (checkedCallTypeServiceId.value !== null) {
+            const oldIndex = props.form.services.indexOf(checkedCallTypeServiceId.value);
+            if (oldIndex !== -1) {
+                props.form.services.splice(oldIndex, 1);
+            }
+            checkedCallTypeServiceId.value = null;
+        }
+
         if (!newCallType) return;
 
-        const callTypeData = callTypes.filter((callType) => callType.id === newCallType)[0];
+        const callTypeData = callTypes.find((ct) => ct.id === newCallType);
+        if (!callTypeData || !callTypeData.has_service) return;
 
-        if (callTypeData.service_id === null) {
-            checkedCallTypeServiceId.value = null;
-            return;
+        const serviceId = callTypeData.service_id;
+
+        if (!props.form.services.includes(serviceId)) {
+            props.form.services.push(serviceId);
         }
 
-        const index = props.form.services.indexOf(callTypeData.service_id);
-        checkedCallTypeServiceId.value = callTypeData.service_id;
-        if (index !== -1) {
-            props.form.services.splice(index, 1);
+        if (serviceId === page.props.constants.services.FIREFIGHTERS) {
+            FireReportDirectories.fetchFireDirectories()
         }
+
+        checkedCallTypeServiceId.value = serviceId;
+
     },
     { immediate: true }
+);
+
+watch(
+    () => props.form.services,
+    (newServices) => {
+        if (newServices.includes(page.props.constants.services.FIREFIGHTERS)) {
+            FireReportDirectories.fetchFireDirectories()
+        }
+    },
+    { deep: true }
 );
 
 const filteredDistricts = computed(() => {
@@ -70,8 +94,7 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
     }
 });
 
-const hasNotPermissionToEdit = ref(!userHasPermissionTo('ukio.edit'));
-provide('hasNotPermissionToEdit', hasNotPermissionToEdit);
+
 </script>
 
 <template>
@@ -84,12 +107,12 @@ provide('hasNotPermissionToEdit', hasNotPermissionToEdit);
             <FormField label="Время регистрации" v-model="form.created_at.time" :readonly="true"  :text-align="'right'" />
             <FormField label="Создатель" v-model="form.creator" :readonly="true"  :text-align="'right'" />
             <FormField label="Тип происшествия" type="select" v-model="form.incident_type" :col-span="4" :grid-col="4" :options="incidentTypes"/>
-            <FormField label="Источник" v-model="form.source_id" type="select" :options="sources"  :text-align="'right'"/>
+            <FormField label="Источник" v-model="form.source_id" type="select" :options="sources"  :text-align="'right'" :readonly="true"/>
             <FormField label="Тип вызова"
                        type="select"
-                       v-model="form.call_type"
+                       v-model="form.call_type_id"
                        :options="callTypes"
-                       :error="form.errors.call_type"
+                       :error="form.errors.call_type_id"
             />
             <div class="col-span-4 flex gap-6">
                 <FormField label="Учебная" type="checkbox" v-model:checked="form.is_training"/>

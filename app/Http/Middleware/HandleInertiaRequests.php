@@ -2,13 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\CallType;
 use App\Condition;
 use App\Models\Area;
-use App\Models\CallType;
 use App\Models\District;
 use App\Models\EmergencyType;
 use App\Models\IncidentType;
-use App\Models\Service;
+use App\Service;
 use App\SourceType;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -63,14 +63,24 @@ class HandleInertiaRequests extends Middleware
                 'sources' => collect(SourceType::cases())->map(function ($item) {
                     return ['id' => $item->value, 'name' => $item->label()];
                 })->toArray(),
+                'services' => collect(Service::cases())->map(fn($s) => [
+                    'id' => $s->value,
+                    'name' => $s->label(),
+                ]),
+                'callTypes' => collect(CallType::cases())->map(fn($ct) => [
+                    'id' => $ct->value,
+                    'name' => $ct->label(),
+                    'service_id' => $ct->relatedService()?->value,
+                    'has_service' => $ct->hasRelatedService(),
+                ]),
 
             ],
             'constants' => [
                 'sources' => collect(SourceType::cases())->pluck('value', 'name')->toArray(),
+                'callTypes' => collect(CallType::cases())->pluck('value', 'name')->toArray(),
+                'services' => collect(Service::cases())->pluck('value', 'name')->toArray(),
             ],
             'directories' => [
-                'services'       => Service::all(),
-                'callTypes'      => CallType::all(),
                 'incidentTypes'  => IncidentType::all(),
                 'emergencyTypes' => EmergencyType::all(),
                 'areas'          => Area::all(),

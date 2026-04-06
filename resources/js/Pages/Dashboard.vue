@@ -50,7 +50,7 @@ const acceptCall = () => {
 
     showAlarmOverlay.value = false;
 
-    router.post(route('incidents.create-from-call'), );
+    router.get(route('incidents.create-from-call'));
 };
 
 const isFilterOpen = ref(false);

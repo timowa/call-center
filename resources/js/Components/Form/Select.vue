@@ -12,7 +12,6 @@ const props = defineProps({
     reduce: { type: Function, default: (option) => option.id  },
 });
 const viewMode = inject('viewMode', ref(false));
-const hasNotPermissionToEdit = inject('hasNotPermissionToEdit', false)
 
 const isDisabled = computed(() => {
     if (props.readonly) return true;

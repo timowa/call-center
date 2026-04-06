@@ -6,6 +6,7 @@ use App\Condition;
 use App\Events\IncidentCardViewed;
 use App\Events\IncidentCreated;
 use App\Events\IncidentUpdated;
+use App\Http\Requests\IncidentRequest;
 use App\Models\CauseOfTheFire;
 use App\Models\FireReport;
 use App\Models\FireReportType;
@@ -13,8 +14,10 @@ use App\Models\Incident;
 use App\Models\UrbanObject;
 use App\Models\UrbanObjectType;
 use App\SourceType;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class IncidentsController extends Controller
@@ -22,18 +25,9 @@ class IncidentsController extends Controller
 
     private function create(SourceType $sourceType)
     {
-        $incident = Incident::create([
-            'user_id' => Auth::id(),
-            'incoming_number' => fake()->numerify('7##########'),
-            'source_id' => $sourceType
-        ]);
-        if (Auth::user()->hasRole('op_01')) {
-            FireReport::create([
-                'incident_id' => $incident->id,
-            ]);
-        }
-        event(new IncidentCreated($incident));
-        return redirect()->route('incidents.edit', ['id' => $incident->id])->with('isNewIncident', true);
+        $incident = new Incident();
+        $incident->source_id = $sourceType;
+        return Inertia::render('Incidents/Edit', ['incident' => $incident, 'sourceType' => $sourceType, 'mode' => 'create']);
     }
 
     public function createInstant()
@@ -46,44 +40,37 @@ class IncidentsController extends Controller
         return $this->create(SourceType::CALL);
     }
 
-    public function edit(int $id)
+    public function edit(int $id, bool $viewMode = false)
     {
+        $mode = 'edit';
+        if ($viewMode) {
+            $mode = 'view';
+        }
         $incident = Incident::findOrFail($id);
         event(new IncidentCardViewed($incident));
-        $incident->load(['user', 'type', 'services', 'callType', 'fireReport']);
-        $incident->dt = [
+        $incident->load(['user', 'type', 'fireReport']);
+        $incident->created_at_dt = [
             'date' => $incident->created_at->format('Y-m-d'),
             'time' => $incident->created_at->format('H:i:s'),
         ];
 
         $incident->processingTime = 129;
 
-        $fireReportData = [
-            'report_types' => FireReportType::all(),
-            'types_of_fire_protection' => FireReport::getTypesOfProtection(),
-            'objects' => UrbanObject::all(),
-            'object_types' => UrbanObjectType::all(),
-            'water_sources' => FireReport::getWaterSources(),
-            'causes'=> CauseOfTheFire::all(),
-            'ranks' => FireReport::getRanks(),
-            'plans' => FireReport::getPlans()
-        ];
+
         return Inertia::render('Incidents/Edit', [
             'incident'       => $incident,
-            'fireReportData' => $fireReportData,
+            'mode'          => $mode,
         ]);
     }
 
-    public function update(Request $request, int $id)
+    public function view(int $id)
     {
-        $request->validate([
-            'call_type' => 'required',
-        ],
-            [
-                'call_type.required' => 'Пожалуйста, выберите основную службу.'
-            ]);
-        $incident = Incident::findOrFail($id);
+        return $this->edit($id, true);
+    }
 
+    public function update(IncidentRequest $request, int $id)
+    {
+        $incident = Incident::findOrFail($id);
         $data = $request->except(['services', 'created_at', 'creator', 'call_type', 'incident_type', 'area_id', 'processing_time', 'coordinates', 'fireReport', 'action']);
         $data['call_type_id'] = $request->call_type ?: null;
         $data['incident_type_id'] = $request->incident_type ?: null;
@@ -94,7 +81,7 @@ class IncidentsController extends Controller
 
         $incident->update($data);
         event(new IncidentUpdated($incident));
-        $incident->services()->syncWithoutDetaching(array_column($request->services, 'id') ?? []);
+
 
         $fireReportData = $request->fireReport;
         $fireReportData['incident_id'] = $incident->id;
@@ -106,9 +93,29 @@ class IncidentsController extends Controller
         }
         FireReport::updateOrCreate($fireReportSearch, $fireReportData);
         return redirect()->route('dashboard')->with([
-            'message' => 'Карточка успешно добавлена',
+            'message' => 'Карточка успешно обновлена',
             'type' => 'success'
         ]);
+    }
+
+    public function store(IncidentRequest $request)
+    {
+        try {
+            $incident = new Incident();
+            $incident->fill($request->all());
+            $incident->user()->associate(Auth::user());
+            $incident->save();
+            return redirect()->route('dashboard')->with([
+                'message' => 'Карточка успешно создана',
+                'type' => 'success'
+            ]);
+        } catch (Exception $e) {
+            Log::error("Ошибка создания инцидента: " . $e->getMessage());
+
+            return redirect()->back()->withErrors([
+                'error' => 'Системная ошибка при сохранении. Попробуйте позже.'
+            ]);
+        }
     }
 
     public function dashboard(Request $request)
@@ -116,15 +123,10 @@ class IncidentsController extends Controller
         $incidents = Incident::scopeArea()->select(['id','created_at', 'user_id', 'call_type_id', 'incoming_number', 'district_id','condition'])
             ->with([
                 'user:id,name',
-                'callType:id,name,service_id',
                 'district:id,name',
                 'fireReport:id,condition,incident_id',
             ])
-            ->when($request->service_id, function ($query, $serviceId) {
-                return $query->whereHas('services', function ($q) use ($serviceId) {
-                    $q->where('services.id', $serviceId);
-                });
-            })
+
             ->when($request->call_type_id, fn($q, $id) => $q->where('call_type_id', $id))
             ->when($request->conditions, fn($q, $cond) => $q->whereIn('condition', (array)$cond))
             ->orderBy('created_at', 'desc')->get();

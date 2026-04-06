@@ -2,22 +2,59 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\ScopeArea;
+use App\CallType;
+use App\Condition;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 class Incident extends Model
 {
-
-   protected $guarded = [];
+    protected $fillable = [
+        'incident_type_id',
+        'call_type_id',
+        'is_training',
+        'is_important',
+        'district_id',
+        'street',
+        'house_number',
+        'corpus_number',
+        'apartment_number',
+        'entrance_number',
+        'floor',
+        'number_of_floors',
+        'ownership',
+        'building',
+        'additional_street',
+        'district_of_city',
+        'object',
+        'longitude',
+        'latitude',
+        'road',
+        'metre',
+        'km',
+        'is_nearby',
+        'address_section',
+        'additional_info',
+        'emergency_threat',
+        'threat_to_people',
+        'number_of_victims',
+        'emergency_type_id',
+        'description',
+        'applicant_info',
+        'incoming_number',
+    ];
+   protected $guarded = [
+       'condition'
+   ];
     protected $casts = [
         'applicant_info' => 'array',
-        'services_info' => 'array',
         'is_training' => 'boolean',
         'is_important' => 'boolean',
         'emergency_threat' => 'boolean',
         'threat_to_people' => 'boolean',
-        'is_nearby' => 'boolean'
+        'is_nearby' => 'boolean',
+        'call_type_id' => CallType::class,
+        'condition' => Condition::class,
     ];
     #[Scope]
     protected function scopeArea(Builder $builder):void
@@ -45,16 +82,6 @@ class Incident extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function callType()
-    {
-        return $this->belongsTo(CallType::class);
-    }
-
-    public function services()
-    {
-        return $this->belongsToMany(Service::class, 'incident_service');
     }
 
     public function type()

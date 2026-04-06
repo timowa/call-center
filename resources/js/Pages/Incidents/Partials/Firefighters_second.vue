@@ -3,6 +3,7 @@
 import FormGroup from "@/Components/Form/FormGroup.vue";
 import FormField from "@/Components/Form/FormField.vue";
 import {inject} from "vue";
+import {FireReportDirectories} from "@/Utils/FireReportDirectories.js";
 
 defineProps(['form']);
 const stvolColumns = [
@@ -30,7 +31,6 @@ const personnel = [
     {key: 'post', label: 'Должность', type: 'text'},
 ];
 
-const {water_sources} = inject('fireReportDirectories');
 </script>
 
 <template>
@@ -44,7 +44,7 @@ const {water_sources} = inject('fireReportDirectories');
     <FormGroup :cols="6">
         <FormField label="Расход воды (л)" :vertical="true" v-model="form.water_consumption"/>
         <FormField label="Время подачи первого ствола (мин)" :vertical="true" v-model="form.first_water_barrel_minutes"/>
-        <FormField label="Водоисточник" :vertical="true" type="select" v-model="form.water_source" :options="water_sources"/>
+        <FormField label="Водоисточник" :vertical="true" type="select" v-model="form.water_source" :options="FireReportDirectories.fireService.water_sources"/>
     </FormGroup>
 </template>
 

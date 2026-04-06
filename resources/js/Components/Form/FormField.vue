@@ -26,7 +26,8 @@ const props = defineProps({
     vertical: {
         type: Boolean,
         default: false
-    }
+    },
+    error: String
 });
 const inputs = {
     text: TextInput,
@@ -64,7 +65,8 @@ const inputClasses = computed(()=>{
     if (isCheckbox || props.vertical) return {};
     return {
         'col-start-2': true,
-        [colEnd[props.colSpan]]: true
+        [colEnd[props.colSpan]]: true,
+        'shadow-red-700 shadow-md': !!props.error
     }
 });
 const display = computed(()=>{
