@@ -2,10 +2,43 @@
 
 namespace App\Models;
 
+use App\Condition;
 use Illuminate\Database\Eloquent\Model;
 
 class FireReport extends Model
 {
+    protected $fillable = [
+        'report_type_id',
+        'is_error_card',
+        'type_of_fire_protection',
+        'object_id',
+        'object_type_id',
+        'plan',
+        'rank',
+        'card_number',
+        'shift',
+        'water_consumption',
+        'dead_total',
+        'dead_children',
+        'dead_staff',
+        'injured_children',
+        'injured_staff',
+        'rescued_children',
+        'rescued_staff',
+        'violated_children',
+        'violated_staff',
+        'info',
+        'barrels',
+        'fire_extinguishing_agents',
+        'rtp',
+        'personnel',
+        'gdzs',
+        'cause_id',
+        'localized_at',
+        'fire_elimination_at',
+        'elimination_at',
+        'viewed_at',
+    ];
     protected $casts = [
         'info' => 'array',
         'barrels' => 'array',
@@ -14,8 +47,9 @@ class FireReport extends Model
         'personnel' => 'array',
         'gdzs' => 'array',
         'is_error_card' => 'boolean',
+        'condition' => Condition::class,
     ];
-    protected $guarded = [];
+    protected $guarded = ['condition'];
 
     public static function getTypesOfProtection()
     {

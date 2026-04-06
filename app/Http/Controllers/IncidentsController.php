@@ -13,10 +13,12 @@ use App\Models\FireReportType;
 use App\Models\Incident;
 use App\Models\UrbanObject;
 use App\Models\UrbanObjectType;
+use App\Service;
 use App\SourceType;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
@@ -101,10 +103,24 @@ class IncidentsController extends Controller
     public function store(IncidentRequest $request)
     {
         try {
-            $incident = new Incident();
-            $incident->fill($request->all());
-            $incident->user()->associate(Auth::user());
-            $incident->save();
+            DB::transaction(function () use ($request) {
+                $incident = new Incident();
+                $incident->fill($request->all());
+                $incident->user()->associate(Auth::user());
+                $incident->save();;
+
+                if ($request->filled('services')) {
+                    foreach ($request->services as $service_id) {
+                        $service = Service::from($service_id);
+                        if ($service->hasRelatedModel()) {
+                            if ($service === Service::FIREFIGHTERS) {
+                                $incident->fireReport()->create($request->fireReport);
+                            }
+                        }
+                    }
+                }
+            });
+
             return redirect()->route('dashboard')->with([
                 'message' => 'Карточка успешно создана',
                 'type' => 'success'

@@ -2,6 +2,8 @@
 
 namespace App;
 
+use App\Models\FireReport;
+
 enum Service: int
 {
     CASE FIREFIGHTERS = 1;
@@ -19,5 +21,21 @@ enum Service: int
             self::EDDS => 'Газ',
             self::ANTITERROR => 'Антитеррор'
         };
+    }
+
+    public function getRelatedModel()
+    {
+        return match ($this) {
+            self::FIREFIGHTERS => FireReport::class,
+            self::POLICE => null,
+            self::EMERGENCY => null,
+            self::EDDS => null,
+            self::ANTITERROR => null
+        };
+    }
+
+    public function hasRelatedModel()
+    {
+        return $this->getRelatedModel() !== null;
     }
 }
