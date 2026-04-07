@@ -288,8 +288,8 @@ watch(() => form.errors, (errors) => {
                         <PrimaryButton :disabled="form.processing" @click="submit('help')">Справочный</PrimaryButton>
                         <PrimaryButton :disabled="form.processing" @click="submit('false')">Ложный</PrimaryButton>
                         <PrimaryButton :disabled="form.processing" @click="submit('child')">Детская шалость</PrimaryButton>
-                        <PrimaryButton :disabled="form.processing || form.call_type === 0" >Передать без вызова</PrimaryButton>
-                        <PrimaryButton :disabled="form.processing || form.call_type === 0" >Переать с вызовом</PrimaryButton>
+                        <PrimaryButton :disabled="form.processing || form.call_type === 0" @click="submit" >Передать без вызова</PrimaryButton>
+                        <PrimaryButton :disabled="form.processing || form.call_type === 0" @click="submit" >Переать с вызовом</PrimaryButton>
                     </div>
 
                 </div>

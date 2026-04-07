@@ -16,7 +16,7 @@ const props = defineProps({
         required: true
     }
 });
-const emit = defineEmits(['close', 'submit']);
+const emit = defineEmits(['close', 'submit', 'reset']);
 
 </script>
 
@@ -26,8 +26,8 @@ const emit = defineEmits(['close', 'submit']);
     <form id="filter-form">
         <div>
             <FormGroup title="Тип происшествия">
-                    <FormField label="Служба" name="sl" :col-span="1" type="select" :options="directories.services" v-model="form.service_id"></FormField>
-                    <FormField label="Тип вызова" name="ad" :col-span="1" type="select" :options="directories.callTypes" v-model="form.call_type_id"></FormField>
+                    <FormField label="Служба" name="sl" :col-span="1" type="select" :options="dictionaries.services" v-model="form.service_id"></FormField>
+                    <FormField label="Тип вызова" name="ad" :col-span="1" type="select" :options="dictionaries.callTypes" v-model="form.call_type_id"></FormField>
                     <div class="col-span-2 flex gap-4">
                         <FormField name="d" label="Учебная" type="checkbox" v-model:checked="form.is_training"/>
                         <FormField name="s" label="Важная" type="checkbox" v-model:checked="form.is_important"/>
@@ -72,7 +72,7 @@ const emit = defineEmits(['close', 'submit']);
     </form>
     <template #footer>
         <div class="flex justify-between">
-            <LinkButton @click="form.reset()">Сбросить</LinkButton>
+            <SecondaryButton @click="emit('reset')">Сбросить</SecondaryButton>
             <div>
                 <SecondaryButton class="mr-4" @click="emit('close')"> Закрыть</SecondaryButton>
                 <PrimaryButton @click="emit('submit')">Сохранить</PrimaryButton>

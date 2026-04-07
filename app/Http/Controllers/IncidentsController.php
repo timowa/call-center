@@ -151,9 +151,29 @@ class IncidentsController extends Controller
                 'fireReport:id,condition,incident_id',
                 'eddsReport:id,condition,incident_id',
             ])
-
+            ->when($request->service_id, function ($q, $service_id) {
+                $service = Service::from($service_id);
+                if ($service->hasRelatedModel()) {
+                    if ($service === Service::FIREFIGHTERS) {
+                        $q->whereHas('fireReport');
+                    }
+                    if ($service === Service::EDDS) {
+                        $q->whereHas('eddsReport');
+                    }
+                }
+            })
             ->when($request->call_type_id, fn($q, $id) => $q->where('call_type_id', $id))
-            ->when($request->conditions, fn($q, $cond) => $q->whereIn('condition', (array)$cond))
+            ->when($request->conditions, function($q, $cond) {
+                if (Auth::user()->hasRole('cov_112')) {
+                    $q->whereIn('condition', (array)$cond);
+                }
+                if (Auth::user()->hasRole('op_01')) {
+                    $q->whereHas('fireReport', fn ($q, ) => $q->whereIn('condition', (array)$cond));
+                }
+                if (Auth::user()->hasRole('edds')) {
+                    $q->whereHas('eddsReport', fn ($q, ) => $q->whereIn('condition', (array)$cond));
+                }
+            })
             ->orderBy('created_at', 'desc')->get();
 
 

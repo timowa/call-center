@@ -14,6 +14,7 @@ import IncidentsTable from "@/Pages/Dashboard/Incidents/Partials/IncidentsTable.
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import ActiveFilterButton from "@/Components/ActiveFilterButton.vue";
 import {getConditionLabel} from "@/Utils/conditions.js";
+import {useIncidentFilters} from "@/Composables/useIncidentsFilter.js";
 const props = defineProps(['incidents']);
 provide('incidents', computed(() => props.incidents));
 
@@ -33,6 +34,7 @@ const showAlarmOverlay = ref(false);
 const audio = ref(null);
 
 const activateAlarm = () => {
+    stopPolling()
     showAlarmOverlay.value = true;
 
     if (!audio.value) {
@@ -53,126 +55,23 @@ const acceptCall = () => {
     router.get(route('incidents.create-from-call'));
 };
 
-const isFilterOpen = ref(false);
-const savedFilters = JSON.parse(localStorage.getItem('filter')) || {};
-const filterForm = useForm({
-    ...{
-        service_id: null,
-        call_type_id: null,
-        is_training: false,
-        is_important: false,
-        emergency_threat: false,
-        period_day: false,
-        period_custom: false,
-        period: [],
-        conditions: [],
-        area_id: null,
-        district_id: null,
-        source_id: null,
-        creator: null,
-        incoming_number: null,
-        applicant_lastname: null,
-        applicant_firstname: null,
-        applicant_surname: null,
-        applicant_phone: null,
-    },
-    ...savedFilters
-
-});
-const getFilterLabel = (key) => {
-    const labels = {
-        service_id: 'Служба',
-        call_type_id: 'Тип вызова',
-        is_training: 'Учебная',
-        is_important: 'Важная',
-        emergency_threat: 'Экстримальный',
-        period_day: 'Период: 24 часа',
-        period_custom: 'Указанный период',
-        conditions: 'Сосотяния',
-        area_id: 'Район',
-        district_id: 'Округ',
-        source_id: 'Источник',
-        creator: 'Создатель',
-        incoming_number: 'Номер звонящего',
-        applicant_lastname: 'Фамилия заявителя',
-        applicant_firstname: 'Имя заявителя',
-        applicant_surname: 'Отчество заявителя',
-        applicant_phone: 'Номер телефона заявителя',
-    };
-    return labels[key] || key;
-};
-const formatFilterValue = (key) => {
-    const value = filterForm[key];
-
-    if (Array.isArray(value)) {
-        if (key === 'conditions') {
-            return Object.values(value).map((condition) => {
-                return getConditionLabel(condition)
-            }).join(', ')
-        }
-    };
-    if (typeof value === 'boolean') return 'Да';
-    return value;
-};
-const clearSingleFilter = (key) => {
-    filterForm[key] = Array.isArray(filterForm[key]) ? [] : null;
-    if (typeof filterForm[key] === 'boolean') filterForm[key] = false;
-    applyFilters();
-};
-const applyFilters = () => {
-    localStorage.setItem('filter', JSON.stringify(filterForm.data()));
-    isFilterOpen.value = false;
-    updateTable();
-};
-
-const updateTable = () => {
-    if (isFilterOpen.value === true) {
-        return;
-    }
-    filterForm.post(route('incidents.dashboard'), {
-        preserveState: true,
-        preserveScroll: true,
-        only: ['incidents'],
-        onSuccess: () => {
-            isFilterOpen.value = false;
-        }
-    });
-}
-
-let interval = null;
-
-onUnmounted(() => {
-    clearInterval(interval);
-});
-
 onMounted(() => {
-    const saved = localStorage.getItem('filter');
-    if (saved) {
-        filterForm.defaults(JSON.parse(saved));
-        filterForm.reset();
-    }
-    updateTable();
-});
+    startPolling()
+})
 
-const activeFilters = computed(() => {
-    const data = filterForm.data();
-
-    return Object.keys(data).reduce((acc, key) => {
-        const value = data[key];
-        const isFilled =
-            value !== null &&
-            value !== undefined &&
-            value !== '' &&
-            !(Array.isArray(value) && value.length === 0) &&
-            !(typeof value === 'boolean' && value === false);
-
-        if (isFilled) {
-            acc[key] = value;
-        }
-
-        return acc;
-    }, {});
-});
+const {
+    isFilterOpen,
+    filterForm,
+    activeFilters,
+    getFilterLabel,
+    formatFilterValue,
+    applyFilters,
+    resetFilters,
+    clearSingleFilter,
+    updateTable,
+    startPolling,
+    stopPolling
+} = useIncidentFilters();
 
 </script>
 
@@ -233,7 +132,7 @@ const activeFilters = computed(() => {
         </template>
 
         <IncidentsTable/>
-        <FilterModal :show="isFilterOpen" @close="isFilterOpen = false" :form="filterForm" @submit="applyFilters" @reset="applyFilters"/>
+        <FilterModal :show="isFilterOpen" @close="isFilterOpen = false" :form="filterForm" @submit="applyFilters" @reset="resetFilters"/>
 
         <template #right-panel>
             <IncidentPreview></IncidentPreview>
