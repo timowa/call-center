@@ -106,7 +106,7 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
             <FormField label="Дата обращения" v-model="form.created_at.date" :readonly="true"  />
             <FormField label="Время регистрации" v-model="form.created_at.time" :readonly="true"  :text-align="'right'" />
             <FormField label="Создатель" v-model="form.creator" :readonly="true"  :text-align="'right'" />
-            <FormField label="Тип происшествия" type="select" v-model="form.incident_type" :col-span="4" :grid-col="4" :options="incidentTypes"/>
+            <FormField label="Тип происшествия" type="select" v-model="form.incident_type_id" :col-span="4" :grid-col="4" :options="incidentTypes"/>
             <FormField label="Источник" v-model="form.source_id" type="select" :options="sources"  :text-align="'right'" :readonly="true"/>
             <FormField label="Тип вызова"
                        type="select"

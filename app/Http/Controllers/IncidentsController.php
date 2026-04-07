@@ -57,11 +57,20 @@ class IncidentsController extends Controller
         $incident = Incident::findOrFail($id);
         event(new IncidentCardViewed($incident));
 
-        $incident->load(['user', 'type', 'fireReport']);
+        $incident->load(['user', 'type']);
         $incident->created_at_dt = [
             'date' => $incident->created_at->format('Y-m-d'),
             'time' => $incident->created_at->format('H:i:s'),
         ];
+        $services = [];
+        if (!is_null($incident->fireReport)) {
+            $services[] = Service::FIREFIGHTERS;
+        }
+        if (!is_null($incident->eddsReport)) {
+            $services[] = Service::EDDS;
+        }
+        $incident->services = $services;
+
 
         $incident->processingTime = 129;
 

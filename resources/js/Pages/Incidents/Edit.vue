@@ -51,6 +51,7 @@ const filteredCallTypes = computed(() => {
 })
 
 provide('viewMode', viewMode)
+console.log(filteredCallTypes.value)
 provide('directories', {
     callTypes: filteredCallTypes.value,
     incidentTypes: page.props.directories.incidentTypes,
@@ -66,7 +67,7 @@ provide('mapCoordinates', {
     setCoordinates: (val) => mapCoordinates.value = val
 })
 
-
+console.log(props.incident)
 const form = useForm({
     id: props.incident.id ?? 0,
     created_at: {
@@ -77,9 +78,9 @@ const form = useForm({
     incoming_number: props.incident.incoming_number ?? 0,
     condition: props.incident.condition ?? 0,
     creator: props.incident.user ? props.incident.user.name : user.name,
-    call_type_id: user.value.call_type_id ?? (props.incident.call_type ? props.incident.call_type?.id : null),
+    call_type_id: props.incident.call_type_id ?? (user.value.call_type_id ?? null),
     services: props.incident.services ?? [],
-    incident_type: props.incident.type ? props.incident.type.id : null,
+    incident_type_id: props.incident.type ? props.incident.type.id : null,
     source_id: props.incident.source_id ?? 0,
     is_training: props.incident.is_training ?? false,
     is_important: props.incident.is_important ?? false,
