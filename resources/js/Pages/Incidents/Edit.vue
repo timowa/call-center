@@ -84,7 +84,7 @@ const form = useForm({
     source_id: props.incident.source_id ?? 0,
     is_training: props.incident.is_training ?? false,
     is_important: props.incident.is_important ?? false,
-    area_id: user.value.area_id ?? props.incident?.area_id ?? null,
+    area_id: props.incident.area_id ?? (user.value.area_id ?? null),
     district_id: props.incident?.district_id ?? null,
     street: props.incident.street ?? null,
     house_number: props.incident.house_number ?? null,
