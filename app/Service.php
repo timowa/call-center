@@ -12,6 +12,7 @@ enum Service: int
     CASE EMERGENCY = 3;
     CASE EDDS = 4;
     CASE ANTITERROR = 5;
+    CASE GAS = 6;
 
     public function label():string
     {
@@ -19,8 +20,9 @@ enum Service: int
             self::FIREFIGHTERS => 'Пожарные',
             self::POLICE => 'Полиция',
             self::EMERGENCY => 'Скорая',
-            self::EDDS => 'Газ',
-            self::ANTITERROR => 'Антитеррор'
+            self::EDDS => 'ЕДДС/ЖКХ',
+            self::ANTITERROR => 'Антитеррор',
+            self::GAS => 'Газ'
         };
     }
 
@@ -31,7 +33,8 @@ enum Service: int
             self::POLICE => null,
             self::EMERGENCY => null,
             self::EDDS => EddsReport::class,
-            self::ANTITERROR => null
+            self::ANTITERROR => null,
+            self::GAS => null,
         };
     }
 
