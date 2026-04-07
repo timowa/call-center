@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Models\EddsReport;
 use App\Models\FireReport;
 
 enum Service: int
@@ -29,7 +30,7 @@ enum Service: int
             self::FIREFIGHTERS => FireReport::class,
             self::POLICE => null,
             self::EMERGENCY => null,
-            self::EDDS => null,
+            self::EDDS => EddsReport::class,
             self::ANTITERROR => null
         };
     }

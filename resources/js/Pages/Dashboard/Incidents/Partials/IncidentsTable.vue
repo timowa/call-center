@@ -41,14 +41,7 @@ const tableColumns = ref([
     {data: 'creator', title: 'Создатель', visible: true},
     {data: 'operator', title: 'ФИО Оператора', visible: true},
     {data: 'id', title: 'УКИО', visible: true},
-    {data: (i, l, c) => {
-            if (user.value.roles.includes('cov_112')) {
-                return i.condition;
-            }
-            if (user.value.roles.includes('op_01')) {
-                return i.fireReport?.condition
-            }
-        }, title: 'Состояние', visible: true},
+    {data: 'condition', title: 'Состояние', visible: true},
     {data: 'call_type', title: 'Тип вызова', visible: true},
     {data: 'incoming_number', title: 'Номер звонящего', visible: true},
     {data: 'dialed_number', title: 'Набранный номер', visible: true},

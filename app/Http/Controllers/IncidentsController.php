@@ -30,6 +30,11 @@ class IncidentsController extends Controller
     {
         $incident = new Incident();
         $incident->source_id = $sourceType;
+
+        if ($sourceType === SourceType::CALL) {
+            $incident->incoming_number = fake()->numerify('7##########');
+        }
+
         return Inertia::render('Incidents/Edit', ['incident' => $incident, 'sourceType' => $sourceType, 'mode' => 'create']);
     }
 
@@ -50,6 +55,8 @@ class IncidentsController extends Controller
             $mode = 'view';
         }
         $incident = Incident::findOrFail($id);
+        event(new IncidentCardViewed($incident));
+
         $incident->load(['user', 'type', 'fireReport']);
         $incident->created_at_dt = [
             'date' => $incident->created_at->format('Y-m-d'),
@@ -57,7 +64,6 @@ class IncidentsController extends Controller
         ];
 
         $incident->processingTime = 129;
-
 
         return Inertia::render('Incidents/Edit', [
             'incident'       => $incident,
@@ -109,6 +115,9 @@ class IncidentsController extends Controller
                             if ($service === Service::FIREFIGHTERS) {
                                 $incident->fireReport()->create($request->fireReport);
                             }
+                            if ($service === Service::EDDS) {
+                                $incident->eddsReport()->create($request->eddsReport);
+                            }
                         }
                     }
                 }
@@ -140,23 +149,34 @@ class IncidentsController extends Controller
                 'user:id,name',
                 'district:id,name',
                 'fireReport:id,condition,incident_id',
+                'eddsReport:id,condition,incident_id',
             ])
 
             ->when($request->call_type_id, fn($q, $id) => $q->where('call_type_id', $id))
             ->when($request->conditions, fn($q, $cond) => $q->whereIn('condition', (array)$cond))
             ->orderBy('created_at', 'desc')->get();
+
+
         $incidents->transform(function ($incident) {
+            $condition = $incident->condition;
+            if (Auth::user()->hasRole('op_01')) {
+                $condition = $incident->fireReport?->condition;
+            }
+            if (Auth::user()->hasRole('edds')) {
+                $condition = $incident->eddsReport?->condition;
+            }
             return [
                 'id' => $incident->id,
                 'datetime' => $incident->created_at->toDateTimeString(),
                 'creator' => $incident->user->name ?? 'Система',
                 'operator' => '33 22 11',
-                'condition' => $incident->condition,
+                'condition' => $condition,
                 'call_type' => $incident->call_type_id->label(),
                 'incoming_number' => $incident->incoming_number,
                 'dialed_number' => '88005553535',
                 'district_name' => $incident->district->name ?? 'Не указано',
                 'fireReport' => $incident->fireReport,
+                'eddsReport' => $incident->eddsReport,
             ];
         });
         return Inertia::render('Dashboard', ['incidents' => $incidents]);

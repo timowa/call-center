@@ -81,6 +81,27 @@ class Incident extends Model
         if ($user->hasRole('op_01')) {
             $builder->whereHas('fireReport');
         }
+        if ($user->hasRole('edds')) {
+            $builder->whereHas('eddsReport');
+        }
+    }
+
+    public function updateCondition(): void
+    {
+        $activeConditions = collect([
+            $this->fireReport?->condition,
+            $this->eddsReport?->condition,
+        ])->filter();
+
+        if ($activeConditions->isEmpty()) return;
+
+        $newCondition = collect(Condition::cases())
+            ->first(fn($case) => $activeConditions->contains($case));
+
+        if ($newCondition && $this->condition !== $newCondition) {
+            $this->condition = $newCondition;
+            $this->save();
+        }
     }
 
 
@@ -108,6 +129,11 @@ class Incident extends Model
     public function fireReport()
     {
         return $this->hasOne(FireReport::class, 'incident_id', 'id');
+    }
+
+    public function eddsReport()
+    {
+        return $this->hasOne(EddsReport::class, 'incident_id', 'id');
     }
 
 

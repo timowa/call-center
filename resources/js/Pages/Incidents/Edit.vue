@@ -15,6 +15,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import Block from "@/Components/Block.vue";
 import {userHasPermissionTo} from "@/Utils/permissions.js";
 import LinkButton from "@/Components/LinkButton.vue";
+import {getEDDSDefaults} from "@/Utils/EDDSForm.js";
 
 const props = defineProps(['incident', 'fireReportData', 'flash', 'mode']);
 const createMode = computed(() => props.mode === 'create');
@@ -128,31 +129,7 @@ const form = useForm({
         additional_info: '',
         language: ''
     },
-    services_info: props.incident.services_info || {
-        EDDS: {
-            info: {
-                type: '',
-                company: '',
-                instruction: '',
-                message: '',
-                additional_info: '',
-                elimination_datetime: '',
-                is_consultation: false,
-            },
-            results: {
-                forces: '',
-                departure_datetime: '',
-                arrival_datetime: '',
-                elimination_datetime: '',
-                applicant_feedback_datetime: '',
-                dispatcher: '',
-                take_actions: ''
-            },
-            response: {
-
-            }
-        },
-    },
+    eddsReport: getEDDSDefaults(props.incident.edds_report),
     fireReport: getFireReportDefaults(props.incident.fire_report),
     actionType: ''
 });
@@ -167,7 +144,8 @@ const tabs = computed(() => ({
         template: EDDS,
         title: 'ЕДДС/ЖКХ',
         show: form.services.includes(page.props.constants.services.EDDS) && userHasPermissionTo('edds.view'),
-        service_id: page.props.constants.services.EDDS
+        service_id: page.props.constants.services.EDDS,
+        condition: getCondition(props.incident.edds_report?.condition)
     },
     FIREFIGHTERS: {
         template: Firefighters,
@@ -199,7 +177,9 @@ watch(() => tabs.value.EDDS.show, (isVisible) => {
 });
 const currentTab = ref('UKIO');
 const currentRightTab = ref('map');
-
+const mayBeCompleted = computed(() => {
+    return [page.props.constants.callTypes.HELP, page.props.constants.callTypes.FALSE, page.props.constants.callTypes.CHILD].includes(form.call_type_id)
+});
 const submit = (actionType) => {
     if (createMode.value) {
         form.actionType = actionType;
@@ -298,11 +278,10 @@ watch(() => form.errors, (errors) => {
                     <LinkButton :href="route('incidents.dashboard')">Отмена</LinkButton>
 
                     <PrimaryButton v-if="viewMode" @click="router.get(route('incidents.edit', incident.id));" type="button">Редактировать</PrimaryButton>
-                    <PrimaryButton v-if="editMode" @click="submit">Сохранить</PrimaryButton>
 
-                    <div v-if="createMode && form.source_id === page.props.constants.sources.INSTANT" class="flex gap-2">
+                    <div v-if="(createMode && form.source_id === page.props.constants.sources.INSTANT) || editMode" class="flex gap-2">
                         <PrimaryButton @click="submit">Сохранить</PrimaryButton>
-                        <PrimaryButton @click="submit('complete')">Завершить работу с карточкой</PrimaryButton>
+                        <PrimaryButton @click="submit('complete')" v-if="mayBeCompleted">Завершить работу с карточкой</PrimaryButton>
                     </div>
 
                     <div v-if="createMode && form.source_id === page.props.constants.sources.CALL" class="flex gap-2">

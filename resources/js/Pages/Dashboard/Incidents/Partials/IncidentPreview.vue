@@ -27,7 +27,7 @@ const previewData = computed(() => {
         {'title': '03', 'ref': ''},
         {'title': '04', 'ref': ''},
         {'title': 'АТ', 'ref': ''},
-        {'title': 'ЕЖС', 'ref': ''},
+        {'title': 'ЕДДС', 'ref': selectedIncident.value.eddsReport?.condition, key: 'condition'},
         {'title': 'Тип вызова', 'ref': selectedIncident.value.call_type},
         {'title': 'Номер звонящего', 'ref': selectedIncident.value.incoming_number},
         {'title': 'Набранный номер', 'ref': selectedIncident.value.dialed_number},

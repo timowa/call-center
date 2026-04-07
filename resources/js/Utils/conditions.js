@@ -18,7 +18,7 @@ const getDictionary = () => {
 
 export const getCondition = (id) => {
     const dict = getDictionary();
-    return dict[id] || { color: 'bg-gray-400', name: 'Неизвестно' };
+    return dict[id] || { color: 'bg-gray-400', name: '' };
 };
 
 export const getConditionLabel = (id) => getCondition(id).name;

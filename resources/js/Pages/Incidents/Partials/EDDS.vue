@@ -67,7 +67,7 @@ const currentTabEDDS = ref(1);
         </TabsHeader>
         <Block>
             <keep-alive>
-                <component :is="tabs[currentTabEDDS].template" :form="form.services_info.EDDS" v-bind="$attrs"/>
+                <component :is="tabs[currentTabEDDS].template" :form="form.eddsReport" v-bind="$attrs"/>
             </keep-alive>
 
         </Block>
