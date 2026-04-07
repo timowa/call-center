@@ -1,5 +1,5 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useForm, usePage } from '@inertiajs/vue3';
+import {router, useForm, usePage} from '@inertiajs/vue3';
 import {getConditionLabel} from "@/Utils/conditions.js";
 
 export function useIncidentFilters() {
@@ -84,7 +84,7 @@ export function useIncidentFilters() {
 
         if (isFilterOpen.value) return;
 
-        filterForm.post(route('incidents.dashboard'), {
+        filterForm.get(route('incidents.dashboard'), {
             preserveState: true,
             preserveScroll: true,
             only: ['incidents'],
@@ -144,6 +144,20 @@ export function useIncidentFilters() {
 
     onMounted(() => {
         updateTable();
+
+        const removeStartListener = router.on('start', () => {
+            stopPolling();
+        });
+
+        const removeErrorListener = router.on('error', () => {
+            startPolling();
+        });
+
+        onUnmounted(() => {
+            stopPolling();
+            removeStartListener();
+            removeErrorListener();
+        });
     });
 
     return {

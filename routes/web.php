@@ -15,7 +15,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
 
-    Route::match(['get', 'post'],'/incidents/dashboard', [IncidentsController::class, 'dashboard'])->name('incidents.dashboard');
+    Route::get('/incidents/dashboard', [IncidentsController::class, 'dashboard'])->name('incidents.dashboard');
 
     Route::get('/incidents/create-instant', [IncidentsController::class, 'createInstant'])->name('incidents.create-instant');
     Route::get('/incidents/create-from-call', [IncidentsController::class, 'createFromCall'])->name('incidents.create-from-call');
