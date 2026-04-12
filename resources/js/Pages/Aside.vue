@@ -1,8 +1,10 @@
 <script setup>
-import {ref} from "vue";
+import {inject, ref} from "vue";
 
 const phone = ref('');
 import TextInput from "@/Components/Form/TextInput.vue";
+
+const {getActiveMode} = inject('workMode');
 </script>
 
 <template>
@@ -11,7 +13,7 @@ import TextInput from "@/Components/Form/TextInput.vue";
     <span class="text-md text-white">Управление активностями</span>
 </div>
     <div class="text-xl text-center py-4">
-        <span>Заблокирован</span>
+        <span>{{ getActiveMode().sidebarTitle }}</span>
     </div>
     <div class="px-2">
         <TextInput :placeholder="'Введите номер'" class="w-full" model-value="phone"></TextInput>

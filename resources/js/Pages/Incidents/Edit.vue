@@ -1,6 +1,6 @@
 
 <script setup>
-import {Head, router, useForm, usePage} from "@inertiajs/vue3";
+import {Head, Link, router, useForm, usePage} from "@inertiajs/vue3";
 import {computed, onUnmounted, provide, ref, watch, inject} from "vue";
 import UKIO from "@/Pages/Incidents/Partials/UKIO.vue";
 import EDDS from "@/Pages/Incidents/Partials/EDDS.vue";
@@ -67,7 +67,6 @@ provide('mapCoordinates', {
     setCoordinates: (val) => mapCoordinates.value = val
 })
 
-console.log(props.incident)
 const form = useForm({
     id: props.incident.id ?? 0,
     created_at: {
@@ -241,6 +240,17 @@ watch(() => form.errors, (errors) => {
 <template>
     <Head title="Dashboard" />
     <AuthenticatedLayout>
+        <template #top-content>
+            <Link :href="route('dashboard')">
+                <span class="flex">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="mi-outline mi-chevron-left" viewBox="0 0 24 24">
+                        <path d="M14.71 6.71a.996.996 0 0 0-1.41 0L8.71 11.3a.996.996 0 0 0 0 1.41l4.59 4.59a.996.996 0 1 0 1.41-1.41L10.83 12l3.88-3.88c.39-.39.38-1.03 0-1.41"/>
+                    </svg>
+                    Обработка карточки
+                </span>
+
+            </Link>
+        </template>
         <template #main-tabs>
             <TabsHeader>
                 <TabHeaderButton

@@ -3,7 +3,7 @@
 import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import IncidentPreview from "@/Pages/Dashboard/Incidents/Partials/IncidentPreview.vue";
 import TabPageButton from "@/Components/TabPageButton.vue";
-import {Head, router, useForm, usePage} from "@inertiajs/vue3";
+import {Head, Link, router, useForm, usePage} from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import LinkButton from "@/Components/LinkButton.vue";
 import ActiveFiltersRow from "@/Components/ActiveFiltersRow.vue";
@@ -19,16 +19,12 @@ const props = defineProps(['incidents']);
 provide('incidents', computed(() => props.incidents));
 
 const selectedIncident = ref(null);
-const page = usePage();
 provide('selectedIncident', {
     data: selectedIncident,
     setSelected: (val) => {
         selectedIncident.value = val
     }
 });
-
-const currentTab = ref('incidents')
-
 
 const showAlarmOverlay = ref(false);
 const audio = ref(null);
@@ -73,6 +69,11 @@ const {
     stopPolling
 } = useIncidentFilters();
 
+const currentTab = ref('incidents')
+const tabs = [
+    {title: 'Происшествия', name: 'incidents'},
+    {title: 'Отчеты', name: 'reports'},
+];
 </script>
 
 <template>
@@ -89,6 +90,8 @@ const {
                     :active="currentTab === name"
                 />
             </div>
+        </template>
+        <template #top-content-2>
             <div class="flex justify-between">
                 <div class="flex gap-12">
                     <span class="text-lg">Карточки происшествий</span>

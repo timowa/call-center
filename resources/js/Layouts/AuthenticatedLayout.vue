@@ -10,37 +10,44 @@ import Noty from 'noty';
 const modes = [
     {
         id: 0,
-        title: 'Разблокирован',
+        buttonTitle: 'Готов',
+        sidebarTitle: 'В работе',
         actionTitle: 'Разблокироваться'
     },
     {
         id: 1,
-        title: 'Вызов к руководству',
+        buttonTitle: 'Вызов к руководству',
+        sidebarTitle: 'Вызов к руководству',
         actionTitle: 'Вызов к руководству'
     },
     {
         id: 2,
-        title: 'Технический перерыв',
+        buttonTitle: 'Технический перерыв',
+        sidebarTitle: 'Технический перерыв',
         actionTitle: 'Техническая неисправность'
     },
     {
         id: 3,
-        title: 'Обед',
+        buttonTitle: 'Обед',
+        sidebarTitle: 'Обед',
         actionTitle: 'Обед'
     },
     {
         id: 4,
-        title: 'Туалет',
+        buttonTitle: 'Туалет',
+        sidebarTitle: 'Туалет',
         actionTitle: 'Туалет'
     },
     {
         id: 5,
-        title: 'Обучение',
+        buttonTitle: 'Обучение',
+        sidebarTitle: 'Обучение',
         actionTitle: 'Обучение'
     },
     {
         id: 6,
-        title: 'Заблокирован',
+        buttonTitle: 'Заблокирован',
+        sidebarTitle: 'Заблокирован',
         actionTitle: 'Заблокироваться'
     }
 ];
@@ -119,8 +126,16 @@ watch(() => page.props.errors, (errors) => {
 
             <main class="flex-1 bg-grey-200 border-gray-300 border-2 rounded-md p-3 flex flex-col overflow-hidden">
 
-                <div v-if="$slots['top-content']" class="flex flex-col gap-3 flex-shrink-0">
-                    <slot name="top-content" />
+                <div class="flex flex-col gap-3 flex-shrink-0">
+                    <div class="flex justify-between">
+                        <slot name="top-content" />
+                        <div>
+                            <span class="text-grey-350 ">{{$page.props.auth.user.name}}</span>
+                        </div>
+                    </div>
+                    <div v-if="$slots['top-content-2']">
+                         <slot name="top-content-2"/>
+                    </div>
                 </div>
 
                 <div class="grid grid-rows-[auto_1fr] flex-1 overflow-hidden gap-x-6"

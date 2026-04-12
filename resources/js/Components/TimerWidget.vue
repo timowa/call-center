@@ -1,5 +1,6 @@
 <script setup>
 import {ref, onMounted, onUnmounted, inject} from 'vue';
+import Dropdown from "@/Components/Dropdown.vue";
 const formatTime = (totalSeconds) => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -18,26 +19,24 @@ const {getActiveMode, setActiveMode, seconds} = inject('workMode');
 </script>
 
 <template>
-    <div class="relative">
-        <button class="px-10 py-2 w-auto bg-primary-light text-white rounded-md flex"
-        @click="dropdownActive = !dropdownActive"
-        >
-            <span class="px-10 font-semibold text-lg flex flex-col justify-center">{{ getActiveMode().title }}</span>
-            <span class="font-mono font-bold underline flex flex-col justify-center">
-        {{ formatTime(seconds) }}
-    </span>
-        </button>
-        <Transition name="slide-fade">
-        <div class="bg-white absolute flex flex-col py-4 will-change-transform"
-             v-show="dropdownActive">
-            <button v-for="mode in modes"
-                    @click="setActiveMode(mode.id); dropdownActive = false"
-                    v-html="mode.actionTitle"
-                    class="p-3 text-left text-grey-400 hover:bg-gray-100"
+    <Dropdown align="left" width="w-64">
+        <template #trigger>
+            <button class="px-10 py-2 bg-primary-light text-white rounded-md flex">
+                <span class="px-10 font-semibold text-lg">{{ getActiveMode().buttonTitle }}</span>
+                <span class="font-mono font-bold underline">{{ formatTime(seconds) }}</span>
+            </button>
+        </template>
+
+        <template #content>
+            <button
+                v-for="mode in modes"
+                :key="mode.id"
+                @click="setActiveMode(mode.id)"
+                class="p-3 text-left text-grey-400 hover:bg-gray-100"
+                v-html="mode.actionTitle"
             ></button>
-        </div>
-        </Transition>
-    </div>
+        </template>
+    </Dropdown>
 
 </template>
 

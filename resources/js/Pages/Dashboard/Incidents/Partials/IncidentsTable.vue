@@ -62,7 +62,8 @@ const tableOptions = ref({
             last: "Последняя",
             next: "Следующая",
             previous: "Предыдущая"
-        }
+        },
+        emptyTable: 'Записей не найдено'
     },
     order: [[0, 'desc']],
     searchPanes: {

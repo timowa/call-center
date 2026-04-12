@@ -2,6 +2,9 @@
 
 import TimerWidget from "@/Components/TimerWidget.vue";
 import NavLink from "@/Components/NavLink.vue";
+import Dropdown from "@/Components/Dropdown.vue";
+import {Link} from "@inertiajs/vue3";
+
 </script>
 
 <template>
@@ -22,12 +25,28 @@ import NavLink from "@/Components/NavLink.vue";
                         <path d="M6 10.5a.75.75 0 0 1 .75.75v1.5a5.25 5.25 0 1 0 10.5 0v-1.5a.75.75 0 0 1 1.5 0v1.5a6.751 6.751 0 0 1-6 6.709v2.291h3a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1 0-1.5h3v-2.291a6.751 6.751 0 0 1-6-6.709v-1.5A.75.75 0 0 1 6 10.5Z" />
                     </svg>
                 </div>
-                <div class="flex justify-center items-center text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="size-6 mr-2">
-                        <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clip-rule="evenodd" />
-                    </svg>
-                    {{$page.props.auth.user.name}}
-                </div>
+                <Dropdown>
+                    <template #trigger>
+                        <button class="flex justify-center items-center text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="size-6 mr-2">
+                                <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clip-rule="evenodd" />
+                            </svg>
+                            {{$page.props.auth.user.uid}}
+                        </button>
+                    </template>
+                    <template #content>
+                        <button class="p-3 text-left text-grey-400 hover:bg-gray-100">Включить редактор</button>
+                        <button class="p-3 text-left text-grey-400 hover:bg-gray-100">Горячие клавиши</button>
+                        <button class="p-3 text-left text-grey-400 hover:bg-gray-100">Информация о РМО</button>
+                        <Link as="button"
+                              method="post"
+                              class="p-3 text-left text-grey-400 hover:bg-gray-100"
+                              :href="route('logout')"
+                              >Выйти из системы</Link>
+                        <button class="p-3 text-left text-grey-400 hover:bg-gray-100">Отключить доп. звук</button>
+                    </template>
+                </Dropdown>
+
             </div>
         </div>
     </header>
