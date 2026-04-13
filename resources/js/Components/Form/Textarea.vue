@@ -2,7 +2,7 @@
 import {computed, inject, onMounted, ref, useAttrs} from 'vue';
 
 const model = defineModel({
-    type: String,
+    type: [String, Number],
     required: true,
 });
 const input = ref(null);

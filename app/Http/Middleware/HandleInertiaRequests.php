@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\ApplicantStatus;
 use App\CallType;
 use App\Condition;
 use App\Models\Area;
@@ -72,6 +73,10 @@ class HandleInertiaRequests extends Middleware
                     'name' => $ct->label(),
                     'service_id' => $ct->relatedService()?->value,
                     'has_service' => $ct->hasRelatedService(),
+                ]),
+                'applicantStatuses' => collect(ApplicantStatus::cases())->map(fn($s) => [
+                    'id' => $s->value,
+                    'name' => $s->label(),
                 ]),
 
             ],

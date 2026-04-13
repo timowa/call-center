@@ -15,7 +15,7 @@ const props = defineProps(['form']);
 const page = usePage();
 const {callTypes, incidentTypes, areas, districts, services, sources} = inject('directories');
 const checkedCallTypeServiceId = ref(null);
-
+console.log(areas)
 watch(
     () => props.form.call_type_id,
     (newCallType) => {
@@ -197,15 +197,23 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
             <FormField label="Имя" v-model="form.applicant_info.firstname" :text-align="'right'"/>
             <FormField label="Отчество" v-model="form.applicant_info.surname" :text-align="'right'"/>
             <FormField label="Телефон" v-model="form.applicant_info.phone"/>
-            <FormField label="Статус" v-model="form.applicant_info.status" :text-align="'right'"/>
+            <FormField label="Статус" v-model="form.applicant_info.status" :text-align="'right'" type="select"
+                       :options="page.props.dictionaries.applicantStatuses"/>
             <InputLabel label="Дата рождения" :text-align="'right'"/>
             <div class="grid grid-cols-5 gap-2">
                 <TextInput v-model="form.applicant_info.birthday" class="col-span-2"/>
                 <FormField v-model="form.applicant_info.age" label="Возраст" :col-span="3" :text-align="'right'"/>
             </div>
-            <FormField type="select" v-model="form.applicant_info.district" label="Район"/>
-            <FormField type="select" v-model="form.applicant_info.area" label="Округ" :text-align="'right'"/>
-            <FormField type="select" v-model="form.applicant_info.street" label="Улица" :text-align="'right'"/>
+            <FormField type="select" v-model="form.applicant_info.district" label="Район" :options="areas"/>
+            <FormField type="select" v-model="form.applicant_info.area" label="Округ" :text-align="'right'" :options="filteredDistricts"/>
+            <FormField
+                v-model="form.applicant_info.street"
+                type="select"
+                :options="streets.options.value"
+                :filterable="false"
+                @search="(query) => streets.onSearch(query, props.form.applicant_info.area, props.form.applicant_info.district)"
+                label="Улица"
+                :text-align="'right'"/>
             <InputLabel label="Дом"/>
             <div class="grid grid-cols-5 gap-2">
                 <TextInput v-model="form.applicant_info.house" class="col-span-2"/>

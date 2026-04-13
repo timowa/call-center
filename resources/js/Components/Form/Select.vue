@@ -1,7 +1,7 @@
 <script setup>
 import vSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { computed, inject, ref } from 'vue';
+import {computed, inject, ref, watch} from 'vue';
 
 const model = defineModel();
 
@@ -25,6 +25,11 @@ const emit = defineEmits(['search']);
 const onSearch = (search, loading) => {
     emit('search', search, loading);
 };
+watch(() => props.options, (newOptions) => {
+    if (newOptions && newOptions.length === 1 && (model.value === null || model.value === undefined)) {
+        model.value = props.reduce(newOptions[0]);
+    }
+}, { immediate: true });
 </script>
 
 <template>

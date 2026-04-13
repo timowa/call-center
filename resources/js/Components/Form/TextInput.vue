@@ -2,7 +2,7 @@
 import {computed, inject, onMounted, ref, useAttrs} from 'vue';
 
 const model = defineModel({
-    type: [String, Number],
+    type: [String, Number, null],
     required: true,
 });
 const viewMode = inject('viewMode', ref(false));

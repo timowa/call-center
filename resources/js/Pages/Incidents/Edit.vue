@@ -66,7 +66,6 @@ provide('mapCoordinates', {
     data: mapCoordinates,
     setCoordinates: (val) => mapCoordinates.value = val
 })
-
 const form = useForm({
     id: props.incident.id ?? 0,
     created_at: {
@@ -76,7 +75,7 @@ const form = useForm({
     processing_time: props.incident.processingTime ?? 0,
     incoming_number: props.incident.incoming_number ?? 0,
     condition: props.incident.condition ?? 0,
-    creator: props.incident.user ? props.incident.user.name : user.name,
+    creator: props.incident.user?.name ?? user.value.name,
     call_type_id: props.incident.call_type_id ?? (user.value.call_type_id ?? null),
     services: props.incident.services ?? [],
     incident_type_id: props.incident.type ? props.incident.type.id : null,
@@ -104,13 +103,13 @@ const form = useForm({
     metre: props.incident.metre ?? null,
     km: props.incident.km ?? null,
     is_nearby: props.incident.is_nearby ?? false,
-    address_section: props.incident.address_section ?? null,
-    additional_info: props.incident.additional_info ?? null,
+    address_section: props.incident.address_section ?? '',
+    additional_info: props.incident.additional_info ?? '',
     emergency_threat: props.incident.emergency_threat ?? false,
-    threat_to_people: props.incident.threat_to_people ?? null,
-    number_of_victims: props.incident.number_of_victims ?? null,
+    threat_to_people: props.incident.threat_to_people ?? false,
+    number_of_victims: props.incident?.number_of_victims ?? 0,
     emergency_type_id: props.incident.emergency_type_id ?? null,
-    description: props.incident.description ?? null,
+    description: props.incident?.description ?? '',
     applicant_info: props.incident.applicant_info || {
         lastname: '',
         firstname: '',
