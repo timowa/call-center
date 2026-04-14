@@ -7,6 +7,7 @@ use App\Models\CallType;
 use App\Models\CauseOfTheFire;
 use App\Models\FireDepartment;
 use App\Models\FireReportType;
+use App\Models\FireReportWaterSource;
 use App\Models\Service;
 use App\Models\District;
 use App\Models\EmergencyType;
@@ -155,6 +156,16 @@ class DatabaseSeeder extends Seeder
            FireDepartment::create([
                'name' => $i . ' ПСЧ'
            ]);
+       }
+
+       $waterSources =  [
+           'Без установки водоисточника',
+            'Водоем естественный',
+            'Водоем искусственный',
+            '3Наружный противопож. воддопровод'];
+
+       foreach ($waterSources as $source) {
+           FireReportWaterSource::create(['name' => $source]);
        }
 
         $this->call([

@@ -11,7 +11,7 @@ export const getFireReportDefaults = (report = null) => ({
     shift: report?.shift ?? null,
     water_consumption: report?.water_consumption ?? null,
     first_water_barrel_minutes: report?.first_water_barrel_minutes ?? null,
-    water_source: report?.water_source ?? null,
+    water_source_id: report?.water_source_id ?? null,
     dead_total: report?.dead_total ?? null,
     dead_children: report?.dead_children ?? null,
     dead_staff: report?.dead_staff ?? null,

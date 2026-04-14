@@ -26,7 +26,7 @@ return new class extends Migration
             $table->integer('shift')->nullable();
             $table->integer('water_consumption')->nullable();
             $table->integer('first_water_barrel_minutes')->nullable();
-            $table->integer('water_source')->nullable();
+            $table->foreignId('water_source_id')->nullable()->constrained('fire_report_water_sources');
             $table->integer('dead_total')->nullable();
             $table->integer('dead_children')->nullable();
             $table->integer('dead_staff')->nullable();

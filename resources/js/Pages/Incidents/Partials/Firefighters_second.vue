@@ -7,7 +7,7 @@ import {FireReportDirectories} from "@/Utils/FireReportDirectories.js";
 
 defineProps(['form']);
 const stvolColumns = [
-    {key: 'type', label: 'Тип', type: 'select', options: [{key: 1, name: 'dad'}, {key: 2, name: 'mom'}]},
+    {key: 'type', label: 'Тип', type: 'select', options: FireReportDirectories.fireService.barrel_types},
     {key: 'count', label: 'Кол-во', type: 'text'},
     {key: 'time', label: 'Время подачи', type: 'text'},
 ];
@@ -44,7 +44,8 @@ const personnel = [
     <FormGroup :cols="6">
         <FormField label="Расход воды (л)" :vertical="true" v-model="form.water_consumption"/>
         <FormField label="Время подачи первого ствола (мин)" :vertical="true" v-model="form.first_water_barrel_minutes"/>
-        <FormField label="Водоисточник" :vertical="true" type="select" v-model="form.water_source" :options="FireReportDirectories.fireService.water_sources"/>
+        <FormField label="Водоисточник" :vertical="true" type="select" v-model="form.water_source_id"
+                   :options="FireReportDirectories.fireService.water_sources"/>
     </FormGroup>
 </template>
 
