@@ -175,7 +175,6 @@ class IncidentsController extends Controller
                 'type' => 'success'
             ]);
         } catch (Exception $e) {
-            dd($e);
             Log::error("Ошибка создания инцидента: " . $e->getMessage());
 
             return redirect()->back()->withErrors([
