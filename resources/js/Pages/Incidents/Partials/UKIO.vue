@@ -13,7 +13,7 @@ import {usePage} from "@inertiajs/vue3";
 import {FireReportDirectories} from "@/Utils/FireReportDirectories.js";
 const props = defineProps(['form']);
 const page = usePage();
-const {callTypes, incidentTypes, areas, districts, services, sources} = inject('directories');
+const {callTypes, incidentTypes, areas, districts, services, sources, urban_objects, emergency_types} = inject('directories');
 const checkedCallTypeServiceId = ref(null);
 watch(
     () => props.form.call_type_id,
@@ -166,8 +166,8 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
             <FormField v-model="form.ownership" label="Владение"/>
             <FormField v-model="form.building" label="Строение" :text-align="'right'"/>
             <FormField v-model="form.additional_street" label="Доп. улица" :text-align="'right'"/>
-            <FormField v-model="form.district_of_city" type="select" label="Район города" />
-            <FormField v-model="form.object" type="select" label="Объект" :text-align="'right'"/>
+            <FormField v-model="form.district_of_city" type="select" label="Район города" :disabled="true"/>
+            <FormField v-model="form.object" type="select" label="Объект" :text-align="'right'" :options="urban_objects"/>
             <FormField v-model="form.coordinates" label="Координаты" :text-align="'right'" :readonly="true"/>
             <FormField v-model="form.road" type="text" label="Дорога" />
             <InputLabel label="Метр" text-align="right"/>
@@ -176,7 +176,7 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
                 <FormField v-model="form.km" label="Км/м" :col-span="3" :text-align="'right'"/>
             </div>
             <FormField v-model:checked="form.is_nearby" label="Рядом" type="checkbox" :col-span="2"/>
-            <FormField label="Адресный участок" v-model="form.address_section" :col-span="6" :grid-col="6" type="textarea"/>
+            <FormField label="Адресный участок" v-model="form.address_section" :col-span="6" :grid-col="6"/>
             <FormField label="Доп. инфо" v-model="form.additional_info" :col-span="6" :grid-col="6" type="textarea"
                        :can-edit="userHasPermissionTo('ukio.edit-description')"/>
         </FormGroup>
@@ -187,7 +187,7 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
                 <FormField v-model:checked="form.threat_to_people" label="Угроза людям" type="checkbox"/>
             </div>
             <FormField v-model="form.number_of_victims" label="Пострадавших" :text-align="'right'"/>
-            <FormField v-model="form.emergency_type_id" label="Тип ЧС" type="select"  :text-align="'right'"/>
+            <FormField v-model="form.emergency_type_id" label="Тип ЧС" type="select"  :text-align="'right'" :options="emergency_types"/>
             <FormField label="Описание" v-model="form.description" :col-span="6" :grid-col="6" type="textarea" />
 
         </FormGroup>

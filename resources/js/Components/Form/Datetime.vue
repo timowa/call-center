@@ -11,7 +11,6 @@ const model = defineModel({
 const viewMode = inject('viewMode', ref(false));
 
 const props = defineProps(['placeholder', 'readonly']);
-const hasNotPermissionToEdit = inject('hasNotPermissionToEdit', false)
 
 const isDisabled = computed(() => {
     if (props.readonly === true) return true;
@@ -23,18 +22,11 @@ const isDisabled = computed(() => {
 
 <template>
     <div class="datetime-picker-wrapper">
-        <VueDatePicker
-            v-model="model"
-            :disabled="isDisabled"
-            :placeholder="placeholder"
-        cancelText="Отмена"
-        selectText="Применить"
-        format="dd.MM.yyyy HH:mm"
-        model-type="yyyy-MM-dd HH:mm:ss"
-        auto-apply
-        :teleport="true"
-        :is-24="true"
-        input-class-name="custom-datepicker-input"
-        />
+        <input class="px-2 py-1 text-sm rounded-md border-gray-300 bg-grey-150 shadow-sm focus:outline-none focus:shadow-none focus:ring-0 focus-visible:ring-0 focus:inset-shadow-none focus:inset-ring-0 focus:border-gray-300 focus:border-b-4 disabled:bg-grey-220 disabled:cursor-not-allowed"
+               v-model="model"
+               :placeholder="placeholder"
+               :disabled="isDisabled"
+               type="datetime-local"
+               ref="input">
     </div>
 </template>

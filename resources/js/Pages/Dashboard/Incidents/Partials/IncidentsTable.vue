@@ -6,6 +6,7 @@ import Block from "@/Components/Block.vue";
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net';
 import {getConditionColor, getConditionLabel} from '@/Utils/conditions.js'
+import {hasRole} from "@/Utils/permissions.js";
 
 const incidents = inject('incidents');
 const {setSelected} = inject('selectedIncident');
@@ -95,7 +96,11 @@ onMounted(function () {
     dt.on('dblclick', 'tr', (e) => {
         const rowData = dt.row(e.currentTarget).data();
         if (rowData && rowData.id) {
-            router.get(route('incidents.view', rowData.id));
+            if (hasRole('cov_112')) {
+                router.get(route('incidents.view', rowData.id));
+            } else {
+                router.get(route('incidents.edit', rowData.id));
+            }
         }
     });
 });

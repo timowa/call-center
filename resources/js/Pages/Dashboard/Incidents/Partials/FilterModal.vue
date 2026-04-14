@@ -6,6 +6,8 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import FormGroup from "@/Components/Form/FormGroup.vue";
 import FormField from "@/Components/Form/FormField.vue";
 import {usePage} from "@inertiajs/vue3";
+import {computed} from "vue";
+import {hasRole} from "@/Utils/permissions.js";
 const page = usePage();
 const directories = page.props.directories;
 const dictionaries = page.props.dictionaries;
@@ -17,7 +19,31 @@ const props = defineProps({
     }
 });
 const emit = defineEmits(['close', 'submit', 'reset']);
-
+const user = page.props.auth.user;
+const filteredServices = computed(() => {
+    if (hasRole('op_01')) {
+        return dictionaries.services.filter(s => s.id === page.props.constants.services.FIREFIGHTERS)
+    }
+    if (hasRole('edds')) {
+        return dictionaries.services.filter(s => s.id === page.props.constants.services.EDDS)
+    }
+    return dictionaries.services;
+});
+const filteredCallTypes = computed(() => {
+    if (hasRole('op_01')) {
+        return dictionaries.callTypes.filter(c => c.id === page.props.constants.callTypes.FIREFIGHTERS)
+    }
+    if (hasRole('edds')) {
+        return dictionaries.callTypes.filter(c => c.id === page.props.constants.callTypes.EDDS)
+    }
+    return dictionaries.callTypes;
+});
+const filteredAreas = computed(() => {
+    if (hasRole('op_01') || hasRole('edds')) {
+        return directories.areas.filter(a => a.id === user.area_id)
+    }
+    return directories.areas;
+});
 </script>
 
 <template>
@@ -26,8 +52,8 @@ const emit = defineEmits(['close', 'submit', 'reset']);
     <form id="filter-form">
         <div>
             <FormGroup title="Тип происшествия">
-                    <FormField label="Служба" name="sl" :col-span="1" type="select" :options="dictionaries.services" v-model="form.service_id"></FormField>
-                    <FormField label="Тип вызова" name="ad" :col-span="1" type="select" :options="dictionaries.callTypes" v-model="form.call_type_id"></FormField>
+                    <FormField label="Служба" name="sl" :col-span="1" type="select" :options="filteredServices" v-model="form.service_id"></FormField>
+                    <FormField label="Тип вызова" name="ad" :col-span="1" type="select" :options="filteredCallTypes" v-model="form.call_type_id"></FormField>
                     <div class="col-span-2 flex gap-4">
                         <FormField name="d" label="Учебная" type="checkbox" v-model:checked="form.is_training"/>
                         <FormField name="s" label="Важная" type="checkbox" v-model:checked="form.is_important"/>
@@ -50,7 +76,7 @@ const emit = defineEmits(['close', 'submit', 'reset']);
                            v-model:checked="form.conditions"/>
             </FormGroup>
             <FormGroup title="Место происшествия">
-                <FormField name="9"  label="Район" :col-span="1" type="select" :options="directories.areas" v-model="form.area_id"/>
+                <FormField name="9"  label="Район" :col-span="1" type="select" :options="filteredAreas" v-model="form.area_id"/>
                 <FormField name="10" label="Район города" :col-span="1" type="select"/>
                 <FormField name="11" label="Округ" :col-span="1" type="select" :options="directories.districts" v-model="form.district_id"/>
             </FormGroup>

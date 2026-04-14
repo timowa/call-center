@@ -57,7 +57,9 @@ provide('directories', {
     services: page.props.dictionaries.services,
     sources: page.props.dictionaries.sources,
     areas: filteredAreas.value,
-    districts: filteredDistricts.value
+    districts: filteredDistricts.value,
+    urban_objects: page.props.directories.urban_objects,
+    emergency_types: page.props.directories.emergency_types,
 })
 const defaultCoordinates = {latitude: 53.722356, longitude: 91.443699}
 const mapCoordinates = ref(defaultCoordinates);

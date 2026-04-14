@@ -202,6 +202,8 @@ class IncidentsController extends Controller
                     if ($service === Service::EDDS) {
                         $q->whereHas('eddsReport');
                     }
+                } else {
+                    $q->whereRaw('1 = 0');
                 }
             })
             ->when($request->call_type_id, fn($q, $id) => $q->where('call_type_id', $id))

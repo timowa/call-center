@@ -72,9 +72,6 @@ watch(() => props.options, (newOptions) => {
 
 .custom-v-select .vs__search {
     @apply text-sm !important;
-    width: 0 !important;
-    position: absolute;
-    margin: 0;
 }
 
 /* 2. Текст выбранного элемента (решаем проблему вылетания) */

@@ -5,8 +5,6 @@ namespace Database\Seeders;
 use App\CallType;
 use App\Models\Area;
 use App\Models\User;
-use Grpc\Call;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 

@@ -9,6 +9,7 @@ use App\Models\Area;
 use App\Models\District;
 use App\Models\EmergencyType;
 use App\Models\IncidentType;
+use App\Models\UrbanObject;
 use App\Service;
 use App\SourceType;
 use Illuminate\Http\Request;
@@ -90,6 +91,8 @@ class HandleInertiaRequests extends Middleware
                 'emergencyTypes' => EmergencyType::all(),
                 'areas'          => Area::all(),
                 'districts'      => District::all(),
+                'urban_objects'  => UrbanObject::all(),
+                'emergency_types' => EmergencyType::all(),
             ]
 
         ];

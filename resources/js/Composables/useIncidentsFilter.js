@@ -76,6 +76,10 @@ export function useIncidentFilters() {
             return Object.values(page.props.dictionaries.callTypes).find(s => s.id === value)?.name || value;
         }
 
+        if (key === 'area_id') {
+            return Object.values(page.props.directories.areas).find(s => s.id === value)?.name || value
+        }
+
         if (typeof value === 'boolean') return 'Да';
         return value;
     };
