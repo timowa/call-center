@@ -57,46 +57,69 @@ watch(() => props.options, (newOptions) => {
 </template>
 
 <style>
-.custom-v-select.vs--disabled .vs__dropdown-toggle {
-    @apply border-0 bg-grey-220 rounded-md !important;
-    padding: 2px 0;
+/* 1. Общие стили контейнера и поиска */
+.custom-v-select {
+    @apply h-full !important;
+    max-width: 100%;
+
+}
+
+.custom-v-select .vs__dropdown-toggle {
+    @apply border-gray-300 h-full rounded-md !important;
     min-height: 34px;
+    padding: 2px 0;
+}
+
+.custom-v-select .vs__search {
+    @apply text-sm !important;
+    width: 0 !important;
+    position: absolute;
+    margin: 0;
+}
+
+/* 2. Текст выбранного элемента (решаем проблему вылетания) */
+.custom-v-select .vs__selected-options {
+    @apply flex-nowrap overflow-hidden !important;
+    max-width: 65%;
 }
 
 .custom-v-select .vs__selected {
     @apply text-sm !important;
+    display: block !important;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 100% !important;
+    margin: 0;
 }
 
-.custom-v-select.vs--disabled .vs__search {
-    @apply text-sm !important;
-    margin: 0;
-    @apply bg-grey-220 cursor-not-allowed !important;
+/* 3. Выпадающее меню */
+.custom-v-select .vs__actions {
+    position: absolute;
+    right: 5px;
+    top: 0px;
+    bottom: 0px;
+    width: 25px;
 }
-.custom-v-select.vs--disabled .vs__open-indicator {
-    @apply text-sm !important;
-    margin: 0;
-    @apply bg-grey-220 cursor-not-allowed !important;
-}
-.custom-v-select.vs--disabled .vs__selected {
-    @apply text-sm !important;
-    margin: 0;
-    @apply bg-grey-220 cursor-not-allowed !important;
-}
-.custom-v-select.vs--disabled .vs__actions {
-    @apply text-sm !important;
-    margin: 0;
-    @apply bg-grey-220 cursor-not-allowed !important;
-}
-
 .custom-v-select .vs__dropdown-menu {
     @apply text-sm shadow-lg border-gray-300 !important;
 }
 
-.custom-v-select.vs--open .vs__dropdown-toggle {
-    @apply border-b-4 border-gray-300 !important;
+/* 4. Стили для состояния DISABLED */
+.custom-v-select.vs--disabled .vs__dropdown-toggle {
+    @apply border-0 bg-grey-220 cursor-not-allowed !important;
 }
 
-.vs--disabled .vs__dropdown-toggle. {
+.custom-v-select.vs--disabled .vs__selected {
+    @apply opacity-100 cursor-not-allowed !important;
+}
+
+.custom-v-select.vs--disabled .vs__search,
+.custom-v-select.vs--disabled .vs__open-indicator,
+.custom-v-select.vs--disabled .vs__actions {
     @apply bg-grey-220 cursor-not-allowed !important;
+}
+.custom-v-select.vs--open {
+
 }
 </style>

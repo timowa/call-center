@@ -6,6 +6,8 @@ use App\Models\Area;
 use App\Models\CallType;
 use App\Models\CauseOfTheFire;
 use App\Models\FireDepartment;
+use App\Models\FirefighterPost;
+use App\Models\FireReportFireExtinguishingAgents;
 use App\Models\FireReportType;
 use App\Models\FireReportWaterSource;
 use App\Models\Service;
@@ -168,6 +170,33 @@ class DatabaseSeeder extends Seeder
            FireReportWaterSource::create(['name' => $source]);
        }
 
+       $firefighterPosts = [
+           'Водитель',
+           'ГУ "1 оттряд ФПС по области"',
+           'ГУ "СЭУ оттряд ФПС по области"',
+           'ГУ "ЦУКС оттряд ФПС по области"',
+           'Диспетчер',
+           'Зам. нач. отряд',
+       ];
+
+       foreach ($firefighterPosts as $post) {
+           FirefighterPost::create([
+               'name' => $post,
+           ]);
+       }
+
+
+       $fireAgents = [
+           'Огнетушитель',
+           'Песок',
+           'Вода'
+       ];
+
+       foreach ($fireAgents as $agent) {
+           FireReportFireExtinguishingAgents::create([
+               'name' => $agent,
+           ]);
+       }
         $this->call([
             RolesAndPermissionsSeeder::class,
             UserSeeder::class,

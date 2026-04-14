@@ -7,6 +7,8 @@ use App\FireReportPlan;
 use App\FireReportRank;
 use App\FireReportTypeOfProtection;
 use App\Models\CauseOfTheFire;
+use App\Models\FirefighterPost;
+use App\Models\FireReportFireExtinguishingAgents;
 use App\Models\FireReportType;
 use App\Models\FireReportWaterSource;
 use App\Models\UrbanObject;
@@ -37,7 +39,9 @@ class FireReportController extends Controller
             'barrel_types' => collect(FireReportBarrelType::cases())->map(fn($s) => [
                 'id' => $s->value,
                 'name' => $s->label(),
-            ])
+            ]),
+            'posts' => FirefighterPost::all(),
+            'fire_extinguishing_agents' => FireReportFireExtinguishingAgents::all()
         ]);
     }
 }

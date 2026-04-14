@@ -4,7 +4,7 @@ import Select from "@/Components/Form/Select.vue";
 import Checkbox from "@/Components/Form/Checkbox.vue";
 import Radio from "@/Components/Form/Radio.vue";
 import InputLabel from "@/Components/Form/InputLabel.vue";
-import {computed, inject} from "vue";
+import {computed, inject, ref} from "vue";
 import Textarea from "@/Components/Form/Textarea.vue";
 import Table from "@/Components/Form/Table.vue";
 import {usePage} from "@inertiajs/vue3";
@@ -62,7 +62,7 @@ const colSpans = {
 const isCheckbox = props.type === 'checkbox' || props.type === 'radio';
 const isTable = props.type === 'table';
 const inputClasses = computed(()=>{
-    if (isCheckbox || props.vertical) return {};
+    if (isCheckbox || props.vertical || isTable) return {};
     return {
         'col-start-2': true,
         [colEnd[props.colSpan]]: true,
@@ -77,7 +77,7 @@ const display = computed(()=>{
     return {
         'grid gap-6': !props.vertical,
         'grid grid-rows-2': props.vertical && !isTable,
-        [gridCols[props.gridCol]]: !props.vertical && props.gridCol > 1,
+        [gridCols[props.gridCol]]: !props.vertical && props.gridCol > 1 && !isTable,
         [colSpans[props.colSpan]]: props.colSpan > 0,
         'items-center': !props.vertical
     }
@@ -89,7 +89,11 @@ const display = computed(()=>{
 <template>
     <div class="align-center text-13 " :class="display">
         <InputLabel v-bind="$attrs" v-if="$attrs.label && !isCheckbox && !isTable"/>
-        <component v-bind="$attrs" :is="inputs[type]"  class="flex-shrink-0" :class="inputClasses"></component>
+        <component v-bind="$attrs" :is="inputs[type]"  class="flex-shrink-0" :class="inputClasses">
+            <template v-for="(_, name) in $slots" #[name]="slotProps">
+                <slot :name="name" v-bind="slotProps || {}" />
+            </template>
+        </component>
         <InputLabel v-bind="$attrs" v-if="$attrs.label && isCheckbox && !isTable"/>
 
     </div>

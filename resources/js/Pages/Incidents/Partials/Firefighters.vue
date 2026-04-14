@@ -45,8 +45,8 @@ onMounted(function() {
     <TabsHeader>
         <TabHeaderButton
             v-for="(tab, id) in tabs"
-            :active="currentTabFire === id"
-            @click="currentTabFire = id"
+            :active="currentTabFire === Number(id)"
+            @click="currentTabFire = Number(id)"
         >{{tab.title}}</TabHeaderButton>
     </TabsHeader>
     <Block>

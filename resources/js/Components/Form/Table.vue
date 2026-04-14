@@ -13,7 +13,6 @@ const props = defineProps({
     },
     columns: {
         type: Array,
-        required: true
     },
     label: String,
     allowEditIfNotCreator: Boolean
@@ -28,12 +27,13 @@ const formEntries = ref({});
 
 const openAdd = () => {
     editingIndex.value = null;
-    formEntries.value = [{}];
+    formEntries.value = {}; // Инициализируем как ПУСТОЙ ОБЪЕКТ
     isModalOpen.value = true;
 };
 
 const openEdit = (index) => {
     editingIndex.value = index;
+    // Копируем существующий объект из массива данных
     formEntries.value = { ...props.modelValue[index] };
     isModalOpen.value = true;
 };
@@ -41,14 +41,15 @@ const openEdit = (index) => {
 const save = () => {
     const currentData = [...props.modelValue];
 
-    const newEntries = formEntries.value.filter(entry =>
-        Object.values(entry).some(val => val !== undefined && val !== '')
-    );
-
+    // Упрощаем логику сохранения для объекта
     if (editingIndex.value !== null) {
-        currentData[editingIndex.value] = formEntries.value[0];
+        // Редактирование
+        currentData[editingIndex.value] = { ...formEntries.value };
     } else {
-        currentData.push(...newEntries);
+        // Создание: проверяем, что объект не совсем пустой перед пушем
+        if (Object.keys(formEntries.value).length > 0) {
+            currentData.push({ ...formEntries.value });
+        }
     }
 
     emit('update:modelValue', currentData);
@@ -91,73 +92,53 @@ const disabled = computed(() => {
             </svg></SecondaryButton>
 
         </div>
-
         <div class="overflow-x-auto border rounded-lg">
             <table class="w-full text-left text-13">
                 <thead class=" border-b text-gray-500">
-                <tr>
-                    <th v-for="col in columns" :key="col.key" class="border-r px-4 py-2 text-sm">
+                <tr v-if="columns">
+                    <th v-for="col in columns" :key="col.key" class="border-r">
                         {{ col.label }}
                     </th>
-                    <th class="px-4 py-2 w-20"></th>
+                    <th class="w-20"></th>
                 </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                <tr v-for="(row, index) in modelValue" :key="index" class="hover:bg-gray-50 group">
-                    <td v-for="col in columns" :key="col.key" class="px-4 py-3 text-gray-700">
-                        {{ row[col.key] }}
-                    </td>
-                    <td class="px-4 py-3 text-right space-x-2">
-                        <button @click="openEdit(index)" class="text-gray-400 hover:text-blue-600">✎</button>
-                        <button @click="remove(index)" class="text-gray-400 hover:text-red-600">×</button>
-                    </td>
-                </tr>
-                <tr v-if="!modelValue.length">
-                    <td :colspan="columns.length + 1" class="px-4 py-8 text-center text-gray-400 text-sm">
-                        Нет данных
+                <tr v-for="(row, index) in modelValue" :key="index" class="group hover:bg-gray-50">
+
+                    <slot name="rows" :row="row" :index="index"></slot>
+
+                    <td class="text-right space-x-2 whitespace-nowrap">
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button type="button" @click="openEdit(index)" class="text-blue-600 hover:text-blue-800 p-1">✎</button>
+                            <button type="button" @click="remove(index)" class="text-red-600 hover:text-red-800 p-1">×</button>
+                        </div>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
 
-        <div v-if="isModalOpen" @click.self="isModalOpen = false" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6">
-                <h2 class="text-lg font-bold mb-6 border-b pb-2">
-                    {{ editingIndex !== null ? 'Редактирование' : 'Добавление' }}
-                </h2>
-                <div  v-for="(entry, index) in formEntries" :key="index" class="flex items-end justify-between">
-                    <div class="grid grid-cols-6 gap-x-6 gap-y-4 w-90"
-                        :class="{'mt-6': index > 0}"
-                    >
-                        <FormField
-                            v-for="col in columns"
-                            :key="col.key"
-                            v-bind="col"
-                            v-model="formEntries[index][col.key]"
-                            :vertical="true"
-                        />
-                    </div>
-                    <AdditionalActionButton @click="formEntries.splice(index, 1)">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-grey-370" viewBox="0 0 32 32" >
-                            <path d="M 15 4 C 14.476563 4 13.941406 4.183594 13.5625 4.5625 C 13.183594 4.941406 13 5.476563 13 6 L 13 7 L 7 7 L 7 9 L 8 9 L 8 25 C 8 26.644531 9.355469 28 11 28 L 23 28 C 24.644531 28 26 26.644531 26 25 L 26 9 L 27 9 L 27 7 L 21 7 L 21 6 C 21 5.476563 20.816406 4.941406 20.4375 4.5625 C 20.058594 4.183594 19.523438 4 19 4 Z M 15 6 L 19 6 L 19 7 L 15 7 Z M 10 9 L 24 9 L 24 25 C 24 25.554688 23.554688 26 23 26 L 11 26 C 10.445313 26 10 25.554688 10 25 Z M 12 12 L 12 23 L 14 23 L 14 12 Z M 16 12 L 16 23 L 18 23 L 18 12 Z M 20 12 L 20 23 L 22 23 L 22 12 Z"></path>
-                        </svg>
-                    </AdditionalActionButton>
-                </div>
+        <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
+                <h3 class="text-lg font-bold mb-4">{{ editingIndex !== null ? 'Редактировать' : 'Добавить' }}</h3>
 
-                <AdditionalActionButton class="mt-6" @click="addRow">
-                    <span class="mr-3 items-center flex ">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor">
-                        <path fill-rule="evenodd" d="M 11 2 L 11 11 L 2 11 L 2 13 L 11 13 L 11 22 L 13 22 L 13 13 L 22 13 L 22 11 L 13 11 L 13 2 Z"></path>
-                        </svg>
-                    </span>
-                    Добавить еще</AdditionalActionButton>
+                <slot name="modal-fields" :form="formEntries"></slot>
 
-                <div class="mt-8 flex justify-end space-x-3">
-                    <SecondaryButton @click="isModalOpen = false">Отменить</SecondaryButton>
-                    <PrimaryButton @click="save">Добавить</PrimaryButton>
+                <div class="mt-6 flex justify-end gap-3">
+                    <SecondaryButton @click="isModalOpen = false">Отмена</SecondaryButton>
+                    <PrimaryButton @click="save">Сохранить</PrimaryButton>
                 </div>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+:deep(td) {
+    @apply px-4 py-2 text-sm border-r border-b;
+}
+
+thead th {
+    @apply px-4 py-2 text-sm;
+}
+</style>
