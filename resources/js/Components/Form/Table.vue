@@ -15,10 +15,15 @@ const props = defineProps({
         type: Array,
     },
     label: String,
-    allowEditIfNotCreator: Boolean
+    allowEditIfNotCreator: Boolean,
+    onCustomSave: Function,
+    withActionButtons: {
+        type: Boolean,
+        default: true
+    }
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'custom-save']);
 const hasNotPermissionToEdit = inject('hasNotPermissionToEdit', false)
 
 const isModalOpen = ref(false);
@@ -39,6 +44,12 @@ const openEdit = (index) => {
 };
 
 const save = () => {
+    if (props.onCustomSave) {
+        emit('custom-save', formEntries.value);
+        isModalOpen.value = false;
+        return;
+    }
+
     const currentData = [...props.modelValue];
 
     // Упрощаем логику сохранения для объекта
@@ -92,14 +103,14 @@ const disabled = computed(() => {
             </svg></SecondaryButton>
 
         </div>
-        <div class="overflow-x-auto border rounded-lg">
+        <div class=" border rounded-lg">
             <table class="w-full text-left text-13">
                 <thead class=" border-b text-gray-500">
                 <tr v-if="columns">
                     <th v-for="col in columns" :key="col.key" class="border-r">
                         {{ col.label }}
                     </th>
-                    <th class="w-20"></th>
+                    <th v-if="withActionButtons" class="w-20"></th>
                 </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -107,7 +118,7 @@ const disabled = computed(() => {
 
                     <slot name="rows" :row="row" :index="index"></slot>
 
-                    <td class="text-right space-x-2 whitespace-nowrap">
+                    <td v-if="withActionButtons" class="text-right space-x-2 whitespace-nowrap">
                         <div class="opacity-0 group-hover:opacity-100 transition-opacity">
                             <button type="button" @click="openEdit(index)" class="text-blue-600 hover:text-blue-800 p-1">✎</button>
                             <button type="button" @click="remove(index)" class="text-red-600 hover:text-red-800 p-1">×</button>

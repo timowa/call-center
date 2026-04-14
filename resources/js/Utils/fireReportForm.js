@@ -51,4 +51,5 @@ export const getFireReportDefaults = (report = null) => ({
     localized_at: report?.localized_at ?? null,
     fire_eliminated_at: report?.fire_eliminated_at ?? null,
     elimination_at: report?.elimination_at ?? null,
+    departments: report?.departments ?? []
 });

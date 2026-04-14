@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\DepartmentReportCondition;
 use App\FireReportBarrelType;
 use App\FireReportPlan;
 use App\FireReportRank;
 use App\FireReportTypeOfProtection;
 use App\Models\CauseOfTheFire;
+use App\Models\FirefighterDepartment;
 use App\Models\FirefighterPost;
 use App\Models\FireReportFireExtinguishingAgents;
 use App\Models\FireReportType;
@@ -41,7 +43,11 @@ class FireReportController extends Controller
                 'name' => $s->label(),
             ]),
             'posts' => FirefighterPost::all(),
-            'fire_extinguishing_agents' => FireReportFireExtinguishingAgents::all()
+            'fire_extinguishing_agents' => FireReportFireExtinguishingAgents::all(),
+            'departments' => FirefighterDepartment::all(),
+            'department_conditions' => collect(DepartmentReportCondition::cases())->mapWithKeys(fn($s) => [
+                $s->name => ['name' => $s->label(), 'id' => $s->value],
+            ])
         ]);
     }
 }

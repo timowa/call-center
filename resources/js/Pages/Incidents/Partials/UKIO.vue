@@ -15,7 +15,6 @@ const props = defineProps(['form']);
 const page = usePage();
 const {callTypes, incidentTypes, areas, districts, services, sources} = inject('directories');
 const checkedCallTypeServiceId = ref(null);
-console.log(areas)
 watch(
     () => props.form.call_type_id,
     (newCallType) => {

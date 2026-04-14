@@ -7,10 +7,10 @@ use App\Models\CallType;
 use App\Models\CauseOfTheFire;
 use App\Models\FireDepartment;
 use App\Models\FirefighterPost;
+use App\Models\FirefighterDepartment;
 use App\Models\FireReportFireExtinguishingAgents;
 use App\Models\FireReportType;
 use App\Models\FireReportWaterSource;
-use App\Models\Service;
 use App\Models\District;
 use App\Models\EmergencyType;
 use App\Models\IncidentType;
@@ -195,6 +195,37 @@ class DatabaseSeeder extends Seeder
        foreach ($fireAgents as $agent) {
            FireReportFireExtinguishingAgents::create([
                'name' => $agent,
+           ]);
+       }
+
+
+       $departments = [
+           '1 ПСЧ',
+           '2 ПСЧ',
+           '3 ПСЧ',
+           '4 ПСЧ',
+           '5 ПСЧ',
+           '6 ПСЧ',
+           '7 ПСЧ',
+           '8 ПСЧ',
+           '9 ПСЧ',
+           '10 ПСЧ',
+           '11 ПСЧ',
+           '12 ПСЧ',
+           '13 ПСЧ',
+           '14 ПСЧ',
+           '15 ПСЧ',
+           '16 ПСЧ',
+           '17 ПСЧ',
+           '18 ПСЧ',
+           '19 ПСЧ',
+           '20 ПСЧ',
+           '21 ПСЧ',
+       ];
+
+       foreach ($departments as $department) {
+           FirefighterDepartment::create([
+               'name' => $department
            ]);
        }
         $this->call([

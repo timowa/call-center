@@ -30,12 +30,8 @@ const personnel = [
     {key: 'fio', label: 'Фамилия И.О.'},
     {key: 'post_id', label: 'Должность'},
 ];
-watch(() => props.form.barrels, (barrels) => {
-    console.log(barrels)
-});
 
 const dictionaries = FireReportDirectories.fireService;
-console.log(dictionaries)
 </script>
 
 <template>

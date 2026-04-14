@@ -15,20 +15,28 @@ class SetCompletedCondition
     public function handle(IncidentUpdated $event): void
     {
         $incident = $event->incident;
-        if (in_array($incident->call_type_id, [CallType::HELP, CallType::FALSE, CallType::CHILD])) {
+        if ($incident->condition !== Condition::AT_WORK) {
+            return;
+        }
+
+        $countRelated = 0;
+        $countRelatedInStatus = 0;
+
+        if ($incident->fireReport()->exists()) {
+            $countRelated++;
+            if ($incident->fireReport->condition === Condition::DONE) {
+                $countRelatedInStatus++;
+            }
+        }
+        if ($incident->eddsReport()->exists()) {
+            $countRelated++;
+            if ($incident->eddsReport->condition === Condition::DONE) {
+                $countRelatedInStatus++;
+            }
+        }
+        if ($countRelated === $countRelatedInStatus) {
             $incident->condition = Condition::DONE;
             $incident->save();
-
-            if (!is_null($incident->fireReport)) {
-                $incident->fireReport->condition = Condition::DONE;
-                $incident->fireReport->save();
-            }
-
-            if (!is_null($incident->eddsReport)) {
-                $incident->eddsReport->condition = Condition::DONE;
-                $incident->eddsReport->save();
-            }
-
         }
 
     }

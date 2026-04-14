@@ -2,18 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\CallType;
-use App\Condition;
+use App\Events\FireReportUpdated;
 use App\Events\IncidentCardViewed;
 use App\Events\IncidentCreated;
 use App\Events\IncidentUpdated;
 use App\Http\Requests\IncidentRequest;
-use App\Models\CauseOfTheFire;
 use App\Models\FireReport;
-use App\Models\FireReportType;
 use App\Models\Incident;
-use App\Models\UrbanObject;
-use App\Models\UrbanObjectType;
 use App\Service;
 use App\SourceType;
 use Exception;
@@ -65,6 +60,16 @@ class IncidentsController extends Controller
         $services = [];
         if (!is_null($incident->fireReport)) {
             $services[] = Service::FIREFIGHTERS;
+            $departments = $incident->fireReport->departments->map(function ($department) use ($incident) {
+                return [
+                    'department_id' => $department->id,
+                    'department_name' => $department->name,
+                    'operator_name' => $incident->user->name,
+                    'condition_id' => $department->pivot->condition_id,
+                    'datetime' => $department->pivot->updated_at->format('Y-m-d H:i:s'),
+                ];
+            });
+            $incident->fireReport->setRelation('departments', $departments);
         }
         if (!is_null($incident->eddsReport)) {
             $services[] = Service::EDDS;
@@ -90,7 +95,6 @@ class IncidentsController extends Controller
         $incident = Incident::findOrFail($id);
 
         $incident->update($request->all());
-        event(new IncidentUpdated($incident));
 
 
         $fireReportData = $request->fireReport;
@@ -101,7 +105,24 @@ class IncidentsController extends Controller
         } else {
             $fireReportSearch['incident_id'] = $incident->id;;
         }
-        FireReport::updateOrCreate($fireReportSearch, $fireReportData);
+        $fireReport = FireReport::updateOrCreate($fireReportSearch, $fireReportData);
+
+        if ($request->has('fireReport.departments')) {
+            $departmentsData = [];
+            $userId = auth()->id();
+
+            foreach ($request->input('fireReport.departments') as $dept) {
+                $departmentsData[$dept['department_id']] = [
+                    'condition_id' => $dept['condition_id'],
+                    'user_id'      => $userId,
+                ];
+            }
+
+            $fireReport->departments()->sync($departmentsData);
+        }
+        event(new FireReportUpdated($fireReport));
+        event(new IncidentUpdated($incident));
+
         return redirect()->route('dashboard')->with([
             'message' => 'Карточка успешно обновлена',
             'type' => 'success'
@@ -122,7 +143,18 @@ class IncidentsController extends Controller
                         $service = Service::from($service_id);
                         if ($service->hasRelatedModel()) {
                             if ($service === Service::FIREFIGHTERS) {
-                                $incident->fireReport()->create($request->fireReport);
+                                $fireReport = $incident->fireReport()->create($request->fireReport);
+                                if ($request->filled('fireReport.departments')) {
+                                    $departments = [];
+                                    $userId = auth()->id();
+                                    foreach ($request->fireReport['departments'] as $department) {
+                                        $departments[$department['department_id']] = [
+                                            'condition_id' => $department['condition_id'],
+                                            'user_id' => $userId,
+                                        ];
+                                    }
+                                    $fireReport->departments()->sync($departments);
+                                }
                             }
                             if ($service === Service::EDDS) {
                                 $incident->eddsReport()->create($request->eddsReport);
@@ -143,6 +175,7 @@ class IncidentsController extends Controller
                 'type' => 'success'
             ]);
         } catch (Exception $e) {
+            dd($e);
             Log::error("Ошибка создания инцидента: " . $e->getMessage());
 
             return redirect()->back()->withErrors([

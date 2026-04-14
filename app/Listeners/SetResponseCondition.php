@@ -15,13 +15,28 @@ class SetResponseCondition
     public function handle(IncidentUpdated $event): void
     {
         $incident = $event->incident;
-        $user = Auth::user();
-        if ($user->hasRole('op_01')) {
-            $incident->load('fireReport');
-            if (!is_null($incident->fireReport) && $incident->fireReport->condition === Condition::WATCHING->value) {
-                $incident->fireReport->update(['condition' => Condition::RESPONSE]);
-                $incident->update(['condition' => Condition::RESPONSE]);
+
+        if (!in_array($incident->condition, [Condition::REQUEST, Condition::CONNECTING])) {
+            return;
+        }
+        $countRelated = 0;
+        $countRelatedInStatus = 0;
+
+        if ($incident->fireReport()->exists()) {
+            $countRelated++;
+            if ($incident->fireReport->condition === Condition::RESPONSE) {
+                $countRelatedInStatus++;
             }
+        }
+        if ($incident->eddsReport()->exists()) {
+            $countRelated++;
+            if ($incident->eddsReport->condition === Condition::RESPONSE) {
+                $countRelatedInStatus++;
+            }
+        }
+        if ($countRelated === $countRelatedInStatus) {
+            $incident->condition = Condition::RESPONSE;
+            $incident->save();
         }
     }
 }

@@ -52,7 +52,6 @@ class FireReport extends Model
         'condition' => Condition::class,
         'rank' => FireReportRank::class,
         'plan' => FireReportPlan::class,
-        'type_of_fire_protection' => FireReportType::class,
     ];
     protected $guarded = ['condition'];
 
@@ -84,5 +83,17 @@ class FireReport extends Model
     public function waterSource()
     {
         return $this->belongsTo(FireReportWaterSource::class, 'fire_report_water_sources', 'id');
+    }
+
+    public function fireProtectionType()
+    {
+        return $this->belongsTo(FireReportType::class, 'type_of_fire_protection');
+    }
+
+    public function departments()
+    {
+        return $this->belongsToMany(FirefighterDepartment::class, 'department_fire_report', 'fire_report_id', 'department_id')
+            ->withPivot('condition_id', 'user_id')
+            ->withTimestamps();
     }
 }

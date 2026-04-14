@@ -82,8 +82,6 @@ const display = computed(()=>{
         'items-center': !props.vertical
     }
 });
-
-
 </script>
 
 <template>

@@ -51,7 +51,6 @@ const filteredCallTypes = computed(() => {
 })
 
 provide('viewMode', viewMode)
-console.log(filteredCallTypes.value)
 provide('directories', {
     callTypes: filteredCallTypes.value,
     incidentTypes: page.props.directories.incidentTypes,
