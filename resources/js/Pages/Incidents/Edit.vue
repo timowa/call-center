@@ -181,6 +181,15 @@ const mayBeCompleted = computed(() => {
     return [page.props.constants.callTypes.HELP, page.props.constants.callTypes.FALSE, page.props.constants.callTypes.CHILD].includes(form.call_type_id)
 });
 const submit = (actionType) => {
+    if (viewMode.value || form.processing) return;
+    form.transform(data => {
+        const payload = {...data};
+        for (const [key, permission] of [['fireReport', '01'], ['eddsReport', 'edds']]) {
+            const action = data[key]?.id ? 'edit' : 'create';
+            if (!userHasPermissionTo(`${permission}.${action}`)) delete payload[key];
+        }
+        return payload;
+    });
     if (createMode.value) {
         form.actionType = actionType;
         if (actionType === 'help') {

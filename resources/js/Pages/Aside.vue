@@ -13,7 +13,7 @@ const {getActiveMode} = inject('workMode');
     <span class="text-md text-white">Управление активностями</span>
 </div>
     <div class="text-xl text-center py-4">
-        <span>{{ getActiveMode().sidebarTitle }}</span>
+        <span>{{ getActiveMode().activityTitle }}</span>
     </div>
     <div class="px-2">
         <TextInput :placeholder="'Введите номер'" class="w-full" model-value="phone"></TextInput>

@@ -4,6 +4,7 @@ import FormGroup from "@/Components/Form/FormGroup.vue";
 import FormField from "@/Components/Form/FormField.vue";
 import {inject, watch} from "vue";
 import {FireReportDirectories} from "@/Utils/FireReportDirectories.js";
+import {formatDateTime} from "@/Utils/dateTime.js";
 
 const props = defineProps(['form']);
 const stvolColumns = [
@@ -40,7 +41,7 @@ const dictionaries = FireReportDirectories.fireService;
         <template #rows="{row}">
             <td>{{dictionaries.barrel_types.find(t => t.id === row.type)?.name}}</td>
             <td>{{row.count}}</td>
-            <td>{{row.time}}</td>
+            <td>{{row.time ? formatDateTime(row.time) : ''}}</td>
         </template>
         <template #modal-fields="{form}">
             <div class="grid grid-cols-6 gap-6">
@@ -60,7 +61,7 @@ const dictionaries = FireReportDirectories.fireService;
         <template #rows="{row}">
             <td>{{dictionaries.fire_extinguishing_agents.find(t => t.id === row.type)?.name}}</td>
             <td>{{row.count}}</td>
-            <td>{{row.time}}</td>
+            <td>{{row.time ? formatDateTime(row.time) : ''}}</td>
     </template>
         <template #modal-fields="{form}">
             <div class="grid grid-cols-6 gap-6">
@@ -80,7 +81,7 @@ const dictionaries = FireReportDirectories.fireService;
         <template #rows="{row}">
                 <td>{{row.fio}}</td>
                 <td>{{dictionaries.posts.find(p => p.id === row.post_id)?.name}}</td>
-                <td>{{row.datetime}}</td>
+                <td>{{row.datetime ? formatDateTime(row.datetime) : ''}}</td>
         </template>
         <template #modal-fields="{form}">
             <div class="grid grid-cols-6 gap-6">
@@ -95,7 +96,7 @@ const dictionaries = FireReportDirectories.fireService;
         <template #rows="{row}">
                 <td>{{row.people}}</td>
                 <td>{{row.minutes}}</td>
-                <td>{{row.datetime}}</td>
+                <td>{{row.datetime ? formatDateTime(row.datetime) : ''}}</td>
         </template>
         <template #modal-fields="{form}">
             <div class="grid grid-cols-6 gap-6">

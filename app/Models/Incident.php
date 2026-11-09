@@ -65,10 +65,10 @@ class Incident extends Model
             return;
         }
         if ($user->area_id) {
-            $builder->whereHas('district', function ($query) use ($user) {
-                $query->where('area_id', $user->area_id);
-            })
-            ->orWhere('user_id', $user->id);
+            $builder->where(function ($query) use ($user) {
+                $query->whereHas('district', fn ($district) => $district->where('area_id', $user->area_id))
+                    ->orWhere('user_id', $user->id);
+            });
         }
     }
     #[Scope]

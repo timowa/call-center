@@ -32,6 +32,7 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+        $request->session()->put('work_session', (string) \Illuminate\Support\Str::uuid());
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

@@ -42,7 +42,9 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
         return [
             ...parent::share($request),
+            'timezone' => config('app.timezone'),
             'auth' => [
+                'work_session' => $request->session()->get('work_session'),
                 'user' => $user ? [
                     'id' => $user->id,
                     'name' => $user->name,

@@ -28,9 +28,9 @@ enum Condition: int
         return match($this) {
             self::REQUEST => 'bg-red-500',
             self::CONNECTING => 'bg-green-500',
-            self::RESPONSE => 'bg-indigo-500',
+            self::RESPONSE => 'bg-purple-500',
             self::AT_WORK => 'bg-yellow-500',
-            self::DONE => 'bg-grey-370',
+            self::DONE => 'bg-white ring-1 ring-gray-400',
             self::WATCHING => 'bg-blue-400'
         };
     }
