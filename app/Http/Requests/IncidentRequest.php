@@ -44,6 +44,8 @@ class IncidentRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
+            'applicant_info' => ['sometimes', 'nullable', 'array'],
+            'applicant_info.phone' => ['sometimes', 'nullable', 'string'],
             'call_type_id' => ['required', Rule::enum(CallType::class)],
             'district_id' => ['nullable', 'integer', 'exists:districts,id'],
             'incoming_number' => ['required_without:id'],

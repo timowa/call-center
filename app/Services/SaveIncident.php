@@ -33,9 +33,22 @@ class SaveIncident
             Gate::authorize($id ? 'update' : 'create', $id ? $incident : Incident::class);
             $original = clone $incident;
             $incident->fill($request->all());
+            if ($id && !$user->can('ukio.edit') && is_array($request->input('applicant_info'))) {
+                $applicant = $original->applicant_info ?? [];
+                foreach ($request->input('applicant_info') as $key => $value) {
+                    if ($key !== 'phone') {
+                        abort_unless($this->comparable($value) == $this->comparable($applicant[$key] ?? null), 403);
+                    }
+                }
+                if (array_key_exists('phone', $request->input('applicant_info'))) {
+                    $applicant['phone'] = $request->input('applicant_info.phone');
+                }
+                $incident->applicant_info = $applicant;
+            }
             if ($id && !$user->can('ukio.edit')) {
                 foreach ($incident->getDirty() as $field => $value) {
                     if ($this->comparable($incident->$field) == $this->comparable($original->$field)) continue;
+                    if ($field === 'applicant_info' && is_array($request->input('applicant_info')) && Gate::allows('updatePhone', $original)) continue;
                     abort_unless($field === 'description' && $user->can('ukio.edit-description'), 403);
                 }
             }

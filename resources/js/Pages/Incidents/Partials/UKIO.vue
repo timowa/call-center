@@ -11,13 +11,17 @@ import {fetchCoordinates} from "@/Composables/getCoordinates.js";
 import {userHasPermissionTo} from "@/Utils/permissions.js";
 import {usePage} from "@inertiajs/vue3";
 import {FireReportDirectories} from "@/Utils/FireReportDirectories.js";
-const props = defineProps(['form']);
+const props = defineProps(['form', 'createMode']);
 const page = usePage();
+const viewMode = inject('viewMode', ref(false));
+const protectedFields = computed(() => viewMode.value || !userHasPermissionTo(props.createMode ? 'ukio.create' : 'ukio.edit'));
+const descriptionReadonly = computed(() => viewMode.value || (!props.createMode && !userHasPermissionTo('ukio.edit') && !userHasPermissionTo('ukio.edit-description')));
 const {callTypes, incidentTypes, areas, districts, services, sources, urban_objects, emergency_types} = inject('directories');
 const checkedCallTypeServiceId = ref(null);
 watch(
     () => props.form.call_type_id,
-    (newCallType) => {
+    (newCallType, oldCallType) => {
+        if (protectedFields.value || (!props.createMode && oldCallType === undefined)) return;
         if (checkedCallTypeServiceId.value !== null) {
             const oldIndex = props.form.services.indexOf(checkedCallTypeServiceId.value);
             if (oldIndex !== -1) {
@@ -98,6 +102,7 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
 
 <template>
     <Block>
+        <fieldset :disabled="protectedFields">
         <FormGroup title="Информация" :cols="6">
             <FormField label="№ карточки" v-model="form.id" :readonly="true" />
             <FormField label="Время обработки" v-model="form.processing_time" :readonly="true"  :text-align="'right'"/>
@@ -105,9 +110,9 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
             <FormField label="Дата обращения" v-model="form.created_at.date" :readonly="true"  />
             <FormField label="Время регистрации" v-model="form.created_at.time" :readonly="true"  :text-align="'right'" />
             <FormField label="Создатель" v-model="form.creator" :readonly="true"  :text-align="'right'" />
-            <FormField label="Тип происшествия" type="select" v-model="form.incident_type_id" :col-span="4" :grid-col="4" :options="incidentTypes"/>
-            <FormField label="Источник" v-model="form.source_id" type="select" :options="sources"  :text-align="'right'" :readonly="true"/>
-            <FormField label="Тип вызова"
+            <FormField :readonly="protectedFields" :auto-select="createMode" label="Тип происшествия" type="select" v-model="form.incident_type_id" :col-span="4" :grid-col="4" :options="incidentTypes"/>
+            <FormField :auto-select="createMode" label="Источник" v-model="form.source_id" type="select" :options="sources"  :text-align="'right'" :readonly="true"/>
+            <FormField :readonly="protectedFields" :auto-select="createMode" label="Тип вызова"
                        type="select"
                        v-model="form.call_type_id"
                        :options="callTypes"
@@ -132,14 +137,14 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
             </div>
         </FormGroup>
         <FormGroup title="Место происшествия" :cols="6">
-            <FormField type="select" v-model="form.area_id" label="Район" :options="areas"/>
-            <FormField type="select"
+            <FormField :readonly="protectedFields" :auto-select="createMode" type="select" v-model="form.area_id" label="Район" :options="areas"/>
+            <FormField :readonly="protectedFields" :auto-select="createMode" type="select"
                        v-model="form.district_id"
                        label="Округ"
                        :text-align="'right'"
                        :options="filteredDistricts"
             />
-            <FormField
+            <FormField :readonly="protectedFields" :auto-select="createMode"
                 v-model="form.street"
                 type="select"
                 :options="streets.options.value"
@@ -166,8 +171,8 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
             <FormField v-model="form.ownership" label="Владение"/>
             <FormField v-model="form.building" label="Строение" :text-align="'right'"/>
             <FormField v-model="form.additional_street" label="Доп. улица" :text-align="'right'"/>
-            <FormField v-model="form.district_of_city" type="select" label="Район города" :disabled="true"/>
-            <FormField v-model="form.object" type="select" label="Объект" :text-align="'right'" :options="urban_objects"/>
+            <FormField :readonly="protectedFields" :auto-select="createMode" v-model="form.district_of_city" type="select" label="Район города" :disabled="true"/>
+            <FormField :readonly="protectedFields" :auto-select="createMode" v-model="form.object" type="select" label="Объект" :text-align="'right'" :options="urban_objects"/>
             <FormField v-model="form.coordinates" label="Координаты" :text-align="'right'" :readonly="true"/>
             <FormField v-model="form.road" type="text" label="Дорога" />
             <InputLabel label="Метр" text-align="right"/>
@@ -181,31 +186,35 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
                        :can-edit="userHasPermissionTo('ukio.edit-description')"/>
         </FormGroup>
 
+        </fieldset>
         <FormGroup label="Описание происшествия" :cols="6">
+            <fieldset :disabled="protectedFields" class="contents">
             <div class="col-span-2 grid grid-cols-2">
                 <FormField v-model:checked="form.emergency_threat" label="Угроза ЧС" type="checkbox"/>
                 <FormField v-model:checked="form.threat_to_people" label="Угроза людям" type="checkbox"/>
             </div>
             <FormField v-model="form.number_of_victims" label="Пострадавших" :text-align="'right'"/>
-            <FormField v-model="form.emergency_type_id" label="Тип ЧС" type="select"  :text-align="'right'" :options="emergency_types"/>
-            <FormField label="Описание" v-model="form.description" :col-span="6" :grid-col="6" type="textarea" />
+            <FormField :readonly="protectedFields" :auto-select="createMode" v-model="form.emergency_type_id" label="Тип ЧС" type="select"  :text-align="'right'" :options="emergency_types"/>
+            </fieldset>
+            <FormField :readonly="descriptionReadonly" label="Описание" v-model="form.description" :col-span="6" :grid-col="6" type="textarea" />
 
         </FormGroup>
+        <fieldset :disabled="protectedFields">
         <FormGroup title="Информация о заявителе" :cols="6">
             <FormField label="Фамилия" v-model="form.applicant_info.lastname"/>
             <FormField label="Имя" v-model="form.applicant_info.firstname" :text-align="'right'"/>
             <FormField label="Отчество" v-model="form.applicant_info.surname" :text-align="'right'"/>
             <FormField label="Телефон" v-model="form.applicant_info.phone"/>
-            <FormField label="Статус" v-model="form.applicant_info.status" :text-align="'right'" type="select"
+            <FormField :readonly="protectedFields" :auto-select="createMode" label="Статус" v-model="form.applicant_info.status" :text-align="'right'" type="select"
                        :options="page.props.dictionaries.applicantStatuses"/>
             <InputLabel label="Дата рождения" :text-align="'right'"/>
             <div class="grid grid-cols-5 gap-2">
                 <TextInput v-model="form.applicant_info.birthday" class="col-span-2"/>
                 <FormField v-model="form.applicant_info.age" label="Возраст" :col-span="3" :text-align="'right'"/>
             </div>
-            <FormField type="select" v-model="form.applicant_info.district" label="Район" :options="areas"/>
-            <FormField type="select" v-model="form.applicant_info.area" label="Округ" :text-align="'right'" :options="filteredDistricts"/>
-            <FormField
+            <FormField :readonly="protectedFields" :auto-select="createMode" type="select" v-model="form.applicant_info.district" label="Район" :options="areas"/>
+            <FormField :readonly="protectedFields" :auto-select="createMode" type="select" v-model="form.applicant_info.area" label="Округ" :text-align="'right'" :options="filteredDistricts"/>
+            <FormField :readonly="protectedFields" :auto-select="createMode"
                 v-model="form.applicant_info.street"
                 type="select"
                 :options="streets.options.value"
@@ -226,6 +235,8 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
             <FormField label="Доп. инфо" v-model="form.applicant_info.additional_info" :col-span="6" :grid-col="6" type="textarea"/>
             <FormField label="Язык общения" v-model="form.applicant_info.language"/>
         </FormGroup>
+        </fieldset>
+        <slot />
     </Block>
 
 </template>

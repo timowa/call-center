@@ -72,6 +72,7 @@ class IncidentsController extends Controller
         return Inertia::render('Incidents/Edit', [
             'incident'       => $incident,
             'mode'          => $mode,
+            'canUpdatePhone' => !$viewMode && Gate::allows('updatePhone', $incident),
         ]);
     }
 

@@ -7,6 +7,12 @@ use App\Models\User;
 
 class IncidentPolicy
 {
+    public function updatePhone(User $user, Incident $incident): bool
+    {
+        return $this->update($user, $incident) && ($user->can('ukio.edit') ||
+            ($user->hasAnyRole(['op_01', 'edds']) && $user->can('ukio.edit-description')));
+    }
+
     public function create(User $user): bool
     {
         return $user->can('ukio.create');

@@ -2,6 +2,8 @@
 <script setup>
 import {Head, Link, router, useForm, usePage} from "@inertiajs/vue3";
 import {computed, onUnmounted, provide, ref, watch, inject} from "vue";
+import UKIOSummary from '@/Pages/Incidents/Partials/UKIOSummary.vue';
+import UKIOToggle from '@/Pages/Incidents/Partials/UKIOToggle.vue';
 import UKIO from "@/Pages/Incidents/Partials/UKIO.vue";
 import EDDS from "@/Pages/Incidents/Partials/EDDS.vue";
 import IncidentMap from "@/Pages/Incidents/Partials/IncidentMap.vue";
@@ -17,7 +19,7 @@ import {userHasPermissionTo} from "@/Utils/permissions.js";
 import LinkButton from "@/Components/LinkButton.vue";
 import {getEDDSDefaults} from "@/Utils/EDDSForm.js";
 
-const props = defineProps(['incident', 'fireReportData', 'flash', 'mode']);
+const props = defineProps(['incident', 'fireReportData', 'flash', 'mode', 'canUpdatePhone']);
 const createMode = computed(() => props.mode === 'create');
 const viewMode = computed(() => props.mode === 'view');
 const editMode = computed(() => props.mode === 'edit');
@@ -28,6 +30,11 @@ const isCov = computed(() => {
     return user.value.roles.includes('cov_112');
 });
 
+
+// Layout priority is independent of permissions: ЦОВ → 01 → ЕДДС.
+const layout = computed(() => isCov.value ? 'cov' : user.value.roles.includes('op_01') ? '01' : user.value.roles.includes('edds') ? 'edds' : 'cov');
+const expanded = ref(true);
+const canUpdatePhone = computed(() => !viewMode.value && (createMode.value ? userHasPermissionTo('ukio.create') : props.canUpdatePhone));
 
 const filteredAreas = computed(() => {
     if (isCov.value ) {
@@ -70,8 +77,8 @@ provide('mapCoordinates', {
 const form = useForm({
     id: props.incident.id ?? 0,
     created_at: {
-        date: props.incident.created_at_dt?.date,
-        time: props.incident.created_at_dt?.time
+        date: props.incident.created_at_dt?.date ?? '',
+        time: props.incident.created_at_dt?.time ?? ''
     },
     processing_time: props.incident.processingTime ?? 0,
     incoming_number: props.incident.incoming_number ?? 0,
@@ -170,12 +177,12 @@ const rightTabs =  computed(() => ({
         title: 'Звонки и СМС'
     }
 }))
-watch(() => tabs.value.EDDS.show, (isVisible) => {
-    if (!isVisible && currentTab.value === 'EDDS') {
+const currentTab = ref('UKIO');
+watch(() => tabs.value[currentTab.value]?.show, (isVisible) => {
+    if (!isVisible && currentTab.value !== 'UKIO') {
         currentTab.value = 'UKIO';
     }
 });
-const currentTab = ref('UKIO');
 const currentRightTab = ref('map');
 const mayBeCompleted = computed(() => {
     return [page.props.constants.callTypes.HELP, page.props.constants.callTypes.FALSE, page.props.constants.callTypes.CHILD].includes(form.call_type_id)
@@ -264,7 +271,7 @@ watch(() => form.errors, (errors) => {
             <TabsHeader>
                 <TabHeaderButton
                     v-for="(tab, id) in tabs"
-                    v-show="tab.show"
+                    v-show="tab.show && (layout !== '01' || id === 'UKIO')"
                     :active="currentTab === id"
                     @click="currentTab = id"
                 >
@@ -290,9 +297,28 @@ watch(() => form.errors, (errors) => {
         </template>
 
         <form @submit.prevent="submit">
-            <keep-alive>
-                <component :is="tabs[currentTab].template" :form="form"/>
-            </keep-alive>
+            <template v-if="layout === '01'">
+                <template v-if="tabs.UKIO.show">
+                    <UKIOSummary v-show="!expanded" :form="form" :can-edit-phone="canUpdatePhone">
+                        <UKIOToggle :expanded="false" @click="expanded = true" />
+                    </UKIOSummary>
+                    <div v-show="expanded">
+                        <UKIO :form="form" :create-mode="createMode">
+                            <UKIOToggle :expanded="true" @click="expanded = false" />
+                        </UKIO>
+                    </div>
+                </template>
+                <div v-if="tabs.FIREFIGHTERS.show" class="mt-5">
+                    <Firefighters :form="form" />
+                </div>
+            </template>
+            <template v-else>
+                <UKIOSummary v-if="layout === 'edds' && currentTab === 'EDDS' && tabs.EDDS.show"
+                             :form="form" :can-edit-phone="canUpdatePhone" class="mb-5" />
+                <keep-alive>
+                    <component v-if="tabs[currentTab]?.show" :key="currentTab" :is="tabs[currentTab].template" :form="form" :create-mode="createMode"/>
+                </keep-alive>
+            </template>
             <div class="mt-6 px-6">
                 <div class="flex justify-between">
                     <LinkButton :href="route('incidents.dashboard')">Отмена</LinkButton>

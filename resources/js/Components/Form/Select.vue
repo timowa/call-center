@@ -9,6 +9,7 @@ const props = defineProps({
     options: { type: Array, default: () => [] },
     placeholder: {type: String, default: ''},
     readonly: Boolean,
+    autoSelect: {type: Boolean, default: true},
     reduce: { type: Function, default: (option) => option.id  },
 });
 const viewMode = inject('viewMode', ref(false));
@@ -26,7 +27,7 @@ const onSearch = (search, loading) => {
     emit('search', search, loading);
 };
 watch(() => props.options, (newOptions) => {
-    if (newOptions && newOptions.length === 1 && (model.value === null || model.value === undefined)) {
+    if (props.autoSelect && !isDisabled.value && newOptions && newOptions.length === 1 && (model.value === null || model.value === undefined)) {
         model.value = props.reduce(newOptions[0]);
     }
 }, { immediate: true });
