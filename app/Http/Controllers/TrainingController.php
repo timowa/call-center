@@ -8,7 +8,7 @@ use Inertia\Inertia;
 class TrainingController extends Controller {
  public function accept(Request $request) {
   Gate::authorize('create', Incident::class);
-  $data = $request->validate(['kind' => 'required|in:call,sms,glonass', 'request_key' => 'required|uuid']);
+  $data = $request->validate(['kind' => 'required|in:sms,glonass', 'request_key' => 'required|uuid']);
   $session = DB::transaction(function () use ($request, $data) {
    User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
    $existing = TrainingSession::where('user_id',$request->user()->id)->where('request_key',$data['request_key'])->first();

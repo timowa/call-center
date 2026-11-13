@@ -73,7 +73,7 @@ class IncidentPhoneTest extends TestCase
     public function test_narrow_update_preserves_omitted_fields_and_rejects_protected_changes(): void
     {
         $incident = $this->incident();
-        foreach (['op_01', 'edds'] as $role) {
+        foreach (['edds'] as $role) {
             $this->actingAs($this->operator($role));
             $this->savePhone($incident, ['phone' => '7999'])->assertSessionHasNoErrors();
             $this->assertSame('Иванов', $incident->fresh()->applicant_info['lastname']);

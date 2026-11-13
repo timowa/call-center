@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\DB;
 class TrainingScenarioSeeder extends Seeder {
  public function run(): void {
   foreach ([1,2] as $n) {
-   foreach (['call'=>'/training/demo-'.$n.'.wav', 'sms'=>"Учебная беседа $n. Нужна помощь.\nУчебный адрес: дом $n.\nСпасибо, ожидаю.", 'glonass'=>json_encode([
+   foreach (['sms'=>"Учебная беседа $n. Нужна помощь.\nУчебный адрес: дом $n.\nСпасибо, ожидаю.", 'glonass'=>json_encode([
     'Адресная информация о местоположении ТС'=>'Учебный адрес '.$n,
     'Государственный регистрационный номер ТС'=>'УЧЕБНЫЙ-'.$n,
     'Цвет кузова ТС'=>'Учебные данные', 'Марка и/или модель ТС'=>'Учебное ТС '.$n,
@@ -22,7 +22,7 @@ class TrainingScenarioSeeder extends Seeder {
     'Удар спереди'=>'Неизвестно', 'Удар слева'=>'Неизвестно', 'Удар справа'=>'Неизвестно', 'Удар сбоку'=>'Неизвестно',
     'Удар сзади'=>'Неизвестно', 'Переворот'=>'Неизвестно', 'Другой тип происшествия'=>'Неизвестно',
    ],JSON_UNESCAPED_UNICODE)] as $kind=>$content) {
-    $name='Учебная заглушка '.$n.($kind==='call' ? ' (тон, не запись разговора)' : '');
+    $name='Учебная заглушка '.$n;
     if (!DB::table('training_scenarios')->where('kind',$kind)->where('name',$name)->exists()) DB::table('training_scenarios')->insert(compact('kind','name','content')+['active'=>true,'created_at'=>now(),'updated_at'=>now()]);
    }
   }

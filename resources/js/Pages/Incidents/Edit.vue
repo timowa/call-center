@@ -39,10 +39,18 @@ const isCov = computed(() => {
 // Layout priority is independent of permissions: ЦОВ → 01 → ЕДДС.
 const layout = computed(() => isCov.value ? 'cov' : user.value.roles.includes('op_01') ? '01' : user.value.roles.includes('edds') ? 'edds' : user.value.roles.includes('gas') ? 'gas' : 'cov');
 const vertical = computed(() => ['01', 'gas'].includes(layout.value));
-const expanded = ref(createMode.value || !vertical.value);
+const expanded = ref(createMode.value || !vertical.value || !!props.editUkio);
 const ukioEditing = ref(createMode.value || vertical.value || props.editUkio);
 const ukioView = computed(() => viewMode.value || !ukioEditing.value);
 provide('ukioView', ukioView);
+function expandUkio() {
+    if (layout.value === '01' && viewMode.value && props.canUpdate) {
+        router.get(route('incidents.edit', props.incident.id), { editUkio: 1 });
+        return;
+    }
+    expanded.value = true;
+    if (layout.value === '01' && !viewMode.value) ukioEditing.value = true;
+}
 const canUpdatePhone = computed(() => !ukioView.value && (createMode.value ? userHasPermissionTo('ukio.create') : props.canUpdatePhone));
 
 const filteredAreas = computed(() => {
@@ -198,6 +206,10 @@ watch(() => tabs.value[currentTab.value]?.show, (isVisible) => {
     }
 });
 const currentRightTab = ref(training.value?.kind === 'glonass' ? 'glonass' : training.value ? 'calls' : 'map');
+const createFromCall = computed(() => createMode.value && props.incident.source_id === page.props.constants.sources.CALL);
+const showCancel = computed(() => createMode.value
+    ? !createFromCall.value
+    : vertical.value || ukioEditing.value);
 const mayBeCompleted = computed(() => {
     return [page.props.constants.callTypes.HELP, page.props.constants.callTypes.FALSE, page.props.constants.callTypes.CHILD].includes(form.call_type_id)
 });
@@ -332,12 +344,12 @@ watch(() => form.errors, (errors) => {
             </TabsHeader>
         </template>
 
-        <form @submit.prevent="submit()">
+        <form @submit.prevent="(!createMode || mayBeCompleted) && submit()">
             <div v-if="Object.keys(form.errors).length" role="alert" class="text-red-700 px-6"><p v-for="error in form.errors">{{ error }}</p></div>
             <template v-if="vertical">
                 <template v-if="tabs.UKIO.show">
                     <UKIOSummary v-show="!expanded" :form="form" :can-edit-phone="canUpdatePhone">
-                        <UKIOToggle :expanded="false" @click="expanded = true" />
+                        <UKIOToggle :expanded="false" @click="expandUkio" />
                     </UKIOSummary>
                     <div v-show="expanded">
                         <UKIO :form="form" :create-mode="createMode">
@@ -359,7 +371,7 @@ watch(() => form.errors, (errors) => {
             </template>
             <div class="mt-6 px-6">
                 <div class="flex justify-between">
-                    <LinkButton v-if="createMode || vertical || ukioEditing" :href="route('incidents.dashboard')">Отмена</LinkButton>
+                    <LinkButton v-if="showCancel" :href="route('incidents.dashboard')">Отмена</LinkButton>
                     <div class="flex gap-2 ml-auto flex-wrap">
                         <template v-if="!createMode">
                             <PrimaryButton v-if="!vertical && !ukioEditing && props.canUpdate" @click="viewMode ? router.get(route('incidents.edit', incident.id), {editUkio: 1}) : ukioEditing = true">Редактировать</PrimaryButton>
@@ -369,15 +381,15 @@ watch(() => form.errors, (errors) => {
                             </template>
                         </template>
                         <template v-else>
-                            <template v-if="form.source_id === page.props.constants.sources.CALL">
+                            <template v-if="createFromCall">
                                 <PrimaryButton :disabled="form.processing" @click="submit('help')">Справочный</PrimaryButton>
                                 <PrimaryButton :disabled="form.processing" @click="submit('false')">Ложный</PrimaryButton>
                                 <PrimaryButton :disabled="form.processing" @click="submit('child')">Детская шалость</PrimaryButton>
                             </template>
                             <PrimaryButton v-if="!form.call_type_id || mayBeCompleted" :disabled="form.processing || !mayBeCompleted" @click="submit()">Сохранить</PrimaryButton>
                             <template v-else>
-                                <PrimaryButton v-if="form.source_id === page.props.constants.sources.CALL && !training?.hung_up" :disabled="form.processing" @click="submit('transfer')">Передать с вызовом</PrimaryButton>
-                                <PrimaryButton v-if="form.source_id === page.props.constants.sources.CALL && !training?.hung_up" :disabled="form.processing" title="Учебная имитация">Конференция</PrimaryButton>
+                                <PrimaryButton v-if="createFromCall" :disabled="form.processing" @click="submit('transfer')">Передать с вызовом</PrimaryButton>
+                                <PrimaryButton v-if="createFromCall" :disabled="form.processing" @click="submit()">Конференция</PrimaryButton>
                                 <PrimaryButton :disabled="form.processing" @click="submit('transfer')">Передать без вызова</PrimaryButton>
                             </template>
                         </template>

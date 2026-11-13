@@ -37,7 +37,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $op01 = Role::firstOrCreate(['name' => 'op_01']);
         $op01->givePermissionTo([
-            'ukio.create', 'ukio.view', 'ukio.edit-description',
+            'ukio.create', 'ukio.view', 'ukio.edit', 'ukio.edit-description',
             '01.create', '01.view', '01.edit',
         ]);
 

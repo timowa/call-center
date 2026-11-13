@@ -28,19 +28,19 @@ provide('selectedIncident', {
 
 const showAlarmOverlay = ref(false);
 const audio = ref(null);
-provide('ringingCall', {active: showAlarmOverlay, cancel: () => { audio.value?.pause(); showAlarmOverlay.value = false; startPolling(); }});
-
-const activateAlarm = () => {
-    stopPolling()
-    showAlarmOverlay.value = true;
-
-    if (!audio.value) {
-        audio.value = new Audio('/alert.mp3');
-        audio.value.loop = true;
-    }
-    audio.value.play().catch(e => console.log("Нужно взаимодействие с юзером для звука"));
+const stopAlarm = () => {
+    if (audio.value) { audio.value.pause(); audio.value.currentTime = 0; }
 };
-
+const cancelCall = () => { stopAlarm(); showAlarmOverlay.value = false; startPolling(); };
+provide('ringingCall', { active: showAlarmOverlay, cancel: cancelCall });
+const activateAlarm = () => {
+    if (accepting.value) return;
+    stopPolling();
+    showAlarmOverlay.value = true;
+    if (!audio.value) { audio.value = new Audio('/alert.mp3'); audio.value.loop = true; }
+    audio.value.play().catch(() => {});
+};
+onUnmounted(stopAlarm);
 const acceptKeys = {};
 const accepting = ref(false);
 const acceptTraining = kind => {
@@ -49,14 +49,11 @@ const acceptTraining = kind => {
     router.post(route('training.accept'), {kind, request_key: acceptKeys[kind]}, {onFinish: () => { accepting.value = false; }, onSuccess: () => { delete acceptKeys[kind]; }});
 };
 const acceptCall = () => {
-    if (audio.value) {
-        audio.value.pause();
-        audio.value.currentTime = 0;
-    }
-
+    if (accepting.value) return;
+    accepting.value = true;
+    stopAlarm();
     showAlarmOverlay.value = false;
-
-    acceptTraining('call');
+    router.get(route('incidents.create-from-call'), {}, { onFinish: () => { accepting.value = false; }, onError: startPolling });
 };
 
 onMounted(() => {
@@ -113,7 +110,7 @@ const tabs = [
                         </span>
                         Создать карточку
                     </LinkButton>
-                    <SecondaryButton :disabled="accepting" @click="activateAlarm()">Принять вызов</SecondaryButton>
+                    <SecondaryButton :disabled="accepting" @click="activateAlarm">Принять вызов</SecondaryButton>
                     <SecondaryButton :disabled="accepting" @click="acceptTraining('sms')">Принять СМС</SecondaryButton>
                     <SecondaryButton :disabled="accepting" @click="acceptTraining('glonass')">Принять ГЛОНАСС</SecondaryButton>
                 </div>
@@ -151,6 +148,8 @@ const tabs = [
             <IncidentPreview></IncidentPreview>
         </template>
 
+
+
         <Teleport to="body">
             <Transition name="fade">
                 <div v-if="showAlarmOverlay"
@@ -161,6 +160,7 @@ const tabs = [
 
                         <button
                             @click="acceptCall"
+                            type="button" :disabled="accepting" aria-label="Принять входящий вызов"
                             class="relative w-64 h-64 bg-red-600 hover:bg-red-500 text-white rounded-full
                                shadow-[0_0_50px_rgba(220,38,38,0.5)] border-8 border-white/20
                                flex items-center justify-center text-3xl font-black uppercase tracking-tighter
@@ -180,6 +180,5 @@ const tabs = [
                 </div>
             </Transition>
         </Teleport>
-
 </AuthenticatedLayout>
 </template>

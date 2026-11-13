@@ -75,6 +75,40 @@ class CustomerChangesTest extends TestCase
         $this->assertNull($card->fresh()->gasReport->departed_at);
     }
 
+    public function test_edds_results_and_responses_are_restored_and_saved_on_completion(): void
+    {
+        $this->actingAs($this->operator('cov_112'));
+        $card = $this->createCard(['call_type_id' => 8]);
+        $timestamp = '2026-11-13 10:00:00';
+        $results = [
+            'forces' => 'Дежурная бригада', 'dispatcher' => 'Диспетчер', 'measures' => 'Работы выполнены',
+            'departed_at' => $timestamp, 'arrived_at' => $timestamp,
+            'resolved_at' => $timestamp, 'notified_at' => $timestamp,
+        ];
+        $response = [
+            'department_name' => 'Аварийная бригада', 'operator_name' => 'Оператор (123)',
+            'condition_id' => 1, 'requested_at' => $timestamp,
+        ];
+        $this->actingAs($this->operator('edds'));
+        $payload = [
+            'id' => $card->id, 'call_type_id' => 8,
+            'eddsReport' => ['id' => $card->eddsReport->id, 'results' => $results, 'responses' => [$response]],
+        ];
+        $route = route('incidents.update', $card);
+        $this->put($route, $payload)->assertRedirect()->assertSessionHasNoErrors();
+        $this->get(route('incidents.edit', $card))->assertInertia(fn (Assert $page) => $page
+            ->where('incident.edds_report.results', $results)
+            ->where('incident.edds_report.responses.0.department_name', $response['department_name']));
+
+        $payload['complete_service'] = 'edds';
+        $payload['eddsReport']['responses'][0]['condition_id'] = 2;
+        $payload['eddsReport']['responses'][0]['accepted_at'] = $timestamp;
+        $this->put($route, $payload)->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame(Condition::DONE, $card->fresh()->eddsReport->condition);
+        $this->assertEquals($payload['eddsReport']['responses'], $card->fresh()->eddsReport->responses);
+        $this->assertSame(Condition::WATCHING, $card->fresh()->condition);
+    }
+
     public function test_gas_round_trip_permissions_and_old_edds_are_preserved(): void
     {
         $this->assertSame(Service::GAS, CallType::GAS->relatedService());
@@ -140,10 +174,20 @@ class CustomerChangesTest extends TestCase
         $this->get(route('incidents.dashboard', $filters))->assertInertia(fn (Assert $p) => $p->has('incidents', 0)->has('filterStreets.incident', 0)->has('filterStreets.applicant', 0));
     }
 
+    public function test_phone_call_opens_card_without_training_scenario(): void
+    {
+        $this->actingAs($this->operator('cov_112'));
+        DB::table('training_scenarios')->where('kind', 'call')->delete();
+        $this->get(route('incidents.create-from-call'))->assertInertia(fn (Assert $page) => $page
+            ->where('mode', 'create')->where('incident.source_id', 2)->missing('incident.training_session'));
+        $this->assertDatabaseCount('training_sessions', 0);
+        $this->post(route('training.accept'), ['kind' => 'call', 'request_key' => (string) Str::uuid()])->assertSessionHasErrors('kind');
+    }
+
     public function test_training_rotation_retries_independence_and_reopening(): void
     {
         $user = $this->operator('cov_112'); $this->actingAs($user);
-        foreach (['call' => 2, 'sms' => 3, 'glonass' => 4] as $kind => $source) {
+        foreach (['sms' => 3, 'glonass' => 4] as $kind => $source) {
             $ids = [];
             for ($i = 0; $i < 3; $i++) {
                 $key = (string) Str::uuid();

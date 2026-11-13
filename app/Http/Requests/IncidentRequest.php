@@ -68,12 +68,24 @@ class IncidentRequest extends FormRequest
             'eddsReport' => ['sometimes', 'nullable', 'array'],
             'fireReport.id' => ['nullable', 'integer'],
             'eddsReport.id' => ['nullable', 'integer'],
+            'eddsReport.results' => ['sometimes', 'array'],
+            'eddsReport.responses' => ['sometimes', 'array', 'list'],
+            'eddsReport.responses.*.department_name' => ['required', 'string', 'max:255', 'distinct:ignore_case'],
+            'eddsReport.responses.*.condition_id' => ['required', 'integer', 'between:1,4'],
+            'eddsReport.responses.*.operator_name' => ['required', 'string', 'max:512'],
             'fireReport.departments' => ['sometimes', 'array'],
             'fireReport.departments.*.department_id' => ['required', 'integer', 'distinct', 'exists:firefighters_departments,id'],
             'fireReport.departments.*.condition_id' => ['required', 'integer', 'between:1,4'],
             'fireReport.departments.*.transitions' => ['sometimes', 'array'],
             'fireReport.departments.*.transitions.*' => ['integer', 'between:2,4'],
         ];
+        foreach (['forces', 'dispatcher', 'measures'] as $field) {
+            $rules['eddsReport.results.'.$field] = ['nullable', 'string'];
+        }
+        foreach (['results.departed_at', 'results.arrived_at', 'results.resolved_at', 'results.notified_at',
+            'responses.*.requested_at', 'responses.*.accepted_at', 'responses.*.arrived_at', 'responses.*.completed_at'] as $field) {
+            $rules['eddsReport.'.$field] = ['nullable', 'date_format:Y-m-d H:i:s'];
+        }
         // Wall-clock values use config(app.timezone), not the browser timezone.
         foreach (['localized_at', 'fire_eliminated_at', 'elimination_at', 'departments.*.requested_at', 'departments.*.accepted_at', 'departments.*.arrived_at', 'departments.*.completed_at', 'barrels.*.time', 'fire_extinguishing_agents.*.time', 'rtp.*.datetime', 'gdzs.*.datetime'] as $field) {
             $rules['fireReport.'.$field] = ['nullable', 'date_format:Y-m-d H:i:s'];

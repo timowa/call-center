@@ -41,7 +41,6 @@ const currentTabEDDS = ref(1);
             >{{tab.title}}</TabHeaderButton>
         </TabsHeader>
         <Block>
-            <button type="button" disabled class="text-gray-400 mb-3">Отделения</button>
             <keep-alive>
                 <component :is="tabs[currentTabEDDS].template" :form="form.eddsReport" v-bind="$attrs"/>
             </keep-alive>

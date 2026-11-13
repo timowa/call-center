@@ -54,8 +54,8 @@ onMounted(function() {
         >{{tab.title}}</TabHeaderButton>
     </TabsHeader>
     <Block>
-        <p v-if="FireReportDirectories.isLoading" class="p-4">Загрузка справочников…</p>
-        <p v-else-if="FireReportDirectories.error" role="alert" class="p-4">{{ FireReportDirectories.error }} <button type="button" @click="FireReportDirectories.fetchFireDirectories()">Повторить</button></p>
+        <p v-if="!FireReportDirectories.fireService && FireReportDirectories.isLoading" class="p-4">Загрузка справочников…</p>
+        <p v-else-if="!FireReportDirectories.fireService && FireReportDirectories.error" role="alert" class="p-4">{{ FireReportDirectories.error }} <button type="button" @click="FireReportDirectories.fetchFireDirectories()">Повторить</button></p>
         <keep-alive v-else-if="FireReportDirectories.fireService">
             <component :is="tabs[currentTabFire].template" :form="form.fireReport" v-bind="$attrs"/>
         </keep-alive>

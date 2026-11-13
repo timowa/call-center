@@ -8,6 +8,6 @@ export const getEDDSDefaults = (report = null) => ({
     additional_info: report?.additional_info ?? null,
     elimination_datetime: report?.elimination_datetime ?? null,
     is_consultation: report?.is_consultation ?? false,
-    results: report?.results ?? [],
+    results: {...report?.results},
     responses: report?.responses ?? []
 });

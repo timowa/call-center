@@ -134,7 +134,7 @@ class IncidentDepartmentsTest extends TestCase
         }
     }
 
-    public function test_foreign_territory_and_ukio_changes_are_denied(): void
+    public function test_op01_can_edit_ukio_but_foreign_territory_is_denied(): void
     {
         $incident = $this->createIncident([$this->row()]);
         $area = DB::table('areas')->insertGetId(['name' => 'Другая территория']);
@@ -143,7 +143,10 @@ class IncidentDepartmentsTest extends TestCase
         $this->get(route('incidents.edit', $incident->id))->assertForbidden();
         $this->get(route('incidents.view', $incident->id))->assertForbidden();
         $this->actingAs($this->operator());
-        $this->save($incident, [$this->row()], [], ['street' => 'Подмена'])->assertForbidden();
+        $this->save($incident, [$this->row()], [], ['street' => 'Новая улица'])->assertSessionHasNoErrors();
+        $this->assertSame('Новая улица', $incident->fresh()->street);
+        $this->get(route('incidents.edit', $incident->id).'?editUkio=1')->assertInertia(fn (Assert $page) => $page
+            ->where('editUkio', true)->where('mode', 'edit')->where('incident.street', 'Новая улица'));
     }
 
     public function test_legacy_unknown_times_are_not_invented_and_no_service_is_created_on_update(): void

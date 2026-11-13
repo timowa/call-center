@@ -11,9 +11,11 @@ const page = usePage();
 const transition = inject('departmentTransition', null);
 const pending = ref(false);
 const transitionError = ref('');
-const props = defineProps(['form']);
+const props = defineProps({form: Object, edds: Boolean});
 const viewMode = inject('viewMode', ref(false));
-const canEdit = computed(() => !viewMode.value && page.props.auth.user.permissions.includes('01.edit'));
+const canEdit = computed(() => !viewMode.value && (props.edds || page.props.auth.user.permissions.includes('01.edit')));
+const rows = computed(() => props.edds ? props.form.responses : props.form.departments);
+const departmentName = ref('');
 const stages = [
     {id: 1, name: 'Заявка создана', field: 'requested_at'},
     {id: 2, name: 'Заявка принята', field: 'accepted_at'},
@@ -27,15 +29,28 @@ const addDialog = ref();
 const timeDialog = ref();
 const editing = ref(null);
 const filtered = computed(() => (FireReportDirectories.fireService?.departments ?? []).filter(d => d.name.toLowerCase().includes(search.value.trim().toLowerCase())));
-const attached = id => props.form.departments.some(d => Number(d.department_id) === Number(id));
+const attached = id => rows.value.some(d => Number(d.department_id) === Number(id));
+const nameExists = computed(() => rows.value.some(row => row.department_name?.toLowerCase() === departmentName.value.trim().toLowerCase()));
 const openAdd = () => {
     if (!canEdit.value) return;
     search.value = ''; selected.value = [];
-    FireReportDirectories.fetchFireDirectories();
+    departmentName.value = '';
+    if (!props.edds) FireReportDirectories.fetchFireDirectories();
     addDialog.value.showModal();
 };
 const saveDepartments = () => {
     if (!canEdit.value) return;
+    if (props.edds) {
+        const name = departmentName.value.trim();
+        if (!name || nameExists.value) return;
+        rows.value.push({
+            department_name: name, condition_id: 1,
+            requested_at: nowInTimezone(page.props.timezone),
+            operator_name: `${page.props.auth.user.name} (${page.props.auth.user.uid})`,
+        });
+        addDialog.value.close();
+        return;
+    }
     const departments = FireReportDirectories.fireService?.departments ?? [];
     for (const id of selected.value) {
         if (attached(id)) continue;
@@ -51,7 +66,7 @@ const saveDepartments = () => {
 };
 const updateCondition = async (row, stage) => {
     if (!canEdit.value || pending.value || stage.id !== Number(row.condition_id) + 1) return;
-    if (transition) {
+    if (transition && !props.edds) {
         pending.value = true; transitionError.value = '';
         try { if (await transition(row, stage)) return; }
         catch (error) { transitionError.value = error.response?.data?.message || 'Переход не подтверждён. Обновите карточку перед повторной попыткой.'; return; }
@@ -59,7 +74,7 @@ const updateCondition = async (row, stage) => {
     }
     row.condition_id = stage.id;
     row[stage.field] = nowInTimezone(page.props.timezone);
-    (row.transitions ??= []).push(stage.id);
+    if (!props.edds) (row.transitions ??= []).push(stage.id);
 };
 const editTime = async (row, stage) => {
     if (!canEdit.value || stage.id > row.condition_id) return;
@@ -80,8 +95,8 @@ const saveTime = value => { if (canEdit.value) editing.value.row[editing.value.s
                 <table class="w-full text-left text-sm">
                     <thead class="text-gray-500"><tr><th>Отделение</th><th>Состояние</th><th>Время изменения</th><th>Оператор, привлекший отделение (PIN)</th><th></th></tr></thead>
                     <tbody>
-                        <tr v-if="!form.departments.length"><td colspan="5" class="text-center text-gray-400">Нет данных</td></tr>
-                        <template v-for="row in form.departments" :key="row.department_id">
+                        <tr v-if="!rows.length"><td colspan="5" class="text-center text-gray-400">Нет данных</td></tr>
+                        <template v-for="(row, index) in rows" :key="row.department_id ?? index">
                             <tr>
                                 <td>{{ row.department_name }}</td>
                                 <td><Dropdown>
@@ -90,9 +105,9 @@ const saveTime = value => { if (canEdit.value) editing.value.row[editing.value.s
                                 </Dropdown></td>
                                 <td>{{ formatDateTime(row[stages[row.condition_id - 1]?.field]) }}</td>
                                 <td>{{ row.operator_name }}</td>
-                                <td><button type="button" :aria-expanded="!!expanded[row.department_id]" aria-label="Хронология отделения" @click="expanded[row.department_id] = !expanded[row.department_id]">{{ expanded[row.department_id] ? '⌃' : '⌄' }}</button></td>
+                                <td><button type="button" :aria-expanded="!!expanded[index]" aria-label="Хронология отделения" @click="expanded[index] = !expanded[index]">{{ expanded[index] ? '⌃' : '⌄' }}</button></td>
                             </tr>
-                            <tr v-if="expanded[row.department_id]">
+                            <tr v-if="expanded[index]">
                                 <td colspan="5">
                                     <ol class="flex py-3 min-w-[650px]">
                                         <li v-for="stage in stages" class="flex-1 relative">
@@ -111,14 +126,17 @@ const saveTime = value => { if (canEdit.value) editing.value.row[editing.value.s
                 </table>
             </div>
         </div>
+        <template v-if="!edds">
         <FormField label="Локализация" type="datetime" :vertical="true" v-model="form.localized_at" />
         <FormField label="Ликвидация открытого огня" type="datetime" :vertical="true" v-model="form.fire_eliminated_at" />
         <FormField label="Ликвидация" type="datetime" :vertical="true" v-model="form.elimination_at" />
+        </template>
     </FormGroup>
     <dialog ref="addDialog" class="rounded-lg p-5 w-96 max-w-[95vw] max-h-[90vh] overflow-auto backdrop:bg-black/40" @keydown.esc.stop>
         <h3 class="font-semibold mb-4">Добавление отделений</h3>
-        <label class="flex items-center gap-2 bg-gray-100 rounded px-2">⌕<input v-model="search" aria-label="Поиск" placeholder="Поиск" class="w-full bg-transparent border-0 text-sm" /></label>
-        <div class="min-h-48 max-h-80 overflow-auto py-3">
+        <label v-if="edds" class="block text-sm">Название отделения<input v-model="departmentName" maxlength="255" class="block w-full rounded border-gray-300" /></label>
+        <label v-else class="flex items-center gap-2 bg-gray-100 rounded px-2">⌕<input v-model="search" aria-label="Поиск" placeholder="Поиск" class="w-full bg-transparent border-0 text-sm" /></label>
+        <div v-if="!edds" class="min-h-48 max-h-80 overflow-auto px-1 py-3">
             <p v-if="FireReportDirectories.isLoading">Загрузка…</p>
             <div v-else-if="FireReportDirectories.error" role="alert">{{ FireReportDirectories.error }} <button type="button" class="text-primary" @click="FireReportDirectories.fetchFireDirectories()">Повторить</button></div>
             <template v-else>
@@ -128,7 +146,7 @@ const saveTime = value => { if (canEdit.value) editing.value.row[editing.value.s
                 </label>
             </template>
         </div>
-        <div class="flex justify-end gap-3 mt-4"><button type="button" @click="addDialog.close()" class="text-primary">Отмена</button><button type="button" @click="saveDepartments" :disabled="!selected.length" class="bg-primary text-white rounded px-3 py-2 disabled:opacity-40">Сохранить</button></div>
+        <div class="flex justify-end gap-3 mt-4"><button type="button" @click="addDialog.close()" class="text-primary">Отмена</button><button type="button" @click="saveDepartments" :disabled="edds ? !departmentName.trim() || nameExists : !selected.length" class="bg-primary text-white rounded px-3 py-2 disabled:opacity-40">Сохранить</button></div>
     </dialog>
     <dialog ref="timeDialog" class="rounded-lg p-5 w-[400px] max-w-[95vw] max-h-[90vh] overflow-auto backdrop:bg-black/40" @cancel.prevent="closeTime" @keydown.esc.stop.prevent="closeTime">
         <template v-if="editing">
