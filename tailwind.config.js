@@ -7,7 +7,9 @@ export default {
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
-        './resources/js/**/*.vue',
+        './resources/js/**/*.{vue,js}',
+        // Status classes are returned by the backend enum at runtime.
+        './app/Condition.php',
     ],
 
     theme: {

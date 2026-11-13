@@ -27,7 +27,7 @@ class DirectoryController extends Controller
             'navigation' => collect(AdminDirectories::all())->map(fn ($item, $key) => ['key' => $key, 'label' => $item['label'], 'groups' => $item['groups']])->values(),
             'group' => $filters['group'] ?? $definition['groups'][0],
             'search' => $search ?? '',
-            'rows' => $query->orderBy('name')->orderBy('id')->paginate(30)->withQueryString(),
+            'rows' => ['data' => $query->orderBy('name')->orderBy('id')->get(), 'total' => (clone $query)->count()],
             'areas' => DB::table('areas')->orderBy('name')->get(['id', 'name']),
             'notice' => session('admin_notice'),
         ]);
