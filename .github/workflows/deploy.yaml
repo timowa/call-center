@@ -16,7 +16,7 @@ jobs:
           host: 91.107.121.26
           username: call-center-ftp
           password: ${{ secrets.SSH_PASSWORD }}
-          port: 21
+          port: 22
           script: |
 
 
