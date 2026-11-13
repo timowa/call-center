@@ -70,17 +70,13 @@ class IncidentPhoneTest extends TestCase
         }
     }
 
-    public function test_narrow_update_preserves_omitted_fields_and_rejects_protected_changes(): void
+    public function test_edds_can_update_applicant_fields_and_validate_phone(): void
     {
         $incident = $this->incident();
         foreach (['edds'] as $role) {
             $this->actingAs($this->operator($role));
-            $this->savePhone($incident, ['phone' => '7999'])->assertSessionHasNoErrors();
-            $this->assertSame('Иванов', $incident->fresh()->applicant_info['lastname']);
-            foreach ([['phone' => '7888', 'lastname' => 'Подмена'], ['phone' => '7888', 'street' => 'Подмена'], null] as $info) {
-                $this->savePhone($incident, $info)->assertForbidden();
-                $this->assertSame('7999', $incident->fresh()->applicant_info['phone']);
-            }
+            $this->savePhone($incident, ['phone' => '7888', 'lastname' => 'Петров'])->assertSessionHasNoErrors();
+            $this->assertSame('Петров', $incident->fresh()->applicant_info['lastname']);
             $this->savePhone($incident, ['phone' => ['invalid']])->assertSessionHasErrors('applicant_info.phone');
             $this->savePhone($incident, ['phone' => ''])->assertSessionHasNoErrors();
             $this->assertNull($incident->fresh()->applicant_info['phone']);

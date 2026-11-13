@@ -122,14 +122,15 @@ class IncidentDepartmentsTest extends TestCase
         $this->save($incident, [$this->row()], ['id' => $other->fireReport->id])->assertSessionHasErrors('fireReport.id');
     }
 
-    public function test_other_roles_cannot_change_01_but_unchanged_report_is_preserved(): void
+    public function test_tabbed_roles_can_change_01_without_touching_edds_report(): void
     {
         $incident = $this->createIncident([$this->row()]);
         $incident->eddsReport()->create(['message' => 'Сохранить ЕДДС']);
         foreach (['cov_112', 'edds'] as $role) {
             $this->actingAs($this->operator($role));
-            $this->save($incident, [array_merge($this->row(), ['requested_at' => '2020-01-01 00:00:00'])])->assertForbidden();
-            $this->save($incident, [$this->row()], [], ['description' => $role])->assertSessionHasNoErrors();
+            $date = $role === 'edds' ? '2020-01-02 00:00:00' : '2020-01-01 00:00:00';
+            $this->save($incident, [array_merge($this->row(), ['requested_at' => $date])], [], ['description' => $role])->assertSessionHasNoErrors();
+            $this->assertDatabaseHas('department_fire_report', ['fire_report_id' => $incident->fireReport->id, 'requested_at' => $date]);
             $this->assertSame('Сохранить ЕДДС', $incident->eddsReport->fresh()->message);
         }
     }
@@ -184,7 +185,7 @@ class IncidentDepartmentsTest extends TestCase
         unset($row['requested_at']);
         $this->createIncident([$row]);
         $this->assertDatabaseHas('department_fire_report', ['requested_at' => now()->format('Y-m-d H:i:s')]);
-        $this->actingAs($this->operator('cov_112'));
+        $this->actingAs($this->operator('gas'));
         $count = Incident::count();
         $this->post(route('incidents.store'), ['call_type_id' => 4, 'incoming_number' => '7000', 'services' => [1], 'fireReport' => ['departments' => [$this->row()]]])->assertForbidden();
         $this->assertSame($count, Incident::count());

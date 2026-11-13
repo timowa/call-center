@@ -7,7 +7,7 @@ import EDDS_second from "@/Pages/Incidents/Partials/EDDS_second.vue";
 import EDDS_third from "@/Pages/Incidents/Partials/EDDS_third.vue";
 import Block from "@/Components/Block.vue";
 import {userHasPermissionTo} from '@/Utils/permissions.js';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import LinkButton from '@/Components/LinkButton.vue';
 const props = defineProps(['form']);
 const parentView = inject('viewMode', ref(false));
 const readOnly = computed(() => parentView.value || !userHasPermissionTo(props.form.eddsReport.id ? 'edds.edit' : 'edds.create'));
@@ -45,7 +45,11 @@ const currentTabEDDS = ref(1);
                 <component :is="tabs[currentTabEDDS].template" :form="form.eddsReport" v-bind="$attrs"/>
             </keep-alive>
 
-            <div class="flex justify-end mt-4"><PrimaryButton v-if="form.eddsReport.id && form.eddsReport.condition !== 5 && !readOnly" :disabled="form.processing" @click="finish('edds')">Завершить карточку ЕДДС/ЖКХ</PrimaryButton></div>
+            <div class="flex justify-end mt-4">
+                <LinkButton v-if="form.eddsReport.id && form.eddsReport.condition !== 5 && !readOnly"
+                            as="button" type="button" :disabled="form.processing"
+                            @click="finish('edds')">Завершить карточку ЕДДС/ЖКХ</LinkButton>
+            </div>
         </Block>
     </div>
 

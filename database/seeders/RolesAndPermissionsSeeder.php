@@ -28,11 +28,11 @@ class RolesAndPermissionsSeeder extends Seeder
         $cov = Role::firstOrCreate(['name' => 'cov_112']);
         $cov->givePermissionTo([
             'ukio.create', 'ukio.view', 'ukio.edit', 'ukio.edit-description',
-            '01.create', '01.view',
-            'edds.create', 'edds.view',
+            '01.create', '01.view', '01.edit',
+            'edds.create', 'edds.view', 'edds.edit',
         ]);
 
-        $cov->givePermissionTo(['gas.create', 'gas.view']);
+        $cov->givePermissionTo(['gas.create', 'gas.view', 'gas.edit']);
         Role::firstOrCreate(['name' => 'gas'])->givePermissionTo(['ukio.create', 'ukio.view', 'ukio.edit-description', 'gas.create', 'gas.view', 'gas.edit']);
 
         $op01 = Role::firstOrCreate(['name' => 'op_01']);
@@ -43,7 +43,8 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $edds = Role::firstOrCreate(['name' => 'edds']);
         $edds->givePermissionTo([
-            'ukio.create', 'ukio.view', 'ukio.edit-description',
+            'ukio.create', 'ukio.view', 'ukio.edit', 'ukio.edit-description',
+            '01.view', '01.edit', 'gas.view', 'gas.edit',
             'edds.create', 'edds.view', 'edds.edit'
         ]);
     }

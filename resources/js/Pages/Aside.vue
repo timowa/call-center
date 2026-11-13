@@ -1,22 +1,15 @@
 <script setup>
 import {inject, ref, computed} from "vue";
+import {usePage} from "@inertiajs/vue3";
+import TextInput from "@/Components/Form/TextInput.vue";
 
-import axios from 'axios';
-import {usePage} from '@inertiajs/vue3';
+defineProps({hideHangup: Boolean});
+const emit = defineEmits(['hangup']);
 const page = usePage();
 const phone = ref('');
 const training = inject('trainingCall', ref(null));
 const ringing = inject('ringingCall', null);
-const activeCall = computed(() => ringing?.active.value || (training.value?.kind === 'call' && page.props.mode === 'create'));
-const pending = ref(false); const error = ref('');
-const hangup = async () => {
- if (ringing?.active.value) { ringing.cancel(); return; }
- if (pending.value) return; pending.value=true;
- try { const {data}=await axios.post(route('training.hangup',training.value.id)); training.value=data; }
- catch { error.value='Не удалось завершить учебный звонок.'; }
- finally { pending.value=false; }
-};
-import TextInput from "@/Components/Form/TextInput.vue";
+const activeCall = computed(() => ringing?.value || (training.value?.kind === 'call' && page.props.mode === 'create'));
 
 const {getActiveMode} = inject('workMode');
 </script>
@@ -33,14 +26,23 @@ const {getActiveMode} = inject('workMode');
         <TextInput :placeholder="'Введите номер'" class="w-full" v-model="phone"></TextInput>
     </div>
     <div class="mt-auto px-2 pt-6 grid grid-cols-4 justify-items-center gap-2 max-w-[224px] mx-auto">
-        <button v-if="!activeCall" type="button" title="Учебная имитация вызова" aria-label="Вызов" class="col-span-4 rounded-full bg-green-500 text-white w-12 h-12 text-xl">☎</button>
-        <template v-else>
+        <template v-if="activeCall">
             <button v-for="item in [{icon:'?',title:'Справка'},{icon:'♟+',title:'Добавить участника'},{icon:'↪',title:'Перевод'},{icon:'✓',title:'Подтвердить'}]" type="button" :title="item.title + ' (имитация)'" class="rounded-full bg-blue-500 text-white w-10 h-10">{{ item.icon }}</button>
-            <button v-if="!training?.hung_up" type="button" @click="hangup" :disabled="pending" title="Отбить" aria-label="Отбить" class="rounded-full bg-red-600 text-white w-10 h-10">☎</button>
             <button type="button" title="Микрофон (имитация)" class="rounded-full bg-gray-700 text-white w-10 h-10">♩</button>
             <button type="button" title="Клавиатура (имитация)" class="rounded-full bg-blue-600 text-white w-10 h-10">▦</button>
         </template>
-        <p v-if="error" role="alert" class="text-red-700 text-xs">{{ error }}</p>
+        <div class="col-span-4 flex gap-2">
+            <button v-for="action in (hideHangup ? ['call'] : ['hangup', 'call'])" :key="action" type="button"
+                    :title="action === 'hangup' ? 'Отбить' : 'Учебная имитация вызова'"
+                    :aria-label="action === 'hangup' ? 'Отбить' : 'Вызов'"
+                    class="grid place-items-center rounded-full text-white w-12 h-12"
+                    :class="action === 'hangup' ? 'bg-red-600' : 'bg-green-500'"
+                    @click="action === 'hangup' && emit('hangup')">
+                <svg aria-hidden="true" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.61 21 3 13.39 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02z"/>
+                </svg>
+            </button>
+        </div>
     </div>
 </aside>
 </template>

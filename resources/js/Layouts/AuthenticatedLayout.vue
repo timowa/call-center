@@ -7,6 +7,9 @@ import {inject, onMounted, onUnmounted, provide, readonly, ref, watch} from "vue
 import {usePage} from "@inertiajs/vue3";
 import Noty from 'noty';
 
+defineProps({hideHangup: Boolean});
+const emit = defineEmits(['hangup']);
+
 const modes = [
     {
         id: 0,
@@ -134,7 +137,7 @@ watch(() => page.props.errors, (errors) => {
         <Header />
 
         <div class="flex flex-1 overflow-hidden p-2 gap-3">
-            <Aside />
+            <Aside :hide-hangup="hideHangup" @hangup="emit('hangup')" />
 
             <main class="flex-1 bg-grey-200 border-gray-300 border-2 rounded-md p-3 flex flex-col overflow-hidden">
 

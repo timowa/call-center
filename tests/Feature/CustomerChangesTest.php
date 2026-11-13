@@ -60,10 +60,31 @@ class CustomerChangesTest extends TestCase
         $this->assertSame(Condition::AT_WORK, $card->fresh()->condition);
     }
 
+    public function test_tabbed_roles_can_save_all_existing_service_reports(): void
+    {
+        $this->actingAs($this->operator('cov_112'));
+        $card = $this->createCard();
+        foreach (['cov_112', 'edds'] as $role) {
+            $this->actingAs($this->operator($role));
+            $this->put(route('incidents.update', $card), [
+                'id' => $card->id, 'call_type_id' => 4, 'description' => $role,
+                'fireReport' => ['localized_at' => '2026-11-13 09:00:00'],
+                'eddsReport' => ['message' => $role],
+                'gasReport' => ['message' => $role],
+            ])->assertRedirect()->assertSessionHasNoErrors();
+            $fresh = $card->fresh();
+            $this->assertSame($role, $fresh->description);
+            $this->assertNotNull($fresh->fireReport->localized_at);
+            $this->assertSame($role, $fresh->eddsReport->message);
+            $this->assertSame($role, $fresh->gasReport->message);
+        }
+    }
+
     public function test_completion_works_without_dates_and_requires_all_services(): void
     {
         $this->actingAs($this->operator('cov_112'));
         $card = $this->createCard();
+        $this->actingAs($this->operator('gas'));
         $this->put(route('incidents.update', $card), ['id' => $card->id, 'call_type_id' => 4, 'complete_service' => '01'])->assertForbidden();
         foreach (['op_01' => '01', 'edds' => 'edds', 'gas' => 'gas'] as $role => $service) {
             $this->actingAs($this->operator($role));
@@ -125,8 +146,9 @@ class CustomerChangesTest extends TestCase
         foreach ($fields as $key => $value) $this->assertEquals($value, $card->fresh()->gasReport->$key);
         $this->assertSame($old, $card->fresh()->eddsReport->getAttributes());
         $this->get(route('incidents.edit', $card))->assertInertia(fn (Assert $p) => $p->where('incident.gas_report.message', $fields['message']));
-        $this->actingAs($cov);
+        $this->actingAs($this->operator('op_01'));
         $this->put(route('incidents.update', $card), ['id' => $card->id, 'call_type_id' => 7, 'gasReport' => ['message' => 'Запрещено']])->assertForbidden();
+        $this->actingAs($cov);
         $other = $this->createCard();
         $this->actingAs($this->operator('gas'));
         $this->put(route('incidents.update', $card), ['id' => $card->id, 'call_type_id' => 7, 'gasReport' => ['id' => $other->gasReport->id]])->assertSessionHasErrors('gasReport.id');
@@ -148,7 +170,7 @@ class CustomerChangesTest extends TestCase
         $this->assertDatabaseHas('department_fire_report', ['department_id' => 1, 'condition_id' => 2]);
         $this->postJson($route, array_merge($payload, ['expected_condition' => 2, 'condition_id' => 4]))->assertUnprocessable();
         $this->postJson($route, array_merge($payload, ['report_id' => 99999]))->assertNotFound();
-        $this->actingAs($this->operator('cov_112'));
+        $this->actingAs($this->operator('gas'));
         $this->postJson($route, $payload)->assertForbidden();
         $outsider = $this->operator('op_01');
         $outsider->area_id = DB::table('areas')->insertGetId(['name' => 'Чужая территория']); $outsider->save();

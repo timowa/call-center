@@ -41,8 +41,20 @@ const layout = computed(() => isCov.value ? 'cov' : user.value.roles.includes('o
 const vertical = computed(() => ['01', 'gas'].includes(layout.value));
 const expanded = ref(createMode.value || !vertical.value || !!props.editUkio);
 const ukioEditing = ref(createMode.value || vertical.value || props.editUkio);
+const formViewMode = computed(() => viewMode.value || (!vertical.value && !ukioEditing.value));
 const ukioView = computed(() => viewMode.value || !ukioEditing.value);
 provide('ukioView', ukioView);
+function startEditing() {
+    if (!viewMode.value) {
+        ukioEditing.value = true;
+        return;
+    }
+    router.get(route('incidents.edit', props.incident.id), {editUkio: 1}, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => { ukioEditing.value = true; },
+    });
+}
 function expandUkio() {
     if (layout.value === '01' && viewMode.value && props.canUpdate) {
         router.get(route('incidents.edit', props.incident.id), { editUkio: 1 });
@@ -74,7 +86,7 @@ const filteredCallTypes = computed(() => {
     return page.props.dictionaries.callTypes.filter(callType => callType.id === user.value.call_type_id)
 })
 
-provide('viewMode', viewMode)
+provide('viewMode', formViewMode)
 provide('directories', {
     callTypes: filteredCallTypes.value,
     incidentTypes: page.props.directories.incidentTypes,
@@ -207,6 +219,14 @@ watch(() => tabs.value[currentTab.value]?.show, (isVisible) => {
 });
 const currentRightTab = ref(training.value?.kind === 'glonass' ? 'glonass' : training.value ? 'calls' : 'map');
 const createFromCall = computed(() => createMode.value && props.incident.source_id === page.props.constants.sources.CALL);
+const callHungUp = ref(false);
+const hideHangup = computed(() => createFromCall.value && callHungUp.value);
+
+function hangup() {
+    if (createFromCall.value) {
+        callHungUp.value = true;
+    }
+}
 const showCancel = computed(() => createMode.value
     ? !createFromCall.value
     : vertical.value || ukioEditing.value);
@@ -241,7 +261,7 @@ provide('finishService', finishService);
 const ownService = computed(() => layout.value === '01' ? '01' : layout.value === 'gas' ? 'gas' : null);
 const ownReport = computed(() => layout.value === '01' ? form.fireReport : form.gasReport);
 const submit = (actionType = null) => {
-    if (viewMode.value || form.processing || transitionPending.value) return;
+    if (formViewMode.value || form.processing || transitionPending.value) return;
     form.transform(data => {
         const payload = {...data};
         for (const [key, permission] of [['fireReport', '01'], ['eddsReport', 'edds'], ['gasReport', 'gas']]) {
@@ -302,7 +322,7 @@ watch(() => form.errors, (errors) => {
 
 <template>
     <Head title="Dashboard" />
-    <AuthenticatedLayout>
+    <AuthenticatedLayout :hide-hangup="hideHangup" @hangup="hangup">
         <template #top-content>
             <Link :href="route('dashboard')">
                 <span class="flex">
@@ -374,8 +394,8 @@ watch(() => form.errors, (errors) => {
                     <LinkButton v-if="showCancel" :href="route('incidents.dashboard')">Отмена</LinkButton>
                     <div class="flex gap-2 ml-auto flex-wrap">
                         <template v-if="!createMode">
-                            <PrimaryButton v-if="!vertical && !ukioEditing && props.canUpdate" @click="viewMode ? router.get(route('incidents.edit', incident.id), {editUkio: 1}) : ukioEditing = true">Редактировать</PrimaryButton>
-                            <template v-else-if="!viewMode">
+                            <PrimaryButton v-if="!vertical && formViewMode && props.canUpdate" @click="startEditing">Редактировать</PrimaryButton>
+                            <template v-else-if="!formViewMode">
                                 <PrimaryButton v-if="vertical && ownReport?.condition !== 5 && userHasPermissionTo(ownService + '.edit')" :disabled="form.processing || transitionPending" @click="finishService(ownService)">Завершить работу с карточкой</PrimaryButton>
                                 <PrimaryButton :disabled="form.processing || transitionPending" @click="submit()">Сохранить</PrimaryButton>
                             </template>
@@ -388,8 +408,8 @@ watch(() => form.errors, (errors) => {
                             </template>
                             <PrimaryButton v-if="!form.call_type_id || mayBeCompleted" :disabled="form.processing || !mayBeCompleted" @click="submit()">Сохранить</PrimaryButton>
                             <template v-else>
-                                <PrimaryButton v-if="createFromCall" :disabled="form.processing" @click="submit('transfer')">Передать с вызовом</PrimaryButton>
-                                <PrimaryButton v-if="createFromCall" :disabled="form.processing" @click="submit()">Конференция</PrimaryButton>
+                                <PrimaryButton v-if="createFromCall && !callHungUp" :disabled="form.processing" @click="submit('transfer')">Передать с вызовом</PrimaryButton>
+                                <PrimaryButton v-if="createFromCall && !callHungUp" :disabled="form.processing" @click="submit()">Конференция</PrimaryButton>
                                 <PrimaryButton :disabled="form.processing" @click="submit('transfer')">Передать без вызова</PrimaryButton>
                             </template>
                         </template>

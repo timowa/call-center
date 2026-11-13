@@ -31,8 +31,7 @@ const audio = ref(null);
 const stopAlarm = () => {
     if (audio.value) { audio.value.pause(); audio.value.currentTime = 0; }
 };
-const cancelCall = () => { stopAlarm(); showAlarmOverlay.value = false; startPolling(); };
-provide('ringingCall', { active: showAlarmOverlay, cancel: cancelCall });
+provide('ringingCall', showAlarmOverlay);
 const activateAlarm = () => {
     if (accepting.value) return;
     stopPolling();
