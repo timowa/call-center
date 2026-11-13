@@ -42,7 +42,9 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
         return [
             ...parent::share($request),
+            'timezone' => config('app.timezone'),
             'auth' => [
+                'work_session' => $request->session()->get('work_session'),
                 'user' => $user ? [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -59,7 +61,7 @@ class HandleInertiaRequests extends Middleware
                 'isNewIncident' => fn () => $request->session()->get('isNewIncident')
             ],
             'dictionaries' => [
-                'conditions' => collect(Condition::cases())->mapWithKeys(fn($s) => [
+                'conditions' => collect(Condition::cases())->reject(fn ($s) => $s === Condition::REQUEST)->mapWithKeys(fn($s) => [
                     $s->value => ['name' => $s->label(), 'color' => $s->color(), 'id' => $s->value],
                 ]),
                 'sources' => collect(SourceType::cases())->map(function ($item) {
@@ -87,6 +89,8 @@ class HandleInertiaRequests extends Middleware
                 'services' => collect(Service::cases())->pluck('value', 'name')->toArray(),
             ],
             'directories' => [
+                'gasUtilities' => \Illuminate\Support\Facades\DB::table('gas_utilities')->get(),
+                'gasEvents' => \Illuminate\Support\Facades\DB::table('gas_events')->get(),
                 'incidentTypes'  => IncidentType::all(),
                 'emergencyTypes' => EmergencyType::all(),
                 'areas'          => Area::all(),

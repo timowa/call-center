@@ -6,7 +6,7 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import FormGroup from "@/Components/Form/FormGroup.vue";
 import FormField from "@/Components/Form/FormField.vue";
 import {usePage} from "@inertiajs/vue3";
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import {hasRole} from "@/Utils/permissions.js";
 const page = usePage();
 const directories = page.props.directories;
@@ -20,6 +20,12 @@ const props = defineProps({
 });
 const emit = defineEmits(['close', 'submit', 'reset']);
 const user = page.props.auth.user;
+const tab = ref('incidents');
+const fields = {incident_number: 'УКИО', filter_incident_type: 'Тип происшествия', incident_street: 'Улица происшествия', comment: 'Комментарий', applicant_street: 'Улица заявителя'};
+const selectedField = ref('');
+const addField = () => { if (selectedField.value && !props.form.incident_fields.includes(selectedField.value)) props.form.incident_fields.push(selectedField.value); selectedField.value = ''; };
+const removeField = key => { props.form[key] = null; props.form.incident_fields = props.form.incident_fields.filter(f => f !== key); };
+const options = key => key === 'filter_incident_type' ? directories.incidentTypes : (page.props.filterStreets?.[key === 'incident_street' ? 'incident' : 'applicant'] ?? []).map(name => ({id: name, name}));
 const filteredServices = computed(() => {
     if (hasRole('op_01')) {
         return dictionaries.services.filter(s => s.id === page.props.constants.services.FIREFIGHTERS)
@@ -49,8 +55,16 @@ const filteredAreas = computed(() => {
 <template>
 <Modal :show="show" @close="emit('close')">
 <template #header>Фильтр</template>
-    <form id="filter-form">
-        <div>
+    <div class="flex gap-4 mb-4"><button type="button" :class="tab === 'incidents' ? 'text-primary font-semibold' : ''" @click="tab = 'incidents'">Фильтр по происшествиям</button><button type="button" :class="tab === 'list' ? 'text-primary font-semibold' : ''" @click="tab = 'list'">Фильтр списка карточек</button></div>
+    <form id="filter-form" @submit.prevent="emit('submit')">
+        <div v-if="tab === 'incidents'" class="space-y-4">
+            <label>Фильтр <select v-model="selectedField" @change="addField" class="ml-3 text-sm rounded border-gray-300"><option value="">Добавить условие</option><option v-for="(label, key) in fields" :value="key" :disabled="form.incident_fields.includes(key)">{{ label }}</option></select></label>
+            <div v-for="key in form.incident_fields" :key="key" class="flex items-center gap-3">
+                <FormField class="flex-1" :label="fields[key]" :auto-select="false" :type="['filter_incident_type','incident_street','applicant_street'].includes(key) ? 'select' : 'text'" :options="options(key)" v-model="form[key]" />
+                <button type="button" :aria-label="'Удалить ' + fields[key]" @click="removeField(key)">×</button>
+            </div>
+        </div>
+        <div v-else>
             <FormGroup title="Тип происшествия">
                     <FormField label="Служба" name="sl" :col-span="1" type="select" :options="filteredServices" v-model="form.service_id"></FormField>
                     <FormField label="Тип вызова" name="ad" :col-span="1" type="select" :options="filteredCallTypes" v-model="form.call_type_id"></FormField>

@@ -32,6 +32,12 @@ class SetAtWorkCondition
                 $countRelatedInStatus++;
             }
         }
+        if ($incident->gasReport()->exists()) {
+            $countRelated++;
+            if ($incident->gasReport->condition === Condition::AT_WORK) {
+                $countRelatedInStatus++;
+            }
+        }
         if ($countRelated === $countRelatedInStatus) {
             $incident->condition = Condition::AT_WORK;
             $incident->save();

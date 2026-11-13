@@ -9,7 +9,7 @@ class EddsReport extends Model
 {
     protected $fillable = [
         'type',
-        'company_id',
+        'company',
         'instruction',
         'message',
         'additional_info',

@@ -22,7 +22,7 @@ const {getActiveMode, setActiveMode, seconds} = inject('workMode');
     <Dropdown align="left" width="w-64">
         <template #trigger>
             <button class="px-10 py-2 bg-primary-light text-white rounded-md flex">
-                <span class="px-10 font-semibold text-lg">{{ getActiveMode().buttonTitle }}</span>
+                <span class="px-10 font-semibold text-lg">{{ getActiveMode().workTitle }}</span>
                 <span class="font-mono font-bold underline">{{ formatTime(seconds) }}</span>
             </button>
         </template>

@@ -10,51 +10,62 @@ import Noty from 'noty';
 const modes = [
     {
         id: 0,
-        buttonTitle: 'Готов',
-        sidebarTitle: 'В работе',
+        workTitle: 'В работе',
+        activityTitle: 'Готов',
         actionTitle: 'Разблокироваться'
     },
     {
         id: 1,
-        buttonTitle: 'Вызов к руководству',
-        sidebarTitle: 'Вызов к руководству',
+        workTitle: 'Вызов к руководству',
+        activityTitle: 'Заблокирован',
         actionTitle: 'Вызов к руководству'
     },
     {
         id: 2,
-        buttonTitle: 'Технический перерыв',
-        sidebarTitle: 'Технический перерыв',
+        workTitle: 'Технический перерыв',
+        activityTitle: 'Заблокирован',
         actionTitle: 'Техническая неисправность'
     },
     {
         id: 3,
-        buttonTitle: 'Обед',
-        sidebarTitle: 'Обед',
+        workTitle: 'Обед',
+        activityTitle: 'Заблокирован',
         actionTitle: 'Обед'
     },
     {
         id: 4,
-        buttonTitle: 'Туалет',
-        sidebarTitle: 'Туалет',
+        workTitle: 'Туалет',
+        activityTitle: 'Заблокирован',
         actionTitle: 'Туалет'
     },
     {
         id: 5,
-        buttonTitle: 'Обучение',
-        sidebarTitle: 'Обучение',
+        workTitle: 'Обучение',
+        activityTitle: 'Заблокирован',
         actionTitle: 'Обучение'
     },
     {
         id: 6,
-        buttonTitle: 'Заблокирован',
-        sidebarTitle: 'Заблокирован',
+        workTitle: 'Заблокирован',
+        activityTitle: 'Заблокирован',
         actionTitle: 'Заблокироваться'
     }
 ];
 
-const activeMode = ref(6);
+const page = usePage();
+const storageKey = 'operator-work-mode';
+const sessionKey = `${page.props.auth.user.id}:${page.props.auth.work_session ?? 'session'}`;
+let saved;
+try { saved = JSON.parse(sessionStorage.getItem(storageKey)); } catch {}
+if (saved?.session !== sessionKey || !modes.some(mode => mode.id === saved?.mode)) saved = null;
+const activeMode = ref(saved?.mode ?? 0);
+let startedAt = saved?.startedAt ?? Date.now();
+const persistMode = () => {
+    try { sessionStorage.setItem(storageKey, JSON.stringify({session: sessionKey, mode: activeMode.value, startedAt})); } catch {}
+};
+persistMode();
 const lastActiveMode = ref(0);
-const seconds = ref(0);
+const seconds = ref(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
 let timerInterval = null;
 const getActiveMode = () => {
     return modes.filter((mode) => mode.id === activeMode.value)[0];
@@ -62,12 +73,14 @@ const getActiveMode = () => {
 const setActiveMode = function(modeId) {
     lastActiveMode.value = activeMode.value;
     activeMode.value = modeId;
+    startedAt = Date.now();
     seconds.value = 0;
+    persistMode();
 }
 
 onMounted(() => {
     timerInterval = setInterval(() => {
-        seconds.value++;
+        seconds.value = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
     }, 1000);
 });
 
@@ -86,7 +99,6 @@ provide('allWorkModes', {
     modes: readonly(modes)
 })
 
-const page = usePage();
 watch(
     () => page.props.flash,
     (flash) => {

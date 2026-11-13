@@ -16,11 +16,12 @@ class SetConditionForNewIncident
         $incident = $event->incident;
         $actionType = $event->actionType;
         $incident->load('fireReport');
-        if (is_null($actionType)) {
-            $condition = Condition::REQUEST;
+        if ($incident->call_type_id->hasRelatedService()) {
+            $condition = Condition::CONNECTING;
         } else {
             $condition = Condition::DONE;
         }
+        if ($incident->gasReport) { $incident->gasReport->condition = $condition; $incident->gasReport->save(); }
         $incident->condition = $condition;
         $incident->save();
         if (!is_null($incident->fireReport)) {

@@ -6,12 +6,16 @@ enum SourceType: int
 {
     case INSTANT = 1;
     case CALL = 2;
+    case SMS = 3;
+    case GLONASS = 4;
 
     public function label()
     {
         return match($this) {
             self::INSTANT => 'Без вызова',
-            self::CALL => 'Телефон'
+            self::CALL => 'Телефон',
+            self::SMS => 'СМС',
+            self::GLONASS => 'ГЛОНАСС'
         };
     }
 }

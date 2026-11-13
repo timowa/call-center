@@ -32,6 +32,7 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+        $request->session()->put('work_session', (string) \Illuminate\Support\Str::uuid());
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
@@ -43,7 +44,12 @@ class AuthenticatedSessionController extends Controller
     {
         Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
+        if (Auth::guard('admin')->check()) {
+            $request->session()->forget('work_session');
+            $request->session()->regenerate();
+        } else {
+            $request->session()->invalidate();
+        }
 
         $request->session()->regenerateToken();
 

@@ -1,5 +1,6 @@
 export const getFireReportDefaults = (report = null) => ({
     id: report?.id ?? null,
+    condition: report?.condition ?? 2,
     report_type_id: report?.report_type_id ?? null,
     is_error_card: report?.is_error_card ?? false,
     type_of_fire_protection: report?.type_of_fire_protection ?? null,

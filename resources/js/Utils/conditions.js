@@ -3,12 +3,11 @@ import {ref} from "vue";
 import { usePage } from '@inertiajs/vue3';
 
 const defaultConditions = {
-    1: { color: 'bg-red-500', name: 'Запрос в 112' },
     2: { color: 'bg-green-500', name: 'Подключение' },
-    3: { color: 'bg-indigo-500', name: 'Реагирование' },
+    3: { color: 'bg-purple-500', name: 'Реагирование' },
     4: { color: 'bg-yellow-500', name: 'В работе' },
-    5: { color: 'bg-grey-370', name: 'Отработана' },
-    6: { color: 'bg-blue-400', name: 'Просмотр' },
+    5: { color: 'bg-white ring-1 ring-gray-400', name: 'Отработана' },
+    6: { color: 'bg-teal-400', name: 'Просмотр' },
 };
 
 const getDictionary = () => {

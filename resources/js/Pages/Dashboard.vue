@@ -28,6 +28,7 @@ provide('selectedIncident', {
 
 const showAlarmOverlay = ref(false);
 const audio = ref(null);
+provide('ringingCall', {active: showAlarmOverlay, cancel: () => { audio.value?.pause(); showAlarmOverlay.value = false; startPolling(); }});
 
 const activateAlarm = () => {
     stopPolling()
@@ -40,6 +41,13 @@ const activateAlarm = () => {
     audio.value.play().catch(e => console.log("Нужно взаимодействие с юзером для звука"));
 };
 
+const acceptKeys = {};
+const accepting = ref(false);
+const acceptTraining = kind => {
+    if (accepting.value) return;
+    acceptKeys[kind] ??= crypto.randomUUID(); accepting.value = true;
+    router.post(route('training.accept'), {kind, request_key: acceptKeys[kind]}, {onFinish: () => { accepting.value = false; }, onSuccess: () => { delete acceptKeys[kind]; }});
+};
 const acceptCall = () => {
     if (audio.value) {
         audio.value.pause();
@@ -48,7 +56,7 @@ const acceptCall = () => {
 
     showAlarmOverlay.value = false;
 
-    router.get(route('incidents.create-from-call'));
+    acceptTraining('call');
 };
 
 onMounted(() => {
@@ -105,7 +113,9 @@ const tabs = [
                         </span>
                         Создать карточку
                     </LinkButton>
-                    <SecondaryButton @click="activateAlarm()" >Принять вызов</SecondaryButton>
+                    <SecondaryButton :disabled="accepting" @click="activateAlarm()">Принять вызов</SecondaryButton>
+                    <SecondaryButton :disabled="accepting" @click="acceptTraining('sms')">Принять СМС</SecondaryButton>
+                    <SecondaryButton :disabled="accepting" @click="acceptTraining('glonass')">Принять ГЛОНАСС</SecondaryButton>
                 </div>
                 <div class="flex gap-6">
                     <FilterButton

@@ -20,6 +20,9 @@ class FireReport extends Model
         'card_number',
         'shift',
         'water_consumption',
+        'first_water_barrel_minutes',
+        'water_source_id',
+        'injured_total',
         'dead_total',
         'dead_children',
         'dead_staff',
@@ -37,7 +40,7 @@ class FireReport extends Model
         'gdzs',
         'cause_id',
         'localized_at',
-        'fire_elimination_at',
+        'fire_eliminated_at',
         'elimination_at',
         'viewed_at',
     ];
@@ -93,7 +96,7 @@ class FireReport extends Model
     public function departments()
     {
         return $this->belongsToMany(FirefighterDepartment::class, 'department_fire_report', 'fire_report_id', 'department_id')
-            ->withPivot('condition_id', 'user_id')
+            ->withPivot('condition_id', 'user_id', 'requested_at', 'accepted_at', 'arrived_at', 'completed_at')
             ->withTimestamps();
     }
 }

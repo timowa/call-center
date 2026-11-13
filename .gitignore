@@ -20,6 +20,8 @@
 /storage/*.key
 /storage/pail
 /vendor
+/docs
+/tmp
 /.osp
 Homestead.json
 Homestead.yaml

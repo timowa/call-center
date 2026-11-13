@@ -15,6 +15,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
 
+    Route::post('/training/accept', [\App\Http\Controllers\TrainingController::class, 'accept'])->name('training.accept');
+    Route::get('/training/{id}', [\App\Http\Controllers\TrainingController::class, 'show'])->name('training.show');
+    Route::post('/training/{id}/reply', [\App\Http\Controllers\TrainingController::class, 'reply'])->name('training.reply');
+    Route::post('/training/{id}/hangup', [\App\Http\Controllers\TrainingController::class, 'hangup'])->name('training.hangup');
+
     Route::get('/incidents/dashboard', [IncidentsController::class, 'dashboard'])->name('incidents.dashboard');
 
     Route::get('/incidents/create-instant', [IncidentsController::class, 'createInstant'])->name('incidents.create-instant');
@@ -24,6 +29,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/incidents/store', [IncidentsController::class, 'store'])->name('incidents.store');
 
+    Route::post('/incidents/{id}/department-transition', \App\Http\Controllers\DepartmentTransitionController::class)->name('incidents.department-transition');
+
     Route::put('/incidents/update/{id}', [IncidentsController::class, 'update'])->name('incidents.update');
 
     Route::post('/suggestions/get-address', [SuggestionsController::class, 'addresses'])->name('suggestions.addresses');
@@ -31,3 +38,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+require __DIR__.'/admin.php';

@@ -25,7 +25,7 @@ const previewData = computed(() => {
         {'title': '01', 'ref': selectedIncident.value.fireReport?.condition, key: 'condition'},
         {'title': '02', 'ref': ''},
         {'title': '03', 'ref': ''},
-        {'title': '04', 'ref': ''},
+        {'title': 'Газ', 'ref': selectedIncident.value.gasReport?.condition, key: 'condition'},
         {'title': 'АТ', 'ref': ''},
         {'title': 'ЕДДС', 'ref': selectedIncident.value.eddsReport?.condition, key: 'condition'},
         {'title': 'Тип вызова', 'ref': selectedIncident.value.call_type},

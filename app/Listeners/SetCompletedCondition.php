@@ -15,10 +15,6 @@ class SetCompletedCondition
     public function handle(IncidentUpdated $event): void
     {
         $incident = $event->incident;
-        if ($incident->condition !== Condition::AT_WORK) {
-            return;
-        }
-
         $countRelated = 0;
         $countRelatedInStatus = 0;
 
@@ -34,7 +30,13 @@ class SetCompletedCondition
                 $countRelatedInStatus++;
             }
         }
-        if ($countRelated === $countRelatedInStatus) {
+        if ($incident->gasReport()->exists()) {
+            $countRelated++;
+            if ($incident->gasReport->condition === Condition::DONE) {
+                $countRelatedInStatus++;
+            }
+        }
+        if ($countRelated > 0 && $countRelated === $countRelatedInStatus) {
             $incident->condition = Condition::DONE;
             $incident->save();
         }

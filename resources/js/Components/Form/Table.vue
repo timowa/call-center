@@ -31,12 +31,14 @@ const editingIndex = ref(null);
 const formEntries = ref({});
 
 const openAdd = () => {
+    if (disabled.value) return;
     editingIndex.value = null;
     formEntries.value = {}; // Инициализируем как ПУСТОЙ ОБЪЕКТ
     isModalOpen.value = true;
 };
 
 const openEdit = (index) => {
+    if (disabled.value) return;
     editingIndex.value = index;
     // Копируем существующий объект из массива данных
     formEntries.value = { ...props.modelValue[index] };
@@ -44,6 +46,7 @@ const openEdit = (index) => {
 };
 
 const save = () => {
+    if (disabled.value) return;
     if (props.onCustomSave) {
         emit('custom-save', formEntries.value);
         isModalOpen.value = false;
@@ -72,6 +75,7 @@ const addRow = () => {
 }
 
 const remove = (index) => {
+    if (disabled.value) return;
     const currentData = props.modelValue.filter((_, i) => i !== index);
     emit('update:modelValue', currentData);
 };
@@ -119,7 +123,7 @@ const disabled = computed(() => {
                     <slot name="rows" :row="row" :index="index"></slot>
 
                     <td v-if="withActionButtons" class="text-right space-x-2 whitespace-nowrap">
-                        <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div v-if="!disabled" class="opacity-0 group-hover:opacity-100 transition-opacity">
                             <button type="button" @click="openEdit(index)" class="text-blue-600 hover:text-blue-800 p-1">✎</button>
                             <button type="button" @click="remove(index)" class="text-red-600 hover:text-red-800 p-1">×</button>
                         </div>
@@ -130,7 +134,7 @@ const disabled = computed(() => {
         </div>
 
         <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
                 <h3 class="text-lg font-bold mb-4">{{ editingIndex !== null ? 'Редактировать' : 'Добавить' }}</h3>
 
                 <slot name="modal-fields" :form="formEntries"></slot>
