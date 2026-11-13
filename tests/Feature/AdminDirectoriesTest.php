@@ -26,6 +26,18 @@ class AdminDirectoriesTest extends TestCase
         $this->post('/admin/login', ['login' => 'administrator', 'password' => 'test-password-123'])->assertRedirect('/admin');
     }
 
+    public function test_admin_seeder_restores_credentials_without_duplicates(): void
+    {
+        Admin::create(['login' => 'admin', 'password' => 'previous-password']);
+        $this->seed(\Database\Seeders\AdminSeeder::class);
+        $this->seed(\Database\Seeders\AdminSeeder::class);
+        $this->assertSame(1, Admin::where('login', 'admin')->count());
+        $this->assertNotSame('admin', Admin::where('login', 'admin')->value('password'));
+        $this->post('/admin/login', ['login' => 'admin', 'password' => 'admin'])->assertRedirect('/admin');
+        $this->assertAuthenticated('admin');
+        $this->assertGuest('web');
+    }
+
     public function test_every_crud_endpoint_requires_separate_admin_login(): void
     {
         foreach ([null, User::factory()->create()] as $user) {
