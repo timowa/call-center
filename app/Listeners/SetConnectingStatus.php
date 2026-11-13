@@ -4,31 +4,33 @@ namespace App\Listeners;
 
 use App\Condition;
 use App\Events\IncidentCardViewed;
+use App\Models\Incident;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SetConnectingStatus
 {
-
     public function handle(IncidentCardViewed $event): void
     {
-        $incident = $event->incident;
-        $user = Auth::user();
-        $changed = false;
-        if ($incident->condition === Condition::REQUEST) {
-            if ($user->hasRole('op_01') && $incident->fireReport?->condition === Condition::REQUEST) {
-                $incident->fireReport->condition = Condition::CONNECTING;
-                $incident->fireReport->save();
-                $changed = true;
+        DB::transaction(function () use ($event) {
+            $incident = Incident::lockForUpdate()->findOrFail($event->incident->id);
+            $user = Auth::user();
+            if ($user->hasRole('cov_112')) return;
+            $viewed = false;
+            foreach (['op_01' => 'fireReport', 'edds' => 'eddsReport', 'gas' => 'gasReport'] as $role => $relation) {
+                if (!$user->hasRole($role)) continue;
+                $report = $incident->$relation;
+                if ($report?->condition === Condition::CONNECTING) {
+                    $report->condition = Condition::WATCHING;
+                    $report->save();
+                    $viewed = true;
+                }
             }
-            if ($user->hasRole('edds') && $incident->eddsReport?->condition === Condition::REQUEST) {
-                $incident->eddsReport->condition = Condition::CONNECTING;
-                $incident->eddsReport->save();
-                $changed = true;
+            if ($viewed && $incident->condition === Condition::CONNECTING) {
+                $incident->condition = Condition::WATCHING;
+                $incident->save();
             }
-        }
-
-        if ($changed) {
-            $incident->updateCondition();
-        }
+            $event->incident->refresh();
+        });
     }
 }

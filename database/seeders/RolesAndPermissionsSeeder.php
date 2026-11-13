@@ -19,7 +19,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $permissions = [
             'ukio.create', 'ukio.view', 'ukio.edit', 'ukio.edit-description',
             '01.create', '01.view', '01.edit',
-            'edds.create', 'edds.view', 'edds.edit'
+            'edds.create', 'edds.view', 'edds.edit', 'gas.create', 'gas.view', 'gas.edit'
         ];
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
@@ -32,6 +32,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'edds.create', 'edds.view',
         ]);
 
+        $cov->givePermissionTo(['gas.create', 'gas.view']);
+        Role::firstOrCreate(['name' => 'gas'])->givePermissionTo(['ukio.create', 'ukio.view', 'ukio.edit-description', 'gas.create', 'gas.view', 'gas.edit']);
+
         $op01 = Role::firstOrCreate(['name' => 'op_01']);
         $op01->givePermissionTo([
             'ukio.create', 'ukio.view', 'ukio.edit-description',
@@ -41,7 +44,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $edds = Role::firstOrCreate(['name' => 'edds']);
         $edds->givePermissionTo([
             'ukio.create', 'ukio.view', 'ukio.edit-description',
-            'edds.create', 'edds.view'
+            'edds.create', 'edds.view', 'edds.edit'
         ]);
     }
 }

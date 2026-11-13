@@ -4,6 +4,9 @@ import {Head, Link, router, useForm, usePage} from "@inertiajs/vue3";
 import {computed, onUnmounted, provide, ref, watch, inject} from "vue";
 import UKIOSummary from '@/Pages/Incidents/Partials/UKIOSummary.vue';
 import UKIOToggle from '@/Pages/Incidents/Partials/UKIOToggle.vue';
+import axios from 'axios';
+import TrainingPanel from '@/Pages/Incidents/Partials/TrainingPanel.vue';
+import Gas from '@/Pages/Incidents/Partials/Gas.vue';
 import UKIO from "@/Pages/Incidents/Partials/UKIO.vue";
 import EDDS from "@/Pages/Incidents/Partials/EDDS.vue";
 import IncidentMap from "@/Pages/Incidents/Partials/IncidentMap.vue";
@@ -19,12 +22,14 @@ import {userHasPermissionTo} from "@/Utils/permissions.js";
 import LinkButton from "@/Components/LinkButton.vue";
 import {getEDDSDefaults} from "@/Utils/EDDSForm.js";
 
-const props = defineProps(['incident', 'fireReportData', 'flash', 'mode', 'canUpdatePhone']);
+const props = defineProps(['incident', 'fireReportData', 'flash', 'mode', 'canUpdatePhone', 'canUpdate', 'editUkio']);
 const createMode = computed(() => props.mode === 'create');
 const viewMode = computed(() => props.mode === 'view');
 const editMode = computed(() => props.mode === 'edit');
 
 const page = usePage();
+const training = ref(props.incident.training_session ?? null);
+provide('trainingCall', training);
 const user = computed(() => page.props.auth.user);
 const isCov = computed(() => {
     return user.value.roles.includes('cov_112');
@@ -32,9 +37,13 @@ const isCov = computed(() => {
 
 
 // Layout priority is independent of permissions: ЦОВ → 01 → ЕДДС.
-const layout = computed(() => isCov.value ? 'cov' : user.value.roles.includes('op_01') ? '01' : user.value.roles.includes('edds') ? 'edds' : 'cov');
-const expanded = ref(true);
-const canUpdatePhone = computed(() => !viewMode.value && (createMode.value ? userHasPermissionTo('ukio.create') : props.canUpdatePhone));
+const layout = computed(() => isCov.value ? 'cov' : user.value.roles.includes('op_01') ? '01' : user.value.roles.includes('edds') ? 'edds' : user.value.roles.includes('gas') ? 'gas' : 'cov');
+const vertical = computed(() => ['01', 'gas'].includes(layout.value));
+const expanded = ref(createMode.value || !vertical.value);
+const ukioEditing = ref(createMode.value || vertical.value || props.editUkio);
+const ukioView = computed(() => viewMode.value || !ukioEditing.value);
+provide('ukioView', ukioView);
+const canUpdatePhone = computed(() => !ukioView.value && (createMode.value ? userHasPermissionTo('ukio.create') : props.canUpdatePhone));
 
 const filteredAreas = computed(() => {
     if (isCov.value ) {
@@ -138,6 +147,9 @@ const form = useForm({
     },
     eddsReport: getEDDSDefaults(props.incident.edds_report),
     fireReport: getFireReportDefaults(props.incident.fire_report),
+    gasReport: {id: null, message: null, utility_id: null, event_id: null, instruction: null, departed_at: null, arrived_at: null, measures: null, ...props.incident.gas_report},
+    training_session_id: training.value?.id ?? null,
+    complete_service: null,
     actionType: ''
 });
 const tabs = computed(() => ({
@@ -145,21 +157,22 @@ const tabs = computed(() => ({
         template: UKIO,
         title: 'УКИО',
         show: userHasPermissionTo('ukio.view'),
-        condition: getCondition(props.incident.condition)
+        condition: createMode.value ? null : getCondition(form.condition)
     },
+    GAS: {template: Gas, title: 'Газ', show: form.services.includes(page.props.constants.services.GAS) && userHasPermissionTo('gas.view'), condition: getCondition(form.gasReport.condition)},
     EDDS: {
         template: EDDS,
         title: 'ЕДДС/ЖКХ',
         show: form.services.includes(page.props.constants.services.EDDS) && userHasPermissionTo('edds.view'),
         service_id: page.props.constants.services.EDDS,
-        condition: getCondition(props.incident.edds_report?.condition)
+        condition: getCondition(form.eddsReport.condition)
     },
     FIREFIGHTERS: {
         template: Firefighters,
         title: '01',
         service_id: page.props.constants.services.FIREFIGHTERS,
         show: form.services.includes(page.props.constants.services.FIREFIGHTERS) && userHasPermissionTo('01.view'),
-        condition: getCondition(props.incident.fire_report?.condition)
+        condition: getCondition(form.fireReport.condition)
     }
 }));
 
@@ -168,6 +181,7 @@ const rightTabs =  computed(() => ({
         template: IncidentMap,
         title: 'Карта'
     },
+    ...(training.value?.kind === 'glonass' ? {glonass: {template: '', title: 'ГЛОНАСС'}} : {}),
     history: {
         template: '',
         title: 'История'
@@ -183,18 +197,46 @@ watch(() => tabs.value[currentTab.value]?.show, (isVisible) => {
         currentTab.value = 'UKIO';
     }
 });
-const currentRightTab = ref('map');
+const currentRightTab = ref(training.value?.kind === 'glonass' ? 'glonass' : training.value ? 'calls' : 'map');
 const mayBeCompleted = computed(() => {
     return [page.props.constants.callTypes.HELP, page.props.constants.callTypes.FALSE, page.props.constants.callTypes.CHILD].includes(form.call_type_id)
 });
-const submit = (actionType) => {
-    if (viewMode.value || form.processing) return;
+const transitionPending = ref(false);
+provide('departmentTransition', async (row, stage) => {
+    if (createMode.value) return false;
+    if (transitionPending.value || form.processing) throw new Error('Дождитесь завершения запроса.');
+    transitionPending.value = true;
+    try {
+        const {data} = await axios.post(route('incidents.department-transition', props.incident.id), {
+            report_id: form.fireReport.id, department_id: row.department_id,
+            expected_condition: row.condition_id, condition_id: stage.id,
+        });
+        // Earlier edited timestamps remain a draft; only the newly recorded stage is merged.
+        row.condition_id = data.row.condition_id;
+        row[stage.field] = data.row[stage.field];
+        row.transitions = [];
+        form.condition = data.condition;
+        form.fireReport.condition = data.report_condition;
+        return true;
+    } finally { transitionPending.value = false; }
+});
+const finishService = service => {
+    if (form.processing || transitionPending.value) return;
+    form.complete_service = service;
+    submit();
+};
+provide('finishService', finishService);
+const ownService = computed(() => layout.value === '01' ? '01' : layout.value === 'gas' ? 'gas' : null);
+const ownReport = computed(() => layout.value === '01' ? form.fireReport : form.gasReport);
+const submit = (actionType = null) => {
+    if (viewMode.value || form.processing || transitionPending.value) return;
     form.transform(data => {
         const payload = {...data};
-        for (const [key, permission] of [['fireReport', '01'], ['eddsReport', 'edds']]) {
+        for (const [key, permission] of [['fireReport', '01'], ['eddsReport', 'edds'], ['gasReport', 'gas']]) {
             const action = data[key]?.id ? 'edit' : 'create';
             if (!userHasPermissionTo(`${permission}.${action}`)) delete payload[key];
         }
+        if (data.complete_service === 'edds') return {id: data.id, call_type_id: props.incident.call_type_id, complete_service: 'edds', eddsReport: payload.eddsReport};
         return payload;
     });
     if (createMode.value) {
@@ -232,13 +274,6 @@ const submit = (actionType) => {
 }
 
 
-onUnmounted(() => {
-    if (form.call_type === null) {
-        form.call_type = 1
-        submit();
-    }
-})
-
 watch(() => form.data(), (newData, oldData) => {
     Object.keys(newData).forEach(key => {
         if (newData[key] !== oldData[key]) {
@@ -271,8 +306,9 @@ watch(() => form.errors, (errors) => {
             <TabsHeader>
                 <TabHeaderButton
                     v-for="(tab, id) in tabs"
-                    v-show="tab.show && (layout !== '01' || id === 'UKIO')"
+                    v-show="tab.show && (!vertical || id === 'UKIO')"
                     :active="currentTab === id"
+                    :class="createMode && id === 'UKIO' ? 'text-red-700 bg-red-100' : ''"
                     @click="currentTab = id"
                 >
                     <div class="flex items-center gap-2">
@@ -296,8 +332,9 @@ watch(() => form.errors, (errors) => {
             </TabsHeader>
         </template>
 
-        <form @submit.prevent="submit">
-            <template v-if="layout === '01'">
+        <form @submit.prevent="submit()">
+            <div v-if="Object.keys(form.errors).length" role="alert" class="text-red-700 px-6"><p v-for="error in form.errors">{{ error }}</p></div>
+            <template v-if="vertical">
                 <template v-if="tabs.UKIO.show">
                     <UKIOSummary v-show="!expanded" :form="form" :can-edit-phone="canUpdatePhone">
                         <UKIOToggle :expanded="false" @click="expanded = true" />
@@ -308,6 +345,7 @@ watch(() => form.errors, (errors) => {
                         </UKIO>
                     </div>
                 </template>
+                <Gas v-if="tabs.GAS.show" :form="form" class="mt-5" />
                 <div v-if="tabs.FIREFIGHTERS.show" class="mt-5">
                     <Firefighters :form="form" />
                 </div>
@@ -321,23 +359,29 @@ watch(() => form.errors, (errors) => {
             </template>
             <div class="mt-6 px-6">
                 <div class="flex justify-between">
-                    <LinkButton :href="route('incidents.dashboard')">Отмена</LinkButton>
-
-                    <PrimaryButton v-if="viewMode" @click="router.get(route('incidents.edit', incident.id));" type="button">Редактировать</PrimaryButton>
-
-                    <div v-if="(createMode && form.source_id === page.props.constants.sources.INSTANT) || editMode" class="flex gap-2">
-                        <PrimaryButton @click="submit">Сохранить</PrimaryButton>
-                        <PrimaryButton @click="submit('complete')" v-if="mayBeCompleted">Завершить работу с карточкой</PrimaryButton>
+                    <LinkButton v-if="createMode || vertical || ukioEditing" :href="route('incidents.dashboard')">Отмена</LinkButton>
+                    <div class="flex gap-2 ml-auto flex-wrap">
+                        <template v-if="!createMode">
+                            <PrimaryButton v-if="!vertical && !ukioEditing && props.canUpdate" @click="viewMode ? router.get(route('incidents.edit', incident.id), {editUkio: 1}) : ukioEditing = true">Редактировать</PrimaryButton>
+                            <template v-else-if="!viewMode">
+                                <PrimaryButton v-if="vertical && ownReport?.condition !== 5 && userHasPermissionTo(ownService + '.edit')" :disabled="form.processing || transitionPending" @click="finishService(ownService)">Завершить работу с карточкой</PrimaryButton>
+                                <PrimaryButton :disabled="form.processing || transitionPending" @click="submit()">Сохранить</PrimaryButton>
+                            </template>
+                        </template>
+                        <template v-else>
+                            <template v-if="form.source_id === page.props.constants.sources.CALL">
+                                <PrimaryButton :disabled="form.processing" @click="submit('help')">Справочный</PrimaryButton>
+                                <PrimaryButton :disabled="form.processing" @click="submit('false')">Ложный</PrimaryButton>
+                                <PrimaryButton :disabled="form.processing" @click="submit('child')">Детская шалость</PrimaryButton>
+                            </template>
+                            <PrimaryButton v-if="!form.call_type_id || mayBeCompleted" :disabled="form.processing || !mayBeCompleted" @click="submit()">Сохранить</PrimaryButton>
+                            <template v-else>
+                                <PrimaryButton v-if="form.source_id === page.props.constants.sources.CALL && !training?.hung_up" :disabled="form.processing" @click="submit('transfer')">Передать с вызовом</PrimaryButton>
+                                <PrimaryButton v-if="form.source_id === page.props.constants.sources.CALL && !training?.hung_up" :disabled="form.processing" title="Учебная имитация">Конференция</PrimaryButton>
+                                <PrimaryButton :disabled="form.processing" @click="submit('transfer')">Передать без вызова</PrimaryButton>
+                            </template>
+                        </template>
                     </div>
-
-                    <div v-if="createMode && form.source_id === page.props.constants.sources.CALL" class="flex gap-2">
-                        <PrimaryButton :disabled="form.processing" @click="submit('help')">Справочный</PrimaryButton>
-                        <PrimaryButton :disabled="form.processing" @click="submit('false')">Ложный</PrimaryButton>
-                        <PrimaryButton :disabled="form.processing" @click="submit('child')">Детская шалость</PrimaryButton>
-                        <PrimaryButton :disabled="form.processing || form.call_type === 0" @click="submit" >Передать без вызова</PrimaryButton>
-                        <PrimaryButton :disabled="form.processing || form.call_type === 0" @click="submit" >Переать с вызовом</PrimaryButton>
-                    </div>
-
                 </div>
             </div>
 
@@ -345,6 +389,7 @@ watch(() => form.errors, (errors) => {
 
         <template #right-panel>
             <Block>
+                <TrainingPanel v-if="training && ((currentRightTab === 'calls' && training.kind !== 'glonass') || (currentRightTab === 'glonass' && training.kind === 'glonass'))" :session="training" :autoplay="createMode" @updated="training = $event" />
                 <keep-alive>
                     <component :is="rightTabs[currentRightTab].template" />
                 </keep-alive>

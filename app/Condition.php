@@ -31,13 +31,13 @@ enum Condition: int
             self::RESPONSE => 'bg-purple-500',
             self::AT_WORK => 'bg-yellow-500',
             self::DONE => 'bg-white ring-1 ring-gray-400',
-            self::WATCHING => 'bg-blue-400'
+            self::WATCHING => 'bg-teal-400'
         };
     }
 
     public static function canSwitchToWatching(int $condition)
     {
-        return in_array($condition, [Condition::REQUEST->value, Condition::CONNECTING->value]);
+        return $condition === Condition::CONNECTING->value;
     }
 
 }

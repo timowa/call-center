@@ -208,7 +208,7 @@ class IncidentDepartmentsTest extends TestCase
         $incident->save();
         $this->save($incident, [array_merge($this->row(), ['requested_at' => '2020-01-01 00:00:00'])])->assertSessionHasNoErrors();
         $this->assertSame(Condition::CONNECTING, $incident->fresh()->condition);
-        $this->assertSame(Condition::REQUEST, $incident->eddsReport->fresh()->condition);
+        $this->assertSame(Condition::CONNECTING, $incident->eddsReport->fresh()->condition);
     }
 
     public function test_uid_login_starts_new_work_session(): void

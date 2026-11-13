@@ -1,5 +1,6 @@
 export const getEDDSDefaults = (report = null) => ({
     id: report?.id ?? null,
+    condition: report?.condition ?? 2,
     type: report?.type ?? null,
     company: report?.company ?? null,
     instruction: report?.instruction ?? null,
@@ -8,5 +9,5 @@ export const getEDDSDefaults = (report = null) => ({
     elimination_datetime: report?.elimination_datetime ?? null,
     is_consultation: report?.is_consultation ?? false,
     results: report?.results ?? [],
-    response: report?.response ?? []
+    responses: report?.responses ?? []
 });

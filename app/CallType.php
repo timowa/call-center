@@ -35,7 +35,7 @@ enum CallType: int
             self::FIREFIGHTERS => Service::FIREFIGHTERS,
             self::POLICE => Service::POLICE,
             self::EMERGENCY => Service::EMERGENCY,
-            self::GAS => Service::EDDS,
+            self::GAS => Service::GAS,
             self::EDDS => Service::EDDS,
         };
     }

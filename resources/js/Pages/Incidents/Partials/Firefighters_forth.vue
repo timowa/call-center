@@ -8,6 +8,9 @@ import Dropdown from '@/Components/Dropdown.vue';
 import DateTimeEditor from '@/Components/Form/DateTimeEditor.vue';
 import {nowInTimezone, formatDateTime} from '@/Utils/dateTime.js';
 const page = usePage();
+const transition = inject('departmentTransition', null);
+const pending = ref(false);
+const transitionError = ref('');
 const props = defineProps(['form']);
 const viewMode = inject('viewMode', ref(false));
 const canEdit = computed(() => !viewMode.value && page.props.auth.user.permissions.includes('01.edit'));
@@ -46,8 +49,14 @@ const saveDepartments = () => {
     }
     addDialog.value.close();
 };
-const updateCondition = (row, stage) => {
-    if (!canEdit.value || stage.id !== Number(row.condition_id) + 1) return;
+const updateCondition = async (row, stage) => {
+    if (!canEdit.value || pending.value || stage.id !== Number(row.condition_id) + 1) return;
+    if (transition) {
+        pending.value = true; transitionError.value = '';
+        try { if (await transition(row, stage)) return; }
+        catch (error) { transitionError.value = error.response?.data?.message || 'Переход не подтверждён. Обновите карточку перед повторной попыткой.'; return; }
+        finally { pending.value = false; }
+    }
     row.condition_id = stage.id;
     row[stage.field] = nowInTimezone(page.props.timezone);
     (row.transitions ??= []).push(stage.id);
@@ -61,6 +70,7 @@ const closeTime = () => { timeDialog.value.close(); editing.value = null; };
 const saveTime = value => { if (canEdit.value) editing.value.row[editing.value.stage.field] = value; closeTime(); };
 </script>
 <template>
+    <p v-if="transitionError" role="alert" class="text-red-700 p-3">{{ transitionError }}</p>
     <FormGroup :cols="6">
         <div class="col-span-6 bg-white rounded border border-gray-200">
             <div class="flex items-center gap-3 p-3 font-semibold text-sm">Отделения
@@ -76,7 +86,7 @@ const saveTime = value => { if (canEdit.value) editing.value.row[editing.value.s
                                 <td>{{ row.department_name }}</td>
                                 <td><Dropdown>
                                     <template #trigger><button type="button" :disabled="!canEdit" class="text-primary disabled:text-gray-500">{{ stages[row.condition_id - 1]?.name }}</button></template>
-                                    <template #content><button v-for="stage in stages" type="button" @click="updateCondition(row, stage)" :disabled="!canEdit || stage.id !== Number(row.condition_id) + 1" class="text-left px-2 py-1 text-primary disabled:text-gray-400">{{ stage.name }}</button></template>
+                                    <template #content><button v-for="stage in stages" type="button" @click="updateCondition(row, stage)" :disabled="!canEdit || pending || stage.id !== Number(row.condition_id) + 1" class="text-left px-2 py-1 text-primary disabled:text-gray-400">{{ stage.name }}</button></template>
                                 </Dropdown></td>
                                 <td>{{ formatDateTime(row[stages[row.condition_id - 1]?.field]) }}</td>
                                 <td>{{ row.operator_name }}</td>

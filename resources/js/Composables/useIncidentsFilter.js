@@ -8,6 +8,8 @@ export function useIncidentFilters() {
     const isFilterOpen = ref(false);
 
     const defaultFilters = {
+        incident_number: null, filter_incident_type: null, incident_street: null, comment: null, applicant_street: null,
+        incident_fields: [],
         service_id: null,
         call_type_id: null,
         is_training: false,
@@ -28,7 +30,9 @@ export function useIncidentFilters() {
         applicant_phone: null,
     };
 
-    const savedFilters = JSON.parse(localStorage.getItem('filter')) || {};
+    let savedFilters = {};
+    try { savedFilters = JSON.parse(localStorage.getItem('filter')) || {}; } catch {}
+    if (Array.isArray(savedFilters.conditions)) savedFilters.conditions = [...new Set(savedFilters.conditions.map(c => Number(c) === 1 ? 2 : Number(c)))];
 
     const filterForm = useForm({
         ...defaultFilters,
@@ -37,6 +41,7 @@ export function useIncidentFilters() {
 
     const getFilterLabel = (key) => {
         const labels = {
+            incident_number: 'УКИО', filter_incident_type: 'Тип происшествия', incident_street: 'Улица происшествия', comment: 'Комментарий', applicant_street: 'Улица заявителя',
             service_id: 'Служба',
             call_type_id: 'Тип вызова',
             is_training: 'Учебная',
@@ -91,7 +96,7 @@ export function useIncidentFilters() {
         filterForm.get(route('incidents.dashboard'), {
             preserveState: true,
             preserveScroll: true,
-            only: ['incidents'],
+            only: ['incidents', 'filterStreets'],
             onSuccess: () => { isFilterOpen.value = false; },
             onFinish: () => {
                 startPolling();
@@ -141,7 +146,7 @@ export function useIncidentFilters() {
             const isFilled = value !== null && value !== undefined && value !== '' &&
                 !(Array.isArray(value) && value.length === 0) &&
                 !(typeof value === 'boolean' && value === false);
-            if (isFilled) acc[key] = value;
+            if (isFilled && key !== 'incident_fields') acc[key] = value;
             return acc;
         }, {});
     });

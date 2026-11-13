@@ -34,7 +34,7 @@ enum Service: int
             self::EMERGENCY => null,
             self::EDDS => EddsReport::class,
             self::ANTITERROR => null,
-            self::GAS => null,
+            self::GAS => \App\Models\GasReport::class,
         };
     }
 

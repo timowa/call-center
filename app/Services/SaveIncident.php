@@ -29,10 +29,17 @@ class SaveIncident
     {
         return DB::transaction(function () use ($request, $id) {
             $user = $request->user();
+            $training = null;
+            if (!$id && $request->filled('training_session_id')) {
+                $training = \App\Models\TrainingSession::lockForUpdate()->findOrFail($request->integer('training_session_id'));
+                abort_unless($training->user_id === $user->id,403);
+                if ($training->incident_id) return $training->incident;
+            }
             $incident = $id ? Incident::lockForUpdate()->findOrFail($id) : new Incident();
             Gate::authorize($id ? 'update' : 'create', $id ? $incident : Incident::class);
             $original = clone $incident;
             $incident->fill($request->all());
+            if (!$id) $incident->source_id = $request->integer('source_id', 1);
             if ($id && !$user->can('ukio.edit') && is_array($request->input('applicant_info'))) {
                 $applicant = $original->applicant_info ?? [];
                 foreach ($request->input('applicant_info') as $key => $value) {
@@ -57,11 +64,19 @@ class SaveIncident
             }
             if (!$id) $incident->user()->associate($user);
             $incident->save();
+            if ($training) {
+                $incident->source_id = match ($training->kind) { 'call' => 2, 'sms' => 3, 'glonass' => 4 };
+                $incident->save();
+                $training->incident_id = $incident->id; $training->save();
+            }
             $stagesChanged = false;
-            foreach (['fireReport' => ['01', Service::FIREFIGHTERS], 'eddsReport' => ['edds', Service::EDDS]] as $relation => [$permission, $service]) {
+            foreach (['fireReport' => ['01', Service::FIREFIGHTERS], 'eddsReport' => ['edds', Service::EDDS], 'gasReport' => ['gas', Service::GAS]] as $relation => [$permission, $service]) {
                 $report = $incident->$relation;
                 $data = $request->input($relation);
-                if (!is_array($data)) continue;
+                if (!is_array($data)) {
+                    if (!$report && in_array($service->value, $request->input('services', []))) $data = [];
+                    else continue;
+                }
                 if (!empty($data['id']) && (!$report || (int) $data['id'] !== $report->id)) {
                     throw ValidationException::withMessages([$relation.'.id' => 'Отчёт не принадлежит этой карточке.']);
                 }
@@ -89,6 +104,7 @@ class SaveIncident
                 }
             }
             $incident->unsetRelations();
+            $complete = $request->input('complete_service');
             if (!$id) {
                 $action = $request->input('actionType');
                 event(new IncidentCreated($incident, is_string($action) && $action !== '' ? $action : null));
@@ -97,12 +113,21 @@ class SaveIncident
                 event(new FireReportUpdated($incident->fireReport));
                 $incident->unsetRelations();
                 // Mixed-service aggregation remains unchanged pending customer agreement.
-                if (!$incident->eddsReport()->exists()) {
+                if (!$incident->eddsReport()->exists() && !$incident->gasReport()->exists()) {
                     $incident->condition = $incident->fireReport->condition;
                     $incident->save();
                 }
             }
-            if ($id && $stagesChanged) event(new IncidentUpdated($incident));
+            if ($complete) {
+                $relations = ['01' => 'fireReport', 'edds' => 'eddsReport', 'gas' => 'gasReport'];
+                abort_unless($id && isset($relations[$complete]) && $user->can($complete.'.edit'), 403);
+                $report = $incident->{$relations[$complete]};
+                abort_unless($report, 422);
+                $report->condition = \App\Condition::DONE;
+                $report->save();
+                $incident->unsetRelations();
+            }
+            if ($id && ($stagesChanged || $complete)) event(new IncidentUpdated($incident));
             return $incident;
         });
     }

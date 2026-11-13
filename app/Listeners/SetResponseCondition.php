@@ -16,7 +16,7 @@ class SetResponseCondition
     {
         $incident = $event->incident;
 
-        if (!in_array($incident->condition, [Condition::REQUEST, Condition::CONNECTING])) {
+        if (!in_array($incident->condition, [Condition::CONNECTING, Condition::WATCHING])) {
             return;
         }
         $countRelated = 0;
@@ -31,6 +31,12 @@ class SetResponseCondition
         if ($incident->eddsReport()->exists()) {
             $countRelated++;
             if ($incident->eddsReport->condition === Condition::RESPONSE) {
+                $countRelatedInStatus++;
+            }
+        }
+        if ($incident->gasReport()->exists()) {
+            $countRelated++;
+            if ($incident->gasReport->condition === Condition::RESPONSE) {
                 $countRelatedInStatus++;
             }
         }

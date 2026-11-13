@@ -7,7 +7,7 @@ export const FireReportDirectories = reactive({
     error: null,
 
     async fetchFireDirectories() {
-        if (this.fireService || this.isLoading) return;
+        if (this.isLoading) return;
 
         this.isLoading = true;
         this.error = null;

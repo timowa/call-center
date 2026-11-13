@@ -46,12 +46,25 @@ class IncidentRequest extends FormRequest
         $rules = [
             'applicant_info' => ['sometimes', 'nullable', 'array'],
             'applicant_info.phone' => ['sometimes', 'nullable', 'string'],
+            'training_session_id' => ['nullable', 'integer'],
+            'actionType' => ['nullable', Rule::in(['help', 'false', 'child', 'complete', 'transfer'])],
+            'complete_service' => ['nullable', Rule::in(['01', 'edds', 'gas'])],
+            'source_id' => ['sometimes', 'integer', Rule::enum(\App\SourceType::class)],
             'call_type_id' => ['required', Rule::enum(CallType::class)],
             'district_id' => ['nullable', 'integer', 'exists:districts,id'],
             'incoming_number' => ['required_without:id'],
             'services' => ['sometimes', 'array'],
             'services.*' => ['integer', 'distinct', Rule::enum(Service::class)],
             'fireReport' => ['sometimes', 'nullable', 'array'],
+            'gasReport' => ['sometimes', 'nullable', 'array'],
+            'gasReport.id' => ['nullable', 'integer'],
+            'gasReport.utility_id' => ['nullable', 'integer', 'exists:gas_utilities,id'],
+            'gasReport.event_id' => ['nullable', 'integer', 'exists:gas_events,id'],
+            'gasReport.message' => ['nullable', 'string'],
+            'gasReport.instruction' => ['nullable', 'string'],
+            'gasReport.measures' => ['nullable', 'string'],
+            'gasReport.departed_at' => ['nullable', 'date_format:Y-m-d H:i:s'],
+            'gasReport.arrived_at' => ['nullable', 'date_format:Y-m-d H:i:s'],
             'eddsReport' => ['sometimes', 'nullable', 'array'],
             'fireReport.id' => ['nullable', 'integer'],
             'eddsReport.id' => ['nullable', 'integer'],
@@ -69,6 +82,20 @@ class IncidentRequest extends FormRequest
             $rules['fireReport.'.$field] = ['sometimes', 'nullable', 'array'];
         }
         return $rules;
+    }
+
+    public function after(): array
+    {
+        return [function ($validator) {
+            if ($validator->errors()->isNotEmpty()) return;
+            $action = $this->input('actionType');
+            $type = CallType::from((int) $this->input('call_type_id'));
+            $quick = ['help' => CallType::HELP, 'false' => CallType::FALSE, 'child' => CallType::CHILD];
+            if ($action && $this->route('id')) $validator->errors()->add('actionType', 'Действие создания недоступно для существующей карточки.');
+            if (isset($quick[$action ?? '']) && ($type !== $quick[$action] || $this->integer('source_id', 1) !== 2)) $validator->errors()->add('actionType', 'Быстрое действие доступно только при принятом звонке с соответствующим типом вызова.');
+            if ($action === 'transfer' && !$type->hasRelatedService()) $validator->errors()->add('actionType', 'Выберите профильный тип вызова.');
+            if ($action === 'complete' && $type->hasRelatedService()) $validator->errors()->add('actionType', 'Завершение относится к собственной службе.');
+        }];
     }
 
     public function messages(): array

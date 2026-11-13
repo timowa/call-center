@@ -81,6 +81,7 @@ class Incident extends Model
         if ($user->hasRole('op_01')) {
             $builder->whereHas('fireReport');
         }
+        if ($user->hasRole('gas')) $builder->whereHas('gasReport');
         if ($user->hasRole('edds')) {
             $builder->whereHas('eddsReport');
         }
@@ -91,6 +92,7 @@ class Incident extends Model
         $activeConditions = collect([
             $this->fireReport?->condition,
             $this->eddsReport?->condition,
+            $this->gasReport?->condition,
         ])->filter();
 
         if ($activeConditions->isEmpty()) return;
@@ -130,6 +132,10 @@ class Incident extends Model
     {
         return $this->hasOne(FireReport::class, 'incident_id', 'id');
     }
+
+    public function trainingSession() { return $this->hasOne(TrainingSession::class); }
+
+    public function gasReport() { return $this->hasOne(GasReport::class); }
 
     public function eddsReport()
     {

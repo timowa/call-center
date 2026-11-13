@@ -13,7 +13,8 @@ import {usePage} from "@inertiajs/vue3";
 import {FireReportDirectories} from "@/Utils/FireReportDirectories.js";
 const props = defineProps(['form', 'createMode']);
 const page = usePage();
-const viewMode = inject('viewMode', ref(false));
+const viewMode = inject('ukioView', inject('viewMode', ref(false)));
+provide('viewMode', viewMode);
 const protectedFields = computed(() => viewMode.value || !userHasPermissionTo(props.createMode ? 'ukio.create' : 'ukio.edit'));
 const descriptionReadonly = computed(() => viewMode.value || (!props.createMode && !userHasPermissionTo('ukio.edit') && !userHasPermissionTo('ukio.edit-description')));
 const {callTypes, incidentTypes, areas, districts, services, sources, urban_objects, emergency_types} = inject('directories');
@@ -112,7 +113,7 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
             <FormField label="Создатель" v-model="form.creator" :readonly="true"  :text-align="'right'" />
             <FormField :readonly="protectedFields" :auto-select="createMode" label="Тип происшествия" type="select" v-model="form.incident_type_id" :col-span="4" :grid-col="4" :options="incidentTypes"/>
             <FormField :auto-select="createMode" label="Источник" v-model="form.source_id" type="select" :options="sources"  :text-align="'right'" :readonly="true"/>
-            <FormField :readonly="protectedFields" :auto-select="createMode" label="Тип вызова"
+            <FormField :readonly="protectedFields" :auto-select="createMode" label="Тип вызова" :class="createMode ? 'call-type-required' : ''"
                        type="select"
                        v-model="form.call_type_id"
                        :options="callTypes"
@@ -196,7 +197,7 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
             <FormField v-model="form.number_of_victims" label="Пострадавших" :text-align="'right'"/>
             <FormField :readonly="protectedFields" :auto-select="createMode" v-model="form.emergency_type_id" label="Тип ЧС" type="select"  :text-align="'right'" :options="emergency_types"/>
             </fieldset>
-            <FormField :readonly="descriptionReadonly" label="Описание" v-model="form.description" :col-span="6" :grid-col="6" type="textarea" />
+            <FormField :readonly="descriptionReadonly" label="Описание" :rows="4" v-model="form.description" :col-span="6" :grid-col="6" type="textarea" />
 
         </FormGroup>
         <fieldset :disabled="protectedFields">
@@ -243,4 +244,8 @@ watch(() => coordsService.coordinates.value, (newCoords) => {
 
 <style scoped>
 
+</style>
+
+<style scoped>
+.call-type-required :deep(.vs__dropdown-toggle) { border-color: #dc2626; background: #fee2e2; }
 </style>
