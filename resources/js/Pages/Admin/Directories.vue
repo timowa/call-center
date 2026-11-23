@@ -85,12 +85,13 @@ watch(() => props.directory, () => { close(); deleting.value = null; deletion.cl
             <div class="flex items-center gap-4"><span>{{ adminLogin }}</span><Link :href="route('admin.logout')" method="post" as="button" class="underline">Выйти</Link></div>
         </header>
         <div class="flex flex-col md:flex-row min-h-[calc(100vh-52px)]">
-            <aside class="md:w-64 shrink-0 bg-white border-r border-gray-300">
-                <nav aria-label="Разделы" class="flex border-b border-gray-300">
+            <aside class="flex shrink-0 bg-white border-r border-gray-300">
+                <nav aria-label="Разделы" class="flex flex-col w-20 border-r border-gray-300">
+                    <Link :href="route('admin.sms.index')" class="text-left px-3 py-3 font-semibold border-l-2 border-transparent">СМС</Link>
                     <Link v-for="tab in groups" :key="tab.key" :href="groupUrl(tab.key)" :aria-current="group === tab.key ? 'page' : undefined"
-                          class="flex-1 text-center px-3 py-3 font-semibold border-b-2" :class="group === tab.key ? 'border-primary text-primary bg-gray-50' : 'border-transparent hover:bg-gray-50'">{{ tab.label }}</Link>
+                          class="text-left px-3 py-3 font-semibold border-l-2" :class="group === tab.key ? 'border-primary text-primary bg-gray-50' : 'border-transparent hover:bg-gray-50'">{{ tab.label }}</Link>
                 </nav>
-                <nav aria-label="Справочники" class="py-2">
+                <nav aria-label="Справочники" class="py-2 w-64">
                     <Link v-for="item in items" :key="item.key" :href="url(item.key)" :aria-current="directory === item.key ? 'page' : undefined"
                           class="block px-5 py-2.5 border-l-4" :class="directory === item.key ? 'border-primary bg-gray-100 text-primary font-semibold' : 'border-transparent hover:bg-gray-50'">{{ item.label }}</Link>
                 </nav>

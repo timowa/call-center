@@ -15,7 +15,13 @@ class TrainingController extends Controller {
    if ($existing) { abort_unless($existing->kind === $data['kind'], 409); return $existing; }
    $query = DB::table('training_scenarios')->where('kind',$data['kind'])->where('active',true);
    $cursor = DB::table('training_cursors')->where('user_id',$request->user()->id)->where('kind',$data['kind'])->first();
+   if ($data['kind'] === 'sms') {
+    $previous = $request->session()->get('sms_previous_template_id');
+    $scenario = $previous === null ? (clone $query)->inRandomOrder()->first()
+     : ((clone $query)->where('id', '>', $previous)->orderBy('id')->first() ?? (clone $query)->orderBy('id')->first());
+   } else {
    $scenario = (clone $query)->where('id','>',$cursor?->last_scenario_id ?? 0)->orderBy('id')->first() ?? $query->orderBy('id')->first();
+   }
    if (!$scenario) throw \Illuminate\Validation\ValidationException::withMessages(['training' => 'Учебные сценарии не загружены.']);
    DB::table('training_cursors')->updateOrInsert(['user_id'=>$request->user()->id,'kind'=>$data['kind']],['last_scenario_id'=>$scenario->id]);
    $lines = preg_split('/\R/u',trim($scenario->content));
@@ -26,6 +32,7 @@ class TrainingController extends Controller {
     'position'=>$data['kind']==='sms' ? 1 : 0,
    ]);
   });
+  if ($session->kind === 'sms') $request->session()->put('sms_previous_template_id', $session->scenario_id);
   return redirect()->route($session->incident_id ? 'incidents.edit' : 'training.show', $session->incident_id ?? $session->id);
  }
  private function authorizeSession(TrainingSession $session, Request $request): void {

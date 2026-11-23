@@ -26,6 +26,19 @@ class AdminDirectoriesTest extends TestCase
         $this->post('/admin/login', ['login' => 'administrator', 'password' => 'test-password-123'])->assertRedirect('/admin');
     }
 
+    public function test_sms_management_requires_admin_and_preserves_existing_templates(): void
+    {
+        $this->post('/admin/sms', ['name' => 'Topic', 'messages' => ['SMS']])->assertRedirect('/admin/login');
+        $this->loginAdmin();
+        $this->post('/admin/sms', ['name' => 'Topic', 'messages' => ['First', 'Second']])->assertSessionHasNoErrors();
+        $id = DB::table('training_scenarios')->where('kind', 'sms')->value('id');
+        $this->put('/admin/sms/'.$id, ['name' => 'Updated topic', 'messages' => ['Updated']])->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('training_scenarios', ['id' => $id, 'content' => 'Updated']);
+        $this->delete('/admin/sms/'.$id)->assertRedirect();
+        $this->assertDatabaseHas('training_scenarios', ['id' => $id, 'active' => false]);
+        $this->put('/admin/sms/'.$id, ['name' => 'Topic', 'messages' => ['Hidden']])->assertNotFound();
+    }
+
     public function test_admin_seeder_restores_credentials_without_duplicates(): void
     {
         Admin::create(['login' => 'admin', 'password' => 'previous-password']);

@@ -228,9 +228,22 @@ class CustomerChangesTest extends TestCase
             $this->get(route('incidents.edit', $card))->assertInertia(fn (Assert $p) => $p->where('incident.training_session.id', $session->id)->where('incident.training_session.content', $session->content)->where('incident.source_id', $source));
             $other = $this->operator('cov_112'); $this->actingAs($other);
             $this->post(route('training.accept'), ['kind' => $kind, 'request_key' => (string) Str::uuid()])->assertRedirect();
-            $this->assertSame($ids[0], TrainingSession::latest('id')->value('scenario_id'));
+            if ($kind === 'glonass') $this->assertSame($ids[0], TrainingSession::latest('id')->value('scenario_id'));
+            else $this->assertSame(TrainingSession::latest('id')->value('scenario_id'), session('sms_previous_template_id'));
             $this->actingAs($user);
         }
+    }
+
+    public function test_sms_selection_uses_session_cursor_and_wraps(): void
+    {
+        $this->actingAs($this->operator('cov_112'));
+        $ids = DB::table('training_scenarios')->where('kind', 'sms')->where('active', true)->orderBy('id')->pluck('id');
+        $this->withSession(['sms_previous_template_id' => $ids->last()])
+            ->post(route('training.accept'), ['kind' => 'sms', 'request_key' => (string) Str::uuid()])->assertRedirect();
+        $this->assertSame($ids->first(), TrainingSession::latest('id')->value('scenario_id'));
+        $this->assertSame($ids->first(), session('sms_previous_template_id'));
+        $this->post(route('training.accept'), ['kind' => 'sms', 'request_key' => (string) Str::uuid()])->assertRedirect();
+        $this->assertSame($ids[1], TrainingSession::latest('id')->value('scenario_id'));
     }
 
     public function test_sms_order_deduplication_exhaustion_and_foreign_session(): void

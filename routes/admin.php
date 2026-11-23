@@ -9,6 +9,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AuthController::class, 'create'])->name('login');
     Route::post('/login', [AuthController::class, 'store'])->middleware('throttle:20,1')->name('login.store');
     Route::middleware(AuthenticateAdmin::class)->group(function () {
+        Route::get('/sms', [\App\Http\Controllers\Admin\SmsController::class, 'index'])->name('sms.index');
+        Route::get('/sms/create', [\App\Http\Controllers\Admin\SmsController::class, 'create'])->name('sms.create');
+        Route::get('/sms/{id}/edit', [\App\Http\Controllers\Admin\SmsController::class, 'edit'])->whereNumber('id')->name('sms.edit');
+        Route::post('/sms', [\App\Http\Controllers\Admin\SmsController::class, 'store'])->name('sms.store');
+        Route::put('/sms/{id}', [\App\Http\Controllers\Admin\SmsController::class, 'update'])->name('sms.update');
+        Route::delete('/sms/{id}', [\App\Http\Controllers\Admin\SmsController::class, 'destroy'])->name('sms.destroy');
         Route::get('/', [DirectoryController::class, 'index'])->name('index');
         Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
         Route::get('/directories/{directory}', [DirectoryController::class, 'index'])->name('directories.index');
