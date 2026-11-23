@@ -26,6 +26,40 @@ class AdminDirectoriesTest extends TestCase
         $this->post('/admin/login', ['login' => 'administrator', 'password' => 'test-password-123'])->assertRedirect('/admin');
     }
 
+    public function test_glonass_crud_validation_isolation_and_session_snapshot(): void
+    {
+        foreach (['get', 'post', 'put', 'delete'] as $method) {
+            $url = '/admin/glonass'.(in_array($method, ['put', 'delete']) ? '/1' : '');
+            $this->$method($url)->assertRedirect('/admin/login');
+        }
+        $this->loginAdmin();
+        $this->get('/admin/glonass/create')->assertInertia(fn (Assert $page) => $page->component('Admin/GlonassEdit'));
+        $payload = ['name' => 'ДТП', 'fields' => [['label' => 'Госномер', 'value' => 'А123'], ['label' => 'Адрес', 'value' => 'Абакан']]];
+        $this->post('/admin/glonass', $payload)->assertRedirect('/admin/glonass');
+        $row = DB::table('training_scenarios')->where('kind', 'glonass')->first();
+        $this->assertSame(['Госномер' => 'А123', 'Адрес' => 'Абакан'], json_decode($row->content, true));
+        $this->get('/admin/glonass')->assertInertia(fn (Assert $page) => $page->component('Admin/Glonass')->has('scenarios', 1));
+        $this->get('/admin/glonass/'.$row->id.'/edit')->assertInertia(fn (Assert $page) => $page->where('scenario.fields.0.value', 'А123'));
+        $user = User::factory()->create();
+        $session = \App\Models\TrainingSession::create(['user_id' => $user->id, 'scenario_id' => $row->id, 'request_key' => (string) \Illuminate\Support\Str::uuid(), 'kind' => 'glonass', 'name' => $row->name, 'content' => $row->content, 'messages' => [], 'position' => 0]);
+        $payload['fields'][0]['value'] = 'Б456';
+        $this->put('/admin/glonass/'.$row->id, $payload)->assertRedirect('/admin/glonass');
+        $this->assertSame('Б456', json_decode(DB::table('training_scenarios')->where('id', $row->id)->value('content'), true)['Госномер']);
+        $payload['fields'][1]['label'] = 'Госномер';
+        $this->put('/admin/glonass/'.$row->id, $payload)->assertSessionHasErrors('fields.1.label');
+        $this->post('/admin/glonass', ['name' => '', 'fields' => []])->assertSessionHasErrors(['name', 'fields']);
+        $sms = DB::table('training_scenarios')->insertGetId(['kind' => 'sms', 'name' => 'SMS', 'content' => 'Text', 'active' => true, 'created_at' => now(), 'updated_at' => now()]);
+        $this->get('/admin/glonass/'.$sms.'/edit')->assertNotFound();
+        $this->put('/admin/glonass/'.$sms, $payload)->assertNotFound();
+        $this->delete('/admin/glonass/'.$sms)->assertNotFound();
+        $this->delete('/admin/glonass/'.$row->id)->assertRedirect('/admin/glonass');
+        $this->assertDatabaseHas('training_scenarios', ['id' => $row->id, 'active' => false]);
+        $this->assertSame($row->content, $session->fresh()->content);
+        $this->get('/admin/glonass')->assertInertia(fn (Assert $page) => $page->has('scenarios', 0));
+        $this->get('/admin/glonass/'.$row->id.'/edit')->assertNotFound();
+        $this->put('/admin/glonass/'.$row->id, $payload)->assertNotFound();
+    }
+
     public function test_sms_management_requires_admin_and_preserves_existing_templates(): void
     {
         $this->post('/admin/sms', ['name' => 'Topic', 'messages' => ['SMS']])->assertRedirect('/admin/login');

@@ -86,8 +86,9 @@ watch(() => props.directory, () => { close(); deleting.value = null; deletion.cl
         </header>
         <div class="flex flex-col md:flex-row min-h-[calc(100vh-52px)]">
             <aside class="flex shrink-0 bg-white border-r border-gray-300">
-                <nav aria-label="Разделы" class="flex flex-col w-20 border-r border-gray-300">
+                <nav aria-label="Разделы" class="flex flex-col w-28 border-r border-gray-300">
                     <Link :href="route('admin.sms.index')" class="text-left px-3 py-3 font-semibold border-l-2 border-transparent">СМС</Link>
+                    <Link :href="route('admin.glonass.index')" class="text-left px-3 py-3 font-semibold border-l-2 border-transparent">ГЛОНАСС</Link>
                     <Link v-for="tab in groups" :key="tab.key" :href="groupUrl(tab.key)" :aria-current="group === tab.key ? 'page' : undefined"
                           class="text-left px-3 py-3 font-semibold border-l-2" :class="group === tab.key ? 'border-primary text-primary bg-gray-50' : 'border-transparent hover:bg-gray-50'">{{ tab.label }}</Link>
                 </nav>
